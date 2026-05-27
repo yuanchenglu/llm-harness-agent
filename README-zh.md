@@ -12,6 +12,12 @@
 
 ---
 
+<p align="center">
+  <a href="https://github.com/yuanchenglu/llm-harness-agent"><b>⭐ 点个 Star</b></a>，有新论文第一时间收到通知。<i>LLM + Harness = Agent</i> 是一个持续更新的系列——更多创新点正在写作中。
+</p>
+
+---
+
 ## 核心架构
 
 ```

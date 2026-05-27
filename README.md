@@ -12,6 +12,12 @@
 
 ---
 
+<p align="center">
+  <a href="https://github.com/yuanchenglu/llm-harness-agent"><b>⭐ Star this repo</b></a> to get notified when new articles drop. <i>LLM + Harness = Agent</i> is a living series — more innovations coming.
+</p>
+
+---
+
 ## Core Architecture
 
 ```
