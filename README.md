@@ -2,6 +2,8 @@
 
 > Why the "Harness" matters more than the model — 5,000+ hours, 10+ Agent products, 5-machine verification
 
+[**阅读简体中文版**](README-zh.md) · [**⭐ Star this repo**](https://github.com/yuanchenglu/llm-harness-agent) to get notified when new articles drop
+
 ---
 
 ## TL;DR
@@ -9,12 +11,6 @@
 1. **LLM intelligence is a constant**. Transformer physics means the longer the context, the more diluted the attention. Model improvements are linear. Harness improvements are exponential.
 2. **The same DeepSeek V4 performs drastically differently across different harnesses**. I've run it through Hermes, ClaudeCode, OpenCode, Codex, OpenClaw, pi, Cursor, Coze — each exposes different capability boundaries.
 3. **I run an agent matrix across 5 machines as my R&D team**. Multiple rounds of Volcano Engine Hermes Agent internal beta testing. This article is systems-level, hands-on output. Not a survey. Not a benchmark. A builder's understanding, earned the hard way.
-
----
-
-<p align="center">
-  <a href="https://github.com/yuanchenglu/llm-harness-agent"><b>⭐ Star this repo</b></a> to get notified when new articles drop. <i>LLM + Harness = Agent</i> is a living series — more innovations coming.
-</p>
 
 ---
 
@@ -42,6 +38,10 @@
 ---
 
 ## Navigation
+
+### 📄 Framework Paper
+
+> **[LLM + Harness = Agent: A First-Principles Framework for Agent Operating Systems](paper.md)** — The unifying theory behind all 12 design patterns. Argues why Transformer attention dilution is a hard physics constraint, why harness is the breakthrough, and distills 4 first-principles-derived universal design rules.
 
 ### Core Innovations (standalone deep-dives)
 
@@ -102,7 +102,3 @@ I believe LLM + Harness = Agent. Engine improvements are linear. Chassis improve
 ---
 
 *This is the entry point for the "LLM + Harness = Agent" series. Each innovation article can be read independently and they interconnect. Start from 01 — they share the same core logic: "separate what can't be lost from what can be compressed."*
-
----
-
-*[阅读简体中文版](README.md)*

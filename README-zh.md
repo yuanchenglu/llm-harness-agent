@@ -2,6 +2,8 @@
 
 > 为什么「Harness」比模型更重要——5000+ 小时、10+ 款 Agent 产品、5 台机器上的系统性验证
 
+[**Read in English**](README.md) · [**⭐ 点个 Star**](https://github.com/yuanchenglu/llm-harness-agent)，有新论文第一时间通知
+
 ---
 
 ## TL;DR
@@ -9,12 +11,6 @@
 1. **LLM 的智商是常数**。Transformer 的物理边界决定了上下文越长，注意力越稀释。模型改进是线性增长，Harness 改进是指数释放。
 2. **同一个 DeepSeek V4，在不同 Harness 上的表现天差地别**。我跑过 Hermes、ClaudeCode、OpenCode、Codex、OpenClaw、pi、Cursor、Coze——每一款都在同一个模型上暴露了不同的能力边界。
 3. **我在 5 台机器上跑了一个 Agent 矩阵当研发团队使**。多期参与火山方舟 Hermes Agent 内部众测。这篇文章是系统性实战输出。不是综述，不是 benchmark，是一个 builder 把手弄脏之后的理解。
-
----
-
-<p align="center">
-  <a href="https://github.com/yuanchenglu/llm-harness-agent"><b>⭐ 点个 Star</b></a>，有新论文第一时间收到通知。<i>LLM + Harness = Agent</i> 是一个持续更新的系列——更多创新点正在写作中。
-</p>
 
 ---
 
@@ -42,6 +38,10 @@
 ---
 
 ## 导航
+
+### 📄 总纲论文
+
+> **[LLM + Harness = Agent：Agent 操作系统的第一性原理框架](paper-zh.md)** — 12 个设计模式统一理论框架。论证为什么 Transformer 的注意力稀释是物理硬约束，Harness 为什么是突破口，以及 4 条第一性原理推导出的通用设计原则。
 
 ### 核心创新点（每篇独立深度文章）
 
