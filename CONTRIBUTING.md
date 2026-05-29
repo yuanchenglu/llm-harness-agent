@@ -8,7 +8,7 @@
 
 - **深度讨论 / 技术交流 / 工作机会**: yuanchenglu001@gmail.com
 - **轻量讨论**: 在对应的 GitHub Issue 下直接留言
-- **X (Twitter)**: [@yuanchenglu](https://x.com/yuanchenglu)
+- **X (Twitter)**: [@bluth111](https://x.com/bluth111)
 
 ## 我目前在找
 
