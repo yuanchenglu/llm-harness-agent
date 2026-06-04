@@ -1,0 +1,56 @@
+{
+  "schema_version": "2.0",
+  "assessed_at": "2026-06-04",
+  "truth_source": "Stage completion requires scope, evidence, usable artifacts, consistent status, validation, and the stage definition of done.",
+  "earliest_incomplete_stage": "1",
+  "stages": {
+    "0": {
+      "name": "Project overview and handoff",
+      "status": "completed",
+      "passed": ["master_readme", "machine_readable_gates", "all_stage_master_prompt", "repository_hygiene_check"],
+      "open": []
+    },
+    "1": {
+      "name": "DeepSeek V4 source and physical-trait research",
+      "status": "in_progress",
+      "passed": ["v1.1_research_package", "phase_1_to_10_documents", "evidence_standard"],
+      "open": ["fixed_source_snapshot_index", "current_fact_calibration", "v3_to_v4_inference_separation", "high_impact_harness_claim_review", "unknowns_register"]
+    },
+    "2": {
+      "name": "Agent product and harness competitor research",
+      "status": "in_progress",
+      "passed": ["six_project_fixed_commit_calibration", "five_project_pass1", "partial_pass2_audits"],
+      "open": ["five_project_pass2", "p1_competitor_scope_decision", "uniform_runtime_and_test_evidence_matrix", "remaining_overclaim_audit"]
+    },
+    "2.5": {
+      "name": "DeepSeek protocol and Prefix Cache validation",
+      "status": "in_progress",
+      "passed": ["offline_harness_tests", "versioned_official_capability_snapshot", "randomized_manifested_runner"],
+      "open": ["E3_flash_and_pro_protocol_matrix", "E3_cache_cross_time_matrix", "committed_redacted_evidence_bundle"]
+    },
+    "3": {
+      "name": "Architecture comparison and borrowing assessment",
+      "status": "draft",
+      "passed": ["partial_layered_matrix", "gap_analysis_v0.1"],
+      "open": ["full_uniform_harness_matrix", "design_patterns_and_antipatterns", "evidence_backed_borrow_adapt_reject_matrix", "E4_real_task_input"]
+    },
+    "4": {
+      "name": "Product strategy and technical architecture",
+      "status": "draft",
+      "passed": ["architecture_ADRs_v0.1", "research_mvp_boundary"],
+      "open": ["complete_product_strategy", "evidence_backed_routing_and_cache_ROI_decisions", "final_runtime_foundation_ADR", "production_architecture_spec"]
+    },
+    "5": {
+      "name": "PRD, UX, and engineering breakdown",
+      "status": "research_mvp_spec",
+      "passed": ["read_only_cli_mvp_scope", "initial_engineering_breakdown"],
+      "open": ["production_PRD", "desktop_agent_and_code_mode_UX", "production_runtime_API_and_data_spec", "security_threat_model", "acceptance_criteria_and_executable_breakdown"]
+    },
+    "6": {
+      "name": "Fork, integration, and MVP implementation",
+      "status": "in_progress",
+      "passed": ["read_only_research_mvp", "workspace_boundary_tests", "opencode_fixed_commit_source_spike"],
+      "open": ["opencode_live_adapter_comparison", "permission_policy", "sandbox", "diff_preview", "rollback", "session_resume", "E4_acceptance_benchmark", "final_foundation_ADR", "release_gate"]
+    }
+  }
+}
