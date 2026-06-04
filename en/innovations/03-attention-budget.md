@@ -1,10 +1,10 @@
 # Attention Budget Management: When Your Agent "Gets Dumb," It's Not the Model
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-10, I-11
 > **LLM + Harness = Agent** · Part 3
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Related: [04 KV Cache Hard-Constraint Prefix Injection](04-kv-cache-prefix.md) · [02 Brain Actively Driving the Cerebellum](02-bidirectional-agent.md)
 
 ---

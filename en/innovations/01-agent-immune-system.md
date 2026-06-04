@@ -1,10 +1,10 @@
 # Agent Immune System: Let the Harness Self-Audit and Self-Repair Prompt Decay
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Point: I-13
 > **LLM + Harness = Agent** · Part 1
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Previous: none
 > Next: [02 Brain Drives the Cerebellum](02-bidirectional-agent.md)
 

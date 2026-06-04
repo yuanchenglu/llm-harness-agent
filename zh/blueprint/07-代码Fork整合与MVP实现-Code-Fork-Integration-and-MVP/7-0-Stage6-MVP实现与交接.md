@@ -27,7 +27,7 @@
 ```text
 你正在继续 /workspace/deepseekagent。先阅读：
 1. docs/.../03-5-.../18-1-科研严谨性复核与阶段重评-Scientific-Rigor-Audit.md
-2. docs/deepseek-agent-project-handoff/stage-gates.json
+2. docs/LLM-Hermes-Agent/zh/blueprint/stage-gates.json
 3. docs/.../07-.../7-1-OpenCode-Adapter-Spike.md
 4. docs/.../07-.../7-2-Stage6-完成定义与阻塞项.md
 

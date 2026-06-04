@@ -1,11 +1,11 @@
 # Byte-Stable Prefix 作为架构约束：不只是缓存 System Prompt——让整个 Agent 以 Cache 优先
 
-> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../RESEARCH-METHOD-zh.md)。
+> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
 > 创新索引: I-13
 > **LLM + Harness = Agent** · 第 13 篇
-> 系列: [LLM + Harness = Agent](../README-zh.md)
-> 关联: [I-04 KV Cache Prefix 硬约束注入](04-kv-cache-prefix-zh.md) · [I-05 文档 KV Cache 优化](05-document-kv-cache-zh.md)
+> 系列: [LLM + Harness = Agent](../../README_zh.md)
+> 关联: [I-04 KV Cache Prefix 硬约束注入](04-kv-cache-prefix.md) · [I-05 文档 KV Cache 优化](05-document-kv-cache.md)
 
 ---
 

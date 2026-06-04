@@ -191,8 +191,8 @@ Checkpoint 的价值不是多存一份摘要，而是把计划、执行、测试
 ### 有计算机基础的普通读者
 
 1. 本文；
-2. [研究方法与事实校准](RESEARCH-METHOD-zh.md)；
-3. [产品对比](comparison-zh.md)；
+2. [研究方法与事实校准](research-method.md)；
+3. [产品对比](../blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md)；
 4. 创新点 03、11、12；
 5. 创新点 13、14。
 
@@ -200,7 +200,7 @@ Checkpoint 的价值不是多存一份摘要，而是把计划、执行、测试
 
 1. 本文；
 2. 创新点 01–14；
-3. [Reasonix 源码分析](analysis/deepseek-reasonix-deep-analysis.md)；
+3. [Reasonix 源码分析](../blueprint/03-Agent竞品Harness调研-Agent-Competitor-Harness-Research/7-a-Reasonix-PrefixCache架构深度分析.md)；
 4. 研究方法中的待验证清单；
 5. 建立自己的协议和 benchmark，而不是直接复制结论。
 

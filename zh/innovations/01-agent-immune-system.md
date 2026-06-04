@@ -1,11 +1,11 @@
 # Agent 免疫系统：让 Harness 自己发现并修复 Prompt 遗忘
 
-> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../RESEARCH-METHOD-zh.md)。
+> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
 > **创新点索引**：I-13
 > **LLM + Harness = Agent** · 第 1 篇
-> **系列**：[LLM + Harness = Agent](../README-zh.md)
-> **下一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent-zh.md)
+> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **下一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent.md)
 
 ---
 
@@ -171,4 +171,4 @@ Agent 约束遵守的可靠性不取决于 Prompt 写得多好——取决于 Ha
 
 ---
 
-*下一篇：[02 大脑主动驱动小脑](02-bidirectional-agent-zh.md) — LLM 不应该只是 Harness 的被动执行者*
+*下一篇：[02 大脑主动驱动小脑](02-bidirectional-agent.md) — LLM 不应该只是 Harness 的被动执行者*

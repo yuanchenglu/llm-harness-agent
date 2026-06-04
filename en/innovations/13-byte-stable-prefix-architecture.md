@@ -1,10 +1,10 @@
 # Byte-Stable Prefix as Architecture Constraint: Don't Just Cache the System Prompt — Make the Whole Agent Cache-First
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-13
 > **LLM + Harness = Agent** · Part 13
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Related: [I-04 KV Cache Prefix Injection](04-kv-cache-prefix.md) · [I-05 Document KV Cache](05-document-kv-cache.md)
 
 ---

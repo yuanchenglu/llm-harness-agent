@@ -1,10 +1,10 @@
 # KV Cache-Driven Review Depth Switching
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-02
 > **LLM + Harness = Agent** · Part 7
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Previous: [06 OKR-Enhanced PlanStep + Cascading Correction Engine](06-okr-planstep-cascade.md)
 > Next: [08 Scope Creep Detection and Adaptive Refusal](08-scope-creep.md)
 

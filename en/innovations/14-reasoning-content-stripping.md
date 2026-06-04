@@ -1,10 +1,10 @@
 # Reasoning Content Stripping: Agent Should Know What NOT to Send
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-14
 > **LLM + Harness = Agent** · Part 14
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Related: [I-13 Byte-Stable Prefix Architecture](13-byte-stable-prefix-architecture.md)
 
 ---

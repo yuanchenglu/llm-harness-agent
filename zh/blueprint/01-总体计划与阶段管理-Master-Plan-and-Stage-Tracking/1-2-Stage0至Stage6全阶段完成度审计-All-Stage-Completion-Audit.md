@@ -1,7 +1,8 @@
 # Stage 0–6 全阶段完成度审计
 
-> 审计日期：2026-06-04
-> 审计结论：此前不仅 Stage 6 被过度声明，**Stage 1、Stage 2、Stage 3、Stage 4、Stage 5 也均不能认定为完整完成**。Stage 0 在本次修正总控提示词、状态清单与 manifest 后可认定完成。
+> 初始审计日期：2026-06-04
+> 最近复核：2026-06-05
+> 当前结论：Stage 0 与 Stage 1 已完成；Stage 2 是最早未完成阶段。Stage 1 的完成表示事实边界已校准，不表示 E3 API 或 E4 真实任务已完成。
 
 ## 1. 审计方法
 
@@ -21,7 +22,7 @@
 | 阶段 | 真实状态 | 为什么不能再提高状态 |
 |---|---|---|
 | Stage 0 项目总纲与交接 | **completed（本次修正后）** | 已有目标、阶段、机器 Gate、全阶段提示词和一致性检查；后续只需维护 |
-| Stage 1 DeepSeek V4 模型事实 | **in_progress / calibration_required** | v1.1 调研包已完成，但仍含待验证物理事实；需要对当前 V4 官方来源固定版本、逐条校准并将模型事实与推论分离 |
+| Stage 1 DeepSeek V4 模型事实 | **completed** | 固定来源、当前事实、外推分离、高影响 Harness 结论复核与 unknowns register 已完成；E3/E4 未知项已转交后续阶段 |
 | Stage 2 竞品/Harness 调研 | **in_progress** | 六项目校准完成、五项目仅 Pass 1；Claude Code 官方源码边界有限；五项目 Pass 2 和第二优先级竞品尚未完成 |
 | Stage 2.5 协议与 Cache 实证 | **in_progress** | Harness 基础设施存在，但只有降级后的 E2 Pilot；缺 Flash/Pro E3 协议矩阵、跨时段 Cache 与可提交 evidence bundle |
 | Stage 3 架构对比与借鉴 | **draft** | 只有部分项目矩阵和 Gap Analysis v0.1；缺全量对比矩阵、设计模式总结、不可照搬清单与 E4 数据 |
@@ -56,13 +57,11 @@
 - 完整 v1.1 文档包、证据规范、Phase 1–10 调研产物；
 - 对模型结构、API、Kernel、Encoding 和 Harness 约束有大量初步结论。
 
-**未完成项**
+**2026-06-05 关闭证据**
 
-- 原始研究日志明确保留 V4 DSA、Ascend、工具稳定性等待验证项；
-- 缺一份类似竞品 `17-0` 的 Stage 1 固定版本事实校准清单；
-- 需要逐条区分：V4 官方当前事实、来自 V3/V3.2 的外推、API 产品声明、工程推论；
-- 需要复核 README 中“通过源码确认”的总括性表述是否过强；
-- Stage 1 结论尚未与 E3 API 实验闭环。
+- `stage1-source-snapshot-2026-06-05.json` 固定官方模型 revision、文件 blob、技术报告 SHA-256 与 API 文档页面哈希；
+- `2-1-DeepSeek-V4当前事实校准与未知项-Current-Fact-Calibration.md` 分离事实、产品声明、推论、unknown 与 rejected 结论；
+- E3 API 与 E4 真实任务问题已明确登记并转交 Stage 2.5 / Stage 3–4，不再伪装成 Stage 1 源码事实。
 
 **完成 Gate**
 
@@ -155,11 +154,10 @@
 
 ## 4. 正确执行顺序
 
-下一位 AI 必须从**最早未完成阶段 Stage 1**开始校准，而不是直接从 Stage 6 开始：
+下一位 AI 必须从**最早未完成阶段 Stage 2**继续，而不是直接从 Stage 6 开始：
 
 ```text
 Stage 0 一致性维护
-→ Stage 1 当前模型事实校准
 → Stage 2 P0 竞品 Pass 2 / 范围决策
 → Stage 2.5 E3 协议与 Cache
 → Stage 3 全量综合与 E4 输入

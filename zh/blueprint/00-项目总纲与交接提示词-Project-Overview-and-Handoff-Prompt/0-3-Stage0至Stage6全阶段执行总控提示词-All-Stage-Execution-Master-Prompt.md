@@ -1,6 +1,6 @@
 # Stage 0–6 全阶段执行总控提示词（复制给新的 AI）
 
-> 这是项目最高优先级交接提示词。Stage 6 提示词只是本提示词到达 Stage 6 后使用的子计划。当前最早未完成阶段是 **Stage 1**，不得直接跳到 Stage 6 并假设前置阶段完成。
+> 这是项目最高优先级交接提示词。Stage 6 提示词只是本提示词到达 Stage 6 后使用的子计划。当前最早未完成阶段是 **Stage 2**，不得直接跳到 Stage 6 并假设前置阶段完成。
 
 ## 复制下面完整代码块给新的 AI
 
@@ -10,10 +10,10 @@
 一、事实优先与禁止事项
 
 1. 不要相信历史回复里的“已完成”。机器真相源是：
-   - docs/deepseek-agent-project-handoff/stage-gates.json
-   - docs/deepseek-agent-project-handoff/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
+   - docs/LLM-Hermes-Agent/zh/blueprint/stage-gates.json
+   - docs/LLM-Hermes-Agent/zh/blueprint/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
    - 固定 commit 源码、官方文档、测试、manifest、脱敏 evidence bundle 和真实任务验收结果。
-2. 当前最早未完成阶段是 Stage 1。原则执行顺序：Stage 1 → 2 → 2.5 → 3 → 4 → 5 → 6。
+2. 当前最早未完成阶段是 Stage 2。原则执行顺序：Stage 2 → 2.5 → 3 → 4 → 5 → 6。
 3. 可以并行实现不依赖前置结论的安全基础设施，但不能因此提前把后续阶段标为 completed。
 4. 不得把 Pass 1、v0.1 草案、文档存在、模块存在、Mock、单次 Pilot、只读 Demo 写成阶段完成。
 5. 每个结论标注证据等级：E0 假设；E1 官方文档/固定源码；E2 低样本 Pilot；E3 可复现实验；E4 真实任务 Benchmark；E5 生产安全与观测。
@@ -29,7 +29,7 @@ pwd
 git status --short --branch
 git log --oneline -5
 find .. -name AGENTS.md -print
-cat docs/deepseek-agent-project-handoff/stage-gates.json
+cat docs/LLM-Hermes-Agent/zh/blueprint/stage-gates.json
 PYTHONPATH=src python -m unittest discover -s tests -v
 python scripts/check_repo.py
 PYTHONPATH=src python -m deepseek_agent.benchmark all --repeats 5 --dry-run
@@ -37,9 +37,9 @@ PYTHONPATH=src python -m deepseek_agent.benchmark all --repeats 5 --dry-run
 然后阅读：
 
 1. README.md
-2. docs/deepseek-agent-project-handoff/README.md
-3. docs/deepseek-agent-project-handoff/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
-4. docs/LLM-Hermes-Agent/RESEARCH-METHOD-zh.md
+2. docs/LLM-Hermes-Agent/zh/blueprint/README.md
+3. docs/LLM-Hermes-Agent/zh/blueprint/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
+4. docs/LLM-Hermes-Agent/zh/theory/research-method.md
 5. 当前最早未完成阶段的 README、计划、证据索引和已有报告
 
 输出本轮执行表：
@@ -101,7 +101,7 @@ Stage 5：生产 PRD、UX 与研发拆解
 
 Stage 6：Fork / 整合 / MVP
 - 到达本阶段后，完整读取并执行：
-  docs/deepseek-agent-project-handoff/00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-2-Stage6执行总控提示词-Stage6-Execution-Master-Prompt.md
+  docs/LLM-Hermes-Agent/zh/blueprint/00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-2-Stage6执行总控提示词-Stage6-Execution-Master-Prompt.md
 - 必须通过底座选择、协议、安全、恢复、质量和发布六个 Gate；
 - 实现 permission policy、sandbox、diff preview/apply/rollback、session/checkpoint/resume；
 - 当前 runtime 与 OpenCode Adapter 通过相同 mock contract 和 E4 任务；
@@ -149,7 +149,7 @@ git diff --check
 - 直到 Stage 0–6 全部 Gate 通过前，禁止说“整个项目完成”；
 - 最终完成时提供全阶段证据索引、最终 ADR、E3/E4 结果、安全/恢复验证、安装/运行/回滚说明、测试命令、commit 和 PR。
 
-现在立即开始启动检查，从 Stage 1 的最早 open Gate 开始；不要直接跳到 Stage 6，不要只回复计划。
+现在立即开始启动检查，从 Stage 2 的最早 open Gate 开始；不要直接跳到 Stage 6，不要只回复计划。
 ```
 
 ## 用户验收新 AI 的简单方法

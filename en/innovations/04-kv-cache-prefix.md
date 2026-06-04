@@ -1,10 +1,10 @@
 # KV Cache Hard-Constraint Prefix Injection: Constraints Survive Not Because Compression Is Smart, But Because They Were Never In The Compression Zone
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-06
 > **LLM + Harness = Agent** · Part 4
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Previous: [03 Attention Budget Management](03-attention-budget.md)
 > Next: [05 Document KV Cache Optimization](05-document-kv-cache.md)
 

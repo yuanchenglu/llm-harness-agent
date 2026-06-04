@@ -1,12 +1,12 @@
 # 7+1 意图→策略自动切换
 
-> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../RESEARCH-METHOD-zh.md)。
+> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
 > **创新点索引**：I-08
 > **LLM + Harness = Agent** · 第 10 篇
-> **系列**：[LLM + Harness = Agent](../README-zh.md)
-> **上一篇**：[09 Skills 自进化闭环](09-skills-self-evolution-zh.md)
-> **下一篇**：[11 Checkpoint 快照驱动的多轮审查](11-checkpoint-review-zh.md)
+> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **上一篇**：[09 Skills 自进化闭环](09-skills-self-evolution.md)
+> **下一篇**：[11 Checkpoint 快照驱动的多轮审查](11-checkpoint-review.md)
 
 ---
 
@@ -345,5 +345,5 @@ OMO 的 7+1 意图分类体系通过三个设计解决了这个问题：
 
 ---
 
-*上一篇：[09 Skills 自进化闭环](09-skills-self-evolution-zh.md) — 重复做的事情，就应该变成肌肉记忆*
-*下一篇：[11 Checkpoint 快照驱动的多轮审查](11-checkpoint-review-zh.md) — 审查质量不应随上下文膨胀而衰减*
+*上一篇：[09 Skills 自进化闭环](09-skills-self-evolution.md) — 重复做的事情，就应该变成肌肉记忆*
+*下一篇：[11 Checkpoint 快照驱动的多轮审查](11-checkpoint-review.md) — 审查质量不应随上下文膨胀而衰减*

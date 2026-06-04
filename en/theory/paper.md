@@ -79,7 +79,7 @@ A complete agent OS requires four layers. Each solves a fundamental problem the 
 
 **Key design decision**: Memory is not a log. It doesn't store task progress, "fixed bug X today," or temporary TODOs. Why? Because seven days later, that information is noise. Memory stores only **stable facts** — information that will still be true seven days from now.
 
-This principle maps to [I-12: Memory Granularity Control](innovations/12-memory-granularity.md) — convergent tasks (need stable context) demand strong memory; divergent tasks (exploratory) demand weak memory.
+This principle maps to [I-12: Memory Granularity Control](../innovations/12-memory-granularity.md) — convergent tasks (need stable context) demand strong memory; divergent tasks (exploratory) demand weak memory.
 
 ### 2.2 Skills Layer: Crystallization and Self-Evolution
 
@@ -87,9 +87,9 @@ This principle maps to [I-12: Memory Granularity Control](innovations/12-memory-
 
 **Solution**: Skills are structured operational manuals — executable checklists, command templates, configuration examples — not natural language hints. After completing a task, the agent auto-proposes saving the successful approach as a Skill. Next trigger: Skill injected into context, zero inference tokens.
 
-This is the core of [I-09: Skills Self-Evolution](innovations/09-skills-self-evolution.md) — the agent doesn't reinvent the wheel; it crystallizes successful patterns.
+This is the core of [I-09: Skills Self-Evolution](../innovations/09-skills-self-evolution.md) — the agent doesn't reinvent the wheel; it crystallizes successful patterns.
 
-Complementing this is [I-01: Agent Immune System](innovations/01-agent-immune-system.md) — positive learning (success → Skill) already exists in Hermes; negative correction (forgetting → self-audit → Skill) is my proposed mechanism: when the system detects a prompt constraint violation, it auto-crystallizes the constraint into a Skill, injected into the execution flow for next time.
+Complementing this is [I-01: Agent Immune System](../innovations/01-agent-immune-system.md) — positive learning (success → Skill) already exists in Hermes; negative correction (forgetting → self-audit → Skill) is my proposed mechanism: when the system detects a prompt constraint violation, it auto-crystallizes the constraint into a Skill, injected into the execution flow for next time.
 
 ### 2.3 Scheduling Layer: From One-Shot to Autonomous
 
@@ -98,7 +98,7 @@ Complementing this is [I-01: Agent Immune System](innovations/01-agent-immune-sy
 **Solution**: Cron scheduling + Kanban decomposition + delegate sub-agent orchestration.
 
 - **Cron**: Time-triggered agent execution with complex schedules (cron expressions), chained tasks (Task A complete → auto-trigger Task B), and multi-platform delivery
-- **Kanban**: Complex task → sub-tasks → dependency-sorted → execute sequentially → cascade correction ([I-06: OKR PlanStep + Cascade](innovations/06-okr-planstep-cascade.md))
+- **Kanban**: Complex task → sub-tasks → dependency-sorted → execute sequentially → cascade correction ([I-06: OKR PlanStep + Cascade](../innovations/06-okr-planstep-cascade.md))
 - **delegate_task**: Spawn independent sub-agents for subtasks; main agent receives only summaries — no context window pollution
 
 This layer transforms the agent from "passive responder" to "active executor." An agent that can't schedule its own time is just a chatbot.
@@ -109,7 +109,7 @@ This layer transforms the agent from "passive responder" to "active executor." A
 
 **Solution**: Gateway unifies multi-platform bridging — same agent receives requests from Feishu, delivers outputs via Discord, and opens GitHub Issues simultaneously. Platform differences are transparent to the agent.
 
-This is the infrastructure for [I-10: 7+1 Intent→Strategy Routing](innovations/10-intent-routing.md) — the agent recognizes task intent and auto-switches execution strategy. Without Gateway, the agent lives only in the terminal.
+This is the infrastructure for [I-10: 7+1 Intent→Strategy Routing](../innovations/10-intent-routing.md) — the agent recognizes task intent and auto-switches execution strategy. Without Gateway, the agent lives only in the terminal.
 
 ---
 
@@ -123,11 +123,11 @@ Transformer attention dilution is a hard physical constraint. You can't prevent 
 
 | # | Design Pattern | Core Method | Problem Solved |
 |---|---------------|-------------|----------------|
-| I-03 | [Attention Budget Management](innovations/03-attention-budget.md) | Treat context as finite budget; dynamically allocate quotas by task type | Agent "getting dumb" isn't the model — it's the harness not managing attention |
-| I-04 | [KV Cache Prefix Injection](innovations/04-kv-cache-prefix.md) | Non-losable constraints in the non-compressible prefix zone, not in compressible body | Constraints survive because they were never in the compression zone |
-| I-05 | [Document KV Cache Optimization](innovations/05-document-kv-cache.md) | Apply agent-internal KV Cache optimization to document conventions — meta-level self-reference | Stable content (definitions, structure) before mutable content (progress, dates) |
-| I-07 | [KV Cache-Driven Review Switching](innovations/07-review-switching.md) | Review depth = f(KV Cache occupancy, Plan complexity), not a fixed threshold | When context is tight, deep review is itself interference |
-| I-11 | [Checkpoint Multi-Round Review](innovations/11-checkpoint-review.md) | Round 2 review context is smaller than Round 1 — not growing larger | Each review round only examines the previous round's decision summary |
+| I-03 | [Attention Budget Management](../innovations/03-attention-budget.md) | Treat context as finite budget; dynamically allocate quotas by task type | Agent "getting dumb" isn't the model — it's the harness not managing attention |
+| I-04 | [KV Cache Prefix Injection](../innovations/04-kv-cache-prefix.md) | Non-losable constraints in the non-compressible prefix zone, not in compressible body | Constraints survive because they were never in the compression zone |
+| I-05 | [Document KV Cache Optimization](../innovations/05-document-kv-cache.md) | Apply agent-internal KV Cache optimization to document conventions — meta-level self-reference | Stable content (definitions, structure) before mutable content (progress, dates) |
+| I-07 | [KV Cache-Driven Review Switching](../innovations/07-review-switching.md) | Review depth = f(KV Cache occupancy, Plan complexity), not a fixed threshold | When context is tight, deep review is itself interference |
+| I-11 | [Checkpoint Multi-Round Review](../innovations/11-checkpoint-review.md) | Round 2 review context is smaller than Round 1 — not growing larger | Each review round only examines the previous round's decision summary |
 
 **Unifying logic**: All five patterns follow one rule — **information has two tiers: non-losable (hard constraints, core decisions) and compressible (execution details, conversation noise). Hard constraints live in the non-compressible zone. Reviews only examine summaries.**
 
@@ -137,9 +137,9 @@ The longer an agent runs, the more it drifts from initial goals. Not because the
 
 | # | Design Pattern | Core Method | Problem Solved |
 |---|---------------|-------------|----------------|
-| I-01 | [Agent Immune System](innovations/01-agent-immune-system.md) | Independent audit agent checks constraint compliance → violated constraints auto-crystallize as Skills | Prompt forgetting is inevitable — let the system self-detect and repair |
-| I-06 | [OKR PlanStep + Cascade](innovations/06-okr-planstep-cascade.md) | Upgrade flat checklists to directed dependency graphs; change one step, cascade-update downstream | Step 7 reveals Step 2 was wrong — no need to redo Steps 3-6 |
-| I-08 | [Two-Level Scope Creep](innovations/08-scope-creep.md) | Demand creep and technical creep are different diseases — different treatments | Agent inflates scope over time — distinguish "user asked for it" from "it self-inflated" |
+| I-01 | [Agent Immune System](../innovations/01-agent-immune-system.md) | Independent audit agent checks constraint compliance → violated constraints auto-crystallize as Skills | Prompt forgetting is inevitable — let the system self-detect and repair |
+| I-06 | [OKR PlanStep + Cascade](../innovations/06-okr-planstep-cascade.md) | Upgrade flat checklists to directed dependency graphs; change one step, cascade-update downstream | Step 7 reveals Step 2 was wrong — no need to redo Steps 3-6 |
+| I-08 | [Two-Level Scope Creep](../innovations/08-scope-creep.md) | Demand creep and technical creep are different diseases — different treatments | Agent inflates scope over time — distinguish "user asked for it" from "it self-inflated" |
 
 **Unifying logic**: Long-running agents need a **correction loop** — not relying on the model "having a good memory," but on the harness performing runtime checks + targeted intervention.
 
@@ -149,8 +149,8 @@ Traditional agents treat each task independently. Yesterday's success doesn't au
 
 | # | Design Pattern | Core Method | Problem Solved |
 |---|---------------|-------------|----------------|
-| I-09 | [Skills Self-Evolution](innovations/09-skills-self-evolution.md) | Complex task complete → auto-propose saving as Skill → next time: zero inference tokens | Agent doesn't reinvent the wheel every time |
-| I-12 | [Memory Granularity Control](innovations/12-memory-granularity.md) | Stronger memory isn't always better — convergent tasks need it, divergent tasks don't | Remember the wrong things = noise pollution; forget the right things = repeat mistakes |
+| I-09 | [Skills Self-Evolution](../innovations/09-skills-self-evolution.md) | Complex task complete → auto-propose saving as Skill → next time: zero inference tokens | Agent doesn't reinvent the wheel every time |
+| I-12 | [Memory Granularity Control](../innovations/12-memory-granularity.md) | Stronger memory isn't always better — convergent tasks need it, divergent tasks don't | Remember the wrong things = noise pollution; forget the right things = repeat mistakes |
 
 **Unifying logic**: Agent knowledge management has two dimensions — **what to persist** (Memory layer granularity decisions) and **what to crystallize** (Skills layer pattern extraction). Both share one judgment criterion: will this information still be true seven days from now?
 
@@ -160,8 +160,8 @@ Traditional agents are "user issues command → agent executes" one-way flow. Re
 
 | # | Design Pattern | Core Method | Problem Solved |
 |---|---------------|-------------|----------------|
-| I-02 | [Brain Drives Cerebellum](innovations/02-bidirectional-agent.md) | From "Harness→LLM" one-way to "LLM⇄Harness" bidirectional flow | LLM isn't just executor — it can actively invoke harness capabilities, initiate Skill saves, adjust Cron strategies |
-| I-10 | [7+1 Intent→Strategy Routing](innovations/10-intent-routing.md) | Recognize message intent → auto-match interview depth, review standard, execution mode | "Take a look at this code" vs "Why is this code so slow" — should use completely different strategies |
+| I-02 | [Brain Drives Cerebellum](../innovations/02-bidirectional-agent.md) | From "Harness→LLM" one-way to "LLM⇄Harness" bidirectional flow | LLM isn't just executor — it can actively invoke harness capabilities, initiate Skill saves, adjust Cron strategies |
+| I-10 | [7+1 Intent→Strategy Routing](../innovations/10-intent-routing.md) | Recognize message intent → auto-match interview depth, review standard, execution mode | "Take a look at this code" vs "Why is this code so slow" — should use completely different strategies |
 
 **Unifying logic**: Agents shouldn't just be "reactive" — they should be "symbiotic." They perceive task type, proactively drive process, and pull the user in when needed — not wait for commands.
 
@@ -190,7 +190,7 @@ Key findings:
 
 ### 4.2 8-Product Comparison
 
-See [8 Agent Products Deep Comparison](comparison.md). Core findings:
+See [8 Agent Products Deep Comparison](../../zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md). Core findings:
 
 | Capability | Hermes-Unique | Partial Competition | Missing in Major Products |
 |------------|--------------|---------------------|--------------------------|
@@ -293,22 +293,22 @@ Not because harness is "more important" than model — but because Transformer a
 
 | # | Article | Design Principle |
 |---|---------|-----------------|
-| [I-01](innovations/01-agent-immune-system.md) | Agent Immune System | P4: Self-Evolution |
-| [I-02](innovations/02-bidirectional-agent.md) | Brain Drives Cerebellum | P2: Active Agent |
-| [I-03](innovations/03-attention-budget.md) | Attention Budget Management | P1: Separate Non-Compressible |
-| [I-04](innovations/04-kv-cache-prefix.md) | KV Cache Prefix Injection | P1: Separate Non-Compressible |
-| [I-05](innovations/05-document-kv-cache.md) | Document KV Cache Optimization | P1: Separate Non-Compressible |
-| [I-06](innovations/06-okr-planstep-cascade.md) | OKR PlanStep + Cascade | P2: Active Agent |
-| [I-07](innovations/07-review-switching.md) | KV Cache-Driven Review Switching | P1: Separate Non-Compressible |
-| [I-08](innovations/08-scope-creep.md) | Two-Level Scope Creep | P2: Active Agent |
-| [I-09](innovations/09-skills-self-evolution.md) | Skills Self-Evolution | P4: Self-Evolution |
-| [I-10](innovations/10-intent-routing.md) | 7+1 Intent→Strategy Routing | P2: Active Agent |
-| [I-11](innovations/11-checkpoint-review.md) | Checkpoint Multi-Round Review | P1: Separate Non-Compressible |
-| [I-12](innovations/12-memory-granularity.md) | Memory Granularity Control | P3: Granularity Match |
+| [I-01](../innovations/01-agent-immune-system.md) | Agent Immune System | P4: Self-Evolution |
+| [I-02](../innovations/02-bidirectional-agent.md) | Brain Drives Cerebellum | P2: Active Agent |
+| [I-03](../innovations/03-attention-budget.md) | Attention Budget Management | P1: Separate Non-Compressible |
+| [I-04](../innovations/04-kv-cache-prefix.md) | KV Cache Prefix Injection | P1: Separate Non-Compressible |
+| [I-05](../innovations/05-document-kv-cache.md) | Document KV Cache Optimization | P1: Separate Non-Compressible |
+| [I-06](../innovations/06-okr-planstep-cascade.md) | OKR PlanStep + Cascade | P2: Active Agent |
+| [I-07](../innovations/07-review-switching.md) | KV Cache-Driven Review Switching | P1: Separate Non-Compressible |
+| [I-08](../innovations/08-scope-creep.md) | Two-Level Scope Creep | P2: Active Agent |
+| [I-09](../innovations/09-skills-self-evolution.md) | Skills Self-Evolution | P4: Self-Evolution |
+| [I-10](../innovations/10-intent-routing.md) | 7+1 Intent→Strategy Routing | P2: Active Agent |
+| [I-11](../innovations/11-checkpoint-review.md) | Checkpoint Multi-Round Review | P1: Separate Non-Compressible |
+| [I-12](../innovations/12-memory-granularity.md) | Memory Granularity Control | P3: Granularity Match |
 
 ---
 
-*This is the framework paper for the "LLM + Harness = Agent" series. Innovation articles are independent case studies; this paper is the unifying theory. License: [CC BY 4.0](LICENSE.md).*
+*This is the framework paper for the "LLM + Harness = Agent" series. Innovation articles are independent case studies; this paper is the unifying theory. License: [CC BY 4.0](../../LICENSE.md).*
 
 *Next: Prototype validation of the 12 design patterns is underway — not proof-of-concept, but engineering implementation.*
 

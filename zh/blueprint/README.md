@@ -3,7 +3,7 @@
 > 版本：v0.1  
 > 日期：2026-06-04  
 > 用途：这是 DeepSeek Agent 项目的总控包 / 交接包。任何 AI 或人接手本项目时，应先阅读本 README，然后按阶段顺序执行任务，并在完成后更新勾选状态。  
-> 当前状态：**已完成 Stage 0–6 全阶段审计。此前不仅 Stage 6 被过度声明，Stage 1–5 也没有完整完成。当前最早未完成阶段是 Stage 1：v1.1 调研包存在，但当前事实校准和固定来源索引未完成；Stage 2/2.5 进行中；Stage 3–4 为草案；Stage 5 为研究型 MVP 规格；Stage 6 进行中。**
+> 当前状态：**Stage 0 与 Stage 1 已完成；当前最早未完成阶段是 Stage 2。Stage 2/2.5 进行中；Stage 3–4 为草案；Stage 5 为研究型 MVP 规格；Stage 6 进行中。完成声明以 `stage-gates.json` 为准。**
 
 ---
 
@@ -33,7 +33,7 @@ Agent Mode + Code Mode
 LLM + Harness = Agent
 ```
 
-DeepSeek V4 的模型侧优势已经通过源码调研确认：
+历史调研提出了以下待逐项校准的 DeepSeek V4 模型侧能力假设：
 
 ```text
 1M context
@@ -48,7 +48,7 @@ thinking effort modes
 API cache hit/miss pricing
 ```
 
-因此 DeepSeek Agent 不能只是普通 API shell，而要专门为 V4 的物理特性重写 Harness。
+其中只有完成固定来源校准或 E3 实证的能力才能进入最终架构约束；其余保持为外推、工程假设或 unknown。
 
 ---
 
@@ -79,7 +79,7 @@ README.md
 - [x] 建立 README 作为任务总控入口
 - [x] 写入 Stage 0–6 全阶段执行总控提示词和 Stage 6 子提示词
 
-### Stage 1：DeepSeek V4 源码与物理特性调研（进行中：历史包完成，当前事实校准未完成）
+### Stage 1：DeepSeek V4 源码与物理特性调研（已完成：事实边界已校准）
 
 - [x] 定位 DeepSeek V4 官方源码、模型卡、config、技术报告、kernel、encoding
 - [x] 完成 Phase 1-2：源码地图 + config 差异
@@ -89,9 +89,9 @@ README.md
 - [x] 完成 Phase 9-10：能力矩阵 + Harness 约束初稿
 - [x] 生成 DeepSeek V4 源代码调研全量终版包 v1.1
 - [x] 将 v1.1 整合进本交接包
-- [ ] 建立当前官方来源的固定版本 / 访问日期索引
-- [ ] 区分 V4 当前事实、V3/V3.2 外推、产品声明和工程推论
-- [ ] 校准高影响 Harness 结论并建立 unknowns register
+- [x] 建立当前官方来源的固定版本 / 访问日期索引
+- [x] 区分 V4 当前事实、V3/V3.2 外推、产品声明和工程推论
+- [x] 校准高影响 Harness 结论并建立 unknowns register
 
 ### Stage 2：Agent 产品 / Harness 竞品调研（进行中）
 
@@ -163,8 +163,7 @@ README.md
 当前不能直接跳到 Stage 6。正确顺序是：
 
 ```text
-Stage 1 当前模型事实校准
-→ Stage 2 P0 竞品 Pass 2 / 范围决策
+Stage 2 P0 竞品 Pass 2 / 范围决策
 → Stage 2.5 E3 协议与 Cache
 → Stage 3 全量综合
 → Stage 4 架构定稿

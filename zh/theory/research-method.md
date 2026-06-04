@@ -104,7 +104,7 @@ N：在公开证据中未找到实现
 
 ## 6. 下一步验证
 
-本项目下一轮只执行一项工作：建立 [DeepSeek API 协议与 Prefix Cache Benchmark Harness](BENCHMARK-HARNESS-PLAN-zh.md)。先验证 `reasoning_content`、工具调用协议、Prefix Cache 漂移、成本和延迟，再由实验结果决定是否以及何时进入路由、planner/executor、reviewer 或 progressive tool disclosure。
+本项目下一轮只执行一项工作：建立 [DeepSeek API 协议与 Prefix Cache Benchmark Harness](../blueprint/benchmark-harness-plan.md)。先验证 `reasoning_content`、工具调用协议、Prefix Cache 漂移、成本和延迟，再由实验结果决定是否以及何时进入路由、planner/executor、reviewer 或 progressive tool disclosure。
 
 ## 结论
 

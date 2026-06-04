@@ -1,10 +1,10 @@
 # The Brain Driving the Cerebellum: Letting the LLM Stop Being Harness's Passive Executor
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-09
 > **LLM + Harness = Agent** · Part 2
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Previous: [01 Agent Immune System](01-agent-immune-system.md)
 > Next: [03 Attention Budget Management](03-attention-budget.md)
 

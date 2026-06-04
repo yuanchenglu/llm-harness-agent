@@ -1,10 +1,10 @@
 # Document KV Cache Optimization: Applying the Agent's Own Optimization Principle to Its Output
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-05
 > **LLM + Harness = Agent** · Part 5
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Previous: [04 KV Cache Hard-Constraint Prefix Injection](04-kv-cache-prefix.md)
 > Previous (English): [03 Attention Budget Management](03-attention-budget.md)
 

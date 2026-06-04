@@ -43,36 +43,36 @@
 
 | 文章 | 用途 |
 |---|---|
-| [DeepSeek Agent 理论总纲](THEORY-GUIDE-zh.md) | 从模型、上下文、工具、编排和证据五层理解产品理论 |
-| [研究方法与事实校准](RESEARCH-METHOD-zh.md) | 了解哪些观点已被源码确认，哪些仍是待验证假设 |
-| [DeepSeek API 与 Prefix Cache Benchmark Harness 计划](BENCHMARK-HARNESS-PLAN-zh.md) | 下一阶段唯一任务的实验矩阵、验收门槛与结果决策树 |
-| [产品对比](comparison-zh.md) | 理解不同 Agent 产品的边界与适用场景 |
+| [DeepSeek Agent 理论总纲](zh/theory/theory-guide.md) | 从模型、上下文、工具、编排和证据五层理解产品理论 |
+| [研究方法与事实校准](zh/theory/research-method.md) | 了解哪些观点已被源码确认，哪些仍是待验证假设 |
+| [DeepSeek API 与 Prefix Cache Benchmark Harness 计划](zh/blueprint/benchmark-harness-plan.md) | 下一阶段唯一任务的实验矩阵、验收门槛与结果决策树 |
+| [产品对比](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | 理解不同 Agent 产品的边界与适用场景 |
 
 ### 核心创新点（每篇独立深度文章）
 
 | # | 文章 | 一句话 |
 |---|------|--------|
-| [01](innovations/01-agent-immune-system-zh.md) | **Agent 免疫系统** | Prompt 指令可能在长任务中失效，让 Harness 自查自修而非让模型硬记 |
-| [02](innovations/02-bidirectional-agent-zh.md) | **大脑主动驱动小脑** | 从「Harness→LLM」单向流变为「LLM⇄Harness」双向主动流 |
-| [03](innovations/03-attention-budget-zh.md) | **注意力预算管理** | Agent 表现退化不一定是模型问题，也可能来自上下文与注意力管理 |
-| [04](innovations/04-kv-cache-prefix-zh.md) | **KV Cache 硬约束前缀注入** | 把稳定约束与可压缩历史分离，降低约束在压缩中丢失的风险 |
-| [05](innovations/05-document-kv-cache-zh.md) | **文档 KV Cache 优化结构** | 把 Agent 内部的优化原理应用到文档规范上——元层面的自指 |
-| [06](innovations/06-okr-planstep-cascade-zh.md) | **OKR 增强型 PlanStep + 级联修正** | Plan 从扁平清单升级为有向依赖图，改一步自动级联修正 |
-| [07](innovations/07-review-switching-zh.md) | **KV Cache 驱动的审查深度切换** | 审查标准不该是固定阈值，应该是 f(KV Cache, Plan 复杂度) |
-| [08](innovations/08-scope-creep-zh.md) | **两层面范围蔓延的分治策略** | 需求蔓延和技术蔓延是两种病，不能用同一种药 |
-| [09](innovations/09-skills-self-evolution-zh.md) | **Skills 自进化闭环** | Agent 完成复杂任务→提议沉淀为 Skill→下次减少重复推理 |
-| [10](innovations/10-intent-routing-zh.md) | **7+1 意图→策略自动切换** | 识别任务意图→自动匹配采访深度/审查标准/执行模式 |
-| [11](innovations/11-checkpoint-review-zh.md) | **Checkpoint 快照驱动的多轮审查** | 用独立快照控制审查上下文，而不是反复携带完整历史 |
-| [12](innovations/12-memory-granularity-zh.md) | **Memory 粒度控制** | Memory 不是越强越好——收敛任务要强记忆，发散任务要弱记忆 |
-| [13](innovations/13-byte-stable-prefix-architecture-zh.md) | **Byte-Stable Prefix 作为架构约束** | 不只是缓存 System Prompt——让整个 Agent 以 Cache 优先 |
-| [14](innovations/14-reasoning-content-stripping-zh.md) | **Reasoning Content 回传陷阱** | Agent 应该知道什么不该回传——每个 Token 都要证明自己的存在价值 |
+| [01](zh/innovations/01-agent-immune-system.md) | **Agent 免疫系统** | Prompt 指令可能在长任务中失效，让 Harness 自查自修而非让模型硬记 |
+| [02](zh/innovations/02-bidirectional-agent.md) | **大脑主动驱动小脑** | 从「Harness→LLM」单向流变为「LLM⇄Harness」双向主动流 |
+| [03](zh/innovations/03-attention-budget.md) | **注意力预算管理** | Agent 表现退化不一定是模型问题，也可能来自上下文与注意力管理 |
+| [04](zh/innovations/04-kv-cache-prefix.md) | **KV Cache 硬约束前缀注入** | 把稳定约束与可压缩历史分离，降低约束在压缩中丢失的风险 |
+| [05](zh/innovations/05-document-kv-cache.md) | **文档 KV Cache 优化结构** | 把 Agent 内部的优化原理应用到文档规范上——元层面的自指 |
+| [06](zh/innovations/06-okr-planstep-cascade.md) | **OKR 增强型 PlanStep + 级联修正** | Plan 从扁平清单升级为有向依赖图，改一步自动级联修正 |
+| [07](zh/innovations/07-review-switching.md) | **KV Cache 驱动的审查深度切换** | 审查标准不该是固定阈值，应该是 f(KV Cache, Plan 复杂度) |
+| [08](zh/innovations/08-scope-creep.md) | **两层面范围蔓延的分治策略** | 需求蔓延和技术蔓延是两种病，不能用同一种药 |
+| [09](zh/innovations/09-skills-self-evolution.md) | **Skills 自进化闭环** | Agent 完成复杂任务→提议沉淀为 Skill→下次减少重复推理 |
+| [10](zh/innovations/10-intent-routing.md) | **7+1 意图→策略自动切换** | 识别任务意图→自动匹配采访深度/审查标准/执行模式 |
+| [11](zh/innovations/11-checkpoint-review.md) | **Checkpoint 快照驱动的多轮审查** | 用独立快照控制审查上下文，而不是反复携带完整历史 |
+| [12](zh/innovations/12-memory-granularity.md) | **Memory 粒度控制** | Memory 不是越强越好——收敛任务要强记忆，发散任务要弱记忆 |
+| [13](zh/innovations/13-byte-stable-prefix-architecture.md) | **Byte-Stable Prefix 作为架构约束** | 不只是缓存 System Prompt——让整个 Agent 以 Cache 优先 |
+| [14](zh/innovations/14-reasoning-content-stripping.md) | **Reasoning Content 回传陷阱** | Agent 应该知道什么不该回传——每个 Token 都要证明自己的存在价值 |
 
 ### 产品分析
 
 | 文章 | 内容 |
 |------|------|
-| [9 款 Agent 产品校准对比](comparison-zh.md) | Hermes / ClaudeCode / OpenCode / Codex / OpenClaw / Cursor / Coze / pi agent / CodeWhale 的校准对比 + Agent 矩阵分工 |
-| [DeepSeek-Reasonix 深度分析](analysis/deepseek-reasonix-deep-analysis.md) | Reasonix 源码级技术分析 + Hermes vs CodeWhale 三方对比 + 9 个 DeepSeek Prefix Cache 优化 |
+| [9 款 Agent 产品校准对比](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | Hermes / ClaudeCode / OpenCode / Codex / OpenClaw / Cursor / Coze / pi agent / CodeWhale 的校准对比 + Agent 矩阵分工 |
+| [DeepSeek-Reasonix 深度分析](zh/blueprint/03-Agent竞品Harness调研-Agent-Competitor-Harness-Research/7-a-Reasonix-PrefixCache架构深度分析.md) | Reasonix 源码级技术分析 + Hermes vs CodeWhale 三方对比 + 9 个 DeepSeek Prefix Cache 优化 |
 
 ---
 

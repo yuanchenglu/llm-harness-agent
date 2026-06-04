@@ -1,10 +1,10 @@
 # A Divide-and-Conquer Strategy for Two-Level Scope Creep
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-04
 > **LLM + Harness = Agent** · Part 8
-> Series: [LLM + Harness = Agent](../README.md)
+> Series: [LLM + Harness = Agent](../../README.md)
 > Previous: [07 Review Switching Engine](07-review-switching.md)
 > Next: [09 Skills Self-Evolution Loop](09-skills-self-evolution.md)
 

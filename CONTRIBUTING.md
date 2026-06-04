@@ -36,4 +36,4 @@
 - 引用快速变化的开源项目时，优先固定 commit；不要仅依赖会移动的 `main` 链接。
 - “唯一、必然、永远、生产级、已证明最优”等强结论必须有可复现实验或明确证据。
 - 每个设计方案都应写清边界条件、失败模式和验证方法。
-- 推荐先阅读 [`THEORY-GUIDE-zh.md`](THEORY-GUIDE-zh.md) 与 [`RESEARCH-METHOD-zh.md`](RESEARCH-METHOD-zh.md)。
+- 推荐先阅读 [`zh/theory/theory-guide.md`](zh/theory/theory-guide.md) 与 [`zh/theory/research-method.md`](zh/theory/research-method.md)。

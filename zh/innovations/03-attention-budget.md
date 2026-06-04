@@ -1,12 +1,12 @@
 # 注意力预算管理：Agent 变傻不是模型问题，是注意力被稀释了
 
-> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../RESEARCH-METHOD-zh.md)。
+> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
 > **创新点索引**：I-10, I-11
 > **LLM + Harness = Agent** · 第 3 篇
-> **系列**：[LLM + Harness = Agent](../README-zh.md)
-> **上一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent-zh.md)
-> **下一篇**：[04 KV Cache 硬约束前缀注入](04-kv-cache-prefix-zh.md)
+> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **上一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent.md)
+> **下一篇**：[04 KV Cache 硬约束前缀注入](04-kv-cache-prefix.md)
 
 ---
 
@@ -83,7 +83,7 @@ $$\alpha_i(t) \propto \frac{1}{L(t)}$$
 
 约束注入到 KV Cache 前缀区后，模型在后续所有轮次中都能以初始注意力强度访问这些约束——因为前缀区的 token 在序列中的位置是固定的，其注意力权重不会被后续 token 的增长稀释。
 
-[详见：KV Cache 硬约束前缀注入](04-kv-cache-prefix-zh.md)
+[详见：KV Cache 硬约束前缀注入](04-kv-cache-prefix.md)
 
 **策略二：Skill 按需加载（选择性分配）**
 
@@ -240,5 +240,5 @@ Agent 变傻不是模型的问题。Agent 变傻是一个**工程问题**——T
 
 ---
 
-*上一篇：[02 大脑主动驱动小脑](02-bidirectional-agent-zh.md) — LLM 不应该只是 Harness 的被动执行者*
-*下一篇：[04 KV Cache 硬约束前缀注入](04-kv-cache-prefix-zh.md) — 硬约束怎么注入到前缀区而不被压缩*
+*上一篇：[02 大脑主动驱动小脑](02-bidirectional-agent.md) — LLM 不应该只是 Harness 的被动执行者*
+*下一篇：[04 KV Cache 硬约束前缀注入](04-kv-cache-prefix.md) — 硬约束怎么注入到前缀区而不被压缩*

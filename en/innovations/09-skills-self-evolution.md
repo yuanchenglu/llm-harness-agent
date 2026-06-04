@@ -1,10 +1,10 @@
 # Skills Self-Evolution: Let the Agent Grow Its Own Skill Tree
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > Innovation Index: I-07
 > **LLM + Harness = Agent** · Part 9
-> **Series**: [LLM + Harness = Agent](../README.md)
+> **Series**: [LLM + Harness = Agent](../../README.md)
 > **Previous**: [08 A Divide-and-Conquer Strategy for Two-Level Scope Creep](08-scope-creep.md)
 > **Next**: [10 7+1 Intent → Strategy Auto-Switching](10-intent-routing.md)
 

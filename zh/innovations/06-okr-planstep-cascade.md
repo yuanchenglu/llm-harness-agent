@@ -1,12 +1,12 @@
 # OKR 增强型 PlanStep + 级联修正引擎
 
-> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../RESEARCH-METHOD-zh.md)。
+> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
 > **创新点索引**：I-01, I-03
 > **LLM + Harness = Agent** · 第 6 篇
-> **系列**：[LLM + Harness = Agent](../README-zh.md)
-> **上一篇**：[05 文档 KV Cache 优化结构](05-document-kv-cache-zh.md)
-> **下一篇**：[07 审查切换引擎](07-review-switching-zh.md)
+> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **上一篇**：[05 文档 KV Cache 优化结构](05-document-kv-cache.md)
+> **下一篇**：[07 审查切换引擎](07-review-switching.md)
 
 ---
 
@@ -321,5 +321,5 @@ OKR 增强型 PlanStep 的五个新字段（key, step_id, parent_id, dependency_
 
 ---
 
-*上一篇：[05 文档 KV Cache 优化结构](05-document-kv-cache-zh.md) — Agent 产出的文档也需要 KV Cache 优化*
-*下一篇：[07 审查切换引擎](07-review-switching-zh.md) — 审查严格度应根据上下文状态动态调整*
+*上一篇：[05 文档 KV Cache 优化结构](05-document-kv-cache.md) — Agent 产出的文档也需要 KV Cache 优化*
+*下一篇：[07 审查切换引擎](07-review-switching.md) — 审查严格度应根据上下文状态动态调整*

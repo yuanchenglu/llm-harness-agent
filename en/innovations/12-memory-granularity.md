@@ -1,10 +1,10 @@
 # Memory Granularity Control: Stronger Isn't Always Better
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../RESEARCH-METHOD.md) first.
+> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
 > **Innovation Point**: New (Extracted from Conversation)
 > **LLM + Harness = Agent** · Part 12
-> **Series**: [LLM + Harness = Agent](../README.md)
+> **Series**: [LLM + Harness = Agent](../../README.md)
 > **Previous**: [11 Checkpoint Multi-Round Review](11-checkpoint-review.md)
 > **Next**: TBD
 
