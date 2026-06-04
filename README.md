@@ -2,7 +2,7 @@
 
 > From model capability to a verifiable Agent system — a theory grounded in practice, source audits, and testable hypotheses
 
-[**阅读简体中文版**](README-zh.md) · [**⭐ Star this repo**](https://github.com/yuanchenglu/llm-harness-agent) to get notified when new articles drop
+[**阅读简体中文版**](README_zh.md) · [**⭐ Star this repo**](https://github.com/yuanchenglu/llm-harness-agent) to get notified when new articles drop
 
 ---
 
