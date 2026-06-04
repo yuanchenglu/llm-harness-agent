@@ -1,0 +1,22 @@
+{
+  "schema_version": "2.0",
+  "package": "DeepSeek Agent project handoff",
+  "version": "v2.0-stage-audit",
+  "date": "2026-06-04",
+  "truth_source": "stage-gates.json",
+  "earliest_incomplete_stage": "1",
+  "current_status": "Stage 0 handoff is complete after consistency correction; Stage 1 through Stage 6 remain incomplete at different evidence levels.",
+  "stage_status": {
+    "0": "completed",
+    "1": "in_progress_calibration_required",
+    "2": "in_progress",
+    "2.5": "in_progress",
+    "3": "draft",
+    "4": "draft",
+    "5": "research_mvp_spec",
+    "6": "in_progress"
+  },
+  "next_task": "Start with Stage 1 fixed-source snapshot index and current-fact calibration; do not jump directly to Stage 6.",
+  "master_prompt": "00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-3-Stage0至Stage6全阶段执行总控提示词-All-Stage-Execution-Master-Prompt.md",
+  "stage6_subprompt": "00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-2-Stage6执行总控提示词-Stage6-Execution-Master-Prompt.md"
+}
