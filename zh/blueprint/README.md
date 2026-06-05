@@ -615,7 +615,7 @@ local-first / cloud / endpoint 部署差异
 
 ## v1.4 更新记录：理论引导文档重构
 
-- [x] 将 `docs/LLM-Hermes-Agent` 从观点文章集合升级为 DeepSeek Agent 理论与调研入口。
+- [x] 将 `docs/llm-harness-agent` 从观点文章集合升级为 DeepSeek Agent 理论与调研入口。
 - [x] 新增中英文理论总纲：`THEORY-GUIDE-zh.md` / `THEORY-GUIDE.md`。
 - [x] 新增中英文研究方法与事实校准：`RESEARCH-METHOD-zh.md` / `RESEARCH-METHOD.md`。
 - [x] 将交接调研中的模型事实、竞品源码校准和产品综合结论提炼进理论文档，而非复制完整交接目录。

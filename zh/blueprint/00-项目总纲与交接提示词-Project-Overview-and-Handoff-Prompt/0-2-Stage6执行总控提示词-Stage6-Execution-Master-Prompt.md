@@ -37,12 +37,12 @@
 
 3. 每次开始工作都必须先读取并遵守：
    - README.md
-   - docs/LLM-Hermes-Agent/zh/blueprint/README.md
-   - docs/LLM-Hermes-Agent/zh/blueprint/stage-gates.json
-   - docs/LLM-Hermes-Agent/zh/blueprint/03-5-DeepSeek-Agent协议与Benchmark验证-DeepSeek-Agent-Protocol-and-Benchmark-Validation/18-1-科研严谨性复核与阶段重评-Scientific-Rigor-Audit.md
-   - docs/LLM-Hermes-Agent/zh/blueprint/07-代码Fork整合与MVP实现-Code-Fork-Integration-and-MVP/7-1-OpenCode-Adapter-Spike.md
-   - docs/LLM-Hermes-Agent/zh/blueprint/07-代码Fork整合与MVP实现-Code-Fork-Integration-and-MVP/7-2-Stage6-完成定义与阻塞项.md
-   - docs/LLM-Hermes-Agent/BENCHMARK-HARNESS-PLAN-zh.md
+   - docs/llm-harness-agent/zh/blueprint/README.md
+   - docs/llm-harness-agent/zh/blueprint/stage-gates.json
+   - docs/llm-harness-agent/zh/blueprint/03-5-DeepSeek-Agent协议与Benchmark验证-DeepSeek-Agent-Protocol-and-Benchmark-Validation/18-1-科研严谨性复核与阶段重评-Scientific-Rigor-Audit.md
+   - docs/llm-harness-agent/zh/blueprint/07-代码Fork整合与MVP实现-Code-Fork-Integration-and-MVP/7-1-OpenCode-Adapter-Spike.md
+   - docs/llm-harness-agent/zh/blueprint/07-代码Fork整合与MVP实现-Code-Fork-Integration-and-MVP/7-2-Stage6-完成定义与阻塞项.md
+   - docs/llm-harness-agent/BENCHMARK-HARNESS-PLAN-zh.md
 
 4. 查找并遵守所有适用的 AGENTS.md。不要删除他人的修改。不要使用已暴露在历史对话中的 API Key。密钥只能来自环境变量，不得写入文件、日志、测试 fixture、Git 或最终回复。
 
