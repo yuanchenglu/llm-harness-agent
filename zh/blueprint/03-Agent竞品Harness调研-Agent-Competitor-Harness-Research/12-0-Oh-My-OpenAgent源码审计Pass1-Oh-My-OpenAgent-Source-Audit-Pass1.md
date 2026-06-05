@@ -1,5 +1,7 @@
 # 12-0 Oh My OpenAgent 源码审计 Pass 1
 
+> Pass 2 已于 2026-06-05 完成，固定 commit、运行路径、实测结果与校准结论见 [`18-0-五项目Pass2与统一证据矩阵`](./18-0-五项目Pass2与统一证据矩阵-Five-Project-Pass2-Uniform-Evidence-Matrix.md)。本文件保留为 Pass 1 历史输入。
+
 ## 1. 目标与结论
 
 Oh My OpenAgent（OMO，历史名称 Oh My OpenCode）是建立在 Agent Harness 之上的“编排与工程纪律增强层”。它不是 OpenCode 的替代品，而是通过 agents、hooks、MCP、skills、规则注入、持续循环与编辑工具，把基础 Agent 变成可长期执行的多 Agent 工程团队。

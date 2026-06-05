@@ -1,5 +1,7 @@
 # 14-0 OpenSpec 源码审计 Pass 1
 
+> Pass 2 已于 2026-06-05 完成，固定 commit、运行路径、实测结果与校准结论见 [`18-0-五项目Pass2与统一证据矩阵`](./18-0-五项目Pass2与统一证据矩阵-Five-Project-Pass2-Uniform-Evidence-Matrix.md)。本文件保留为 Pass 1 历史输入；特别注意 OpenSpec 的 verify/complete 不等于项目测试已执行。
+
 ## 1. 目标与结论
 
 OpenSpec 是跨 AI Coding Assistant 的轻量 Spec-Driven Development（SDD）框架。它不替代 Agent Runtime，而是在聊天历史与代码之间增加可版本化的 change artifact 层，使“为什么做、做什么、如何做、做到哪”不再只存在于易失的上下文中。

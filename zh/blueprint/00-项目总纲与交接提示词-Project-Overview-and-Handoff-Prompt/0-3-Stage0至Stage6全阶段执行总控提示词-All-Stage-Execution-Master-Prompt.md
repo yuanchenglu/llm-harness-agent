@@ -1,6 +1,6 @@
 # Stage 0–6 全阶段执行总控提示词（复制给新的 AI）
 
-> 这是项目最高优先级交接提示词。Stage 6 提示词只是本提示词到达 Stage 6 后使用的子计划。当前最早未完成阶段是 **Stage 2**，不得直接跳到 Stage 6 并假设前置阶段完成。
+> 这是项目最高优先级交接提示词。Stage 6 提示词只是本提示词到达 Stage 6 后使用的子计划。当前最早未完成阶段是 **Stage 2.5**，不得直接跳到 Stage 6 并假设前置阶段完成。
 
 ## 复制下面完整代码块给新的 AI
 
@@ -13,7 +13,7 @@
    - docs/LLM-Hermes-Agent/zh/blueprint/stage-gates.json
    - docs/LLM-Hermes-Agent/zh/blueprint/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
    - 固定 commit 源码、官方文档、测试、manifest、脱敏 evidence bundle 和真实任务验收结果。
-2. 当前最早未完成阶段是 Stage 2。原则执行顺序：Stage 2 → 2.5 → 3 → 4 → 5 → 6。
+2. 当前最早未完成阶段是 Stage 2.5。原则执行顺序：Stage 2.5 → 3 → 4 → 5 → 6。
 3. 可以并行实现不依赖前置结论的安全基础设施，但不能因此提前把后续阶段标为 completed。
 4. 不得把 Pass 1、v0.1 草案、文档存在、模块存在、Mock、单次 Pilot、只读 Demo 写成阶段完成。
 5. 每个结论标注证据等级：E0 假设；E1 官方文档/固定源码；E2 低样本 Pilot；E3 可复现实验；E4 真实任务 Benchmark；E5 生产安全与观测。
@@ -149,7 +149,7 @@ git diff --check
 - 直到 Stage 0–6 全部 Gate 通过前，禁止说“整个项目完成”；
 - 最终完成时提供全阶段证据索引、最终 ADR、E3/E4 结果、安全/恢复验证、安装/运行/回滚说明、测试命令、commit 和 PR。
 
-现在立即开始启动检查，从 Stage 2 的最早 open Gate 开始；不要直接跳到 Stage 6，不要只回复计划。
+现在立即开始启动检查，从 Stage 2.5 的最早 open Gate 开始；不要直接跳到 Stage 6，不要只回复计划。
 ```
 
 ## 用户验收新 AI 的简单方法

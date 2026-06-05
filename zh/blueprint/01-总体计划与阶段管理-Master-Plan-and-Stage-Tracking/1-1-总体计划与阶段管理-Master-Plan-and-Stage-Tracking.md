@@ -19,7 +19,7 @@ Stage 6：代码 Fork / 整合 / MVP 实现
 
 - Stage 0：已完成；交接、机器 Gate 与全阶段提示词已一致化
 - Stage 1：已完成；固定来源索引、当前事实校准、外推分离、高影响结论复核与 unknowns register 已通过验证
-- Stage 2：进行中；六项目校准和部分 Pass 2 已有，五项目 Pass 2、范围决策与统一证据矩阵未完成
+- Stage 2：已完成；六项目校准、五项目固定 commit Pass 2、P1 范围决策、统一证据矩阵与过度声明复核已通过
 - Stage 2.5：进行中；实验基础设施完成，E3 协议/Cache 与 evidence bundle 未完成
 - Stage 3：草案；全量统一矩阵、模式/反模式和 E4 输入未完成
 - Stage 4：草案；产品战略和生产技术架构未定稿

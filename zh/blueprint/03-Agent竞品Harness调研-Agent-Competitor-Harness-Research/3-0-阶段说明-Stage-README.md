@@ -1,6 +1,6 @@
 # 3-0 Agent 竞品 Harness 调研 Agent Competitor Harness Research
 
-当前阶段：进行中。核心竞品已经完成多轮源码审计；新增五个 Agent 产品 / 插件已完成源码审计 Pass 1 与综合借鉴评估。
+当前阶段：**已完成（固定快照与公开源码边界内）**。核心竞品已完成多轮源码审计；新增五项目已完成固定 commit Pass 2、代表性运行测试、统一矩阵、P1 范围决策与过度声明复核。
 
 第一优先级已覆盖：
 
@@ -23,7 +23,7 @@ OpenSpec                 Spec / Artifact 驱动开发协议
 Superpowers              可组合的软件工程技能方法论
 ```
 
-下一步：按源码深读硬性规则执行新增五项目 Pass 2，重点审计核心 loop、hooks、team state、artifact schema、skills tests，并用统一 prototype benchmark 验证对 DeepSeek Agent 的真实收益。
+下一步：从 Stage 2.5 执行 DeepSeek 协议与 Prefix Cache E3；Roo/OpenHands/Goose/Aider 作为 E4 baseline，不将待验证收益写成 Stage 2 源码事实。统一结果见 `18-0-五项目Pass2与统一证据矩阵-Five-Project-Pass2-Uniform-Evidence-Matrix.md`。
 
 
 ## 2026-06-04 事实校准状态

@@ -1,5 +1,7 @@
 # 13-0 Oh My ClaudeCode 源码审计 Pass 1
 
+> Pass 2 已于 2026-06-05 完成，固定 commit、运行路径、实测结果与校准结论见 [`18-0-五项目Pass2与统一证据矩阵`](./18-0-五项目Pass2与统一证据矩阵-Five-Project-Pass2-Uniform-Evidence-Matrix.md)。本文件保留为 Pass 1 历史输入。
+
 ## 1. 目标与结论
 
 Oh My ClaudeCode（OMC）是面向 Claude Code 的 teams-first 多 Agent 编排插件与 CLI runtime。它把团队执行定义为显式阶段流水线，并提供 native in-session teams 与 tmux CLI workers 两种并行运行时，同时包含深度访谈、自动执行、持续验证、质量循环和跨模型顾问。

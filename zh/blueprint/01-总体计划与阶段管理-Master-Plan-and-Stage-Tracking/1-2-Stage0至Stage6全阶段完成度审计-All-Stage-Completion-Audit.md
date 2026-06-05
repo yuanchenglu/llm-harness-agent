@@ -2,7 +2,7 @@
 
 > 初始审计日期：2026-06-04
 > 最近复核：2026-06-05
-> 当前结论：Stage 0 与 Stage 1 已完成；Stage 2 是最早未完成阶段。Stage 1 的完成表示事实边界已校准，不表示 E3 API 或 E4 真实任务已完成。
+> 当前结论：Stage 0–2 已完成；Stage 2.5 是最早未完成阶段。Stage 2 的完成表示固定源码边界与竞品范围已闭环，不表示 E3 API、E4 真实任务或底座选择已完成。
 
 ## 1. 审计方法
 
@@ -23,7 +23,7 @@
 |---|---|---|
 | Stage 0 项目总纲与交接 | **completed（本次修正后）** | 已有目标、阶段、机器 Gate、全阶段提示词和一致性检查；后续只需维护 |
 | Stage 1 DeepSeek V4 模型事实 | **completed** | 固定来源、当前事实、外推分离、高影响 Harness 结论复核与 unknowns register 已完成；E3/E4 未知项已转交后续阶段 |
-| Stage 2 竞品/Harness 调研 | **in_progress** | 六项目校准完成、五项目仅 Pass 1；Claude Code 官方源码边界有限；五项目 Pass 2 和第二优先级竞品尚未完成 |
+| Stage 2 竞品/Harness 调研 | **completed** | 固定快照 Pass 2、P1 范围决策、统一证据矩阵与过度声明复核完成；Claude Code engine 不公开作为永久边界 |
 | Stage 2.5 协议与 Cache 实证 | **in_progress** | Harness 基础设施存在，但只有降级后的 E2 Pilot；缺 Flash/Pro E3 协议矩阵、跨时段 Cache 与可提交 evidence bundle |
 | Stage 3 架构对比与借鉴 | **draft** | 只有部分项目矩阵和 Gap Analysis v0.1；缺全量对比矩阵、设计模式总结、不可照搬清单与 E4 数据 |
 | Stage 4 产品战略与技术架构 | **draft** | 当前只有短篇假设性架构 v0.1；Cache ROI、路由、planner/reviewer、底座选择均未由 E3/E4 支撑 |
@@ -78,13 +78,13 @@
 - Codex、Trae、Reasonix、Hermes、CodeWhale 的部分 Pass 2；
 - OpenCode、OMO、OMC、OpenSpec、Superpowers Pass 1 和综合评估。
 
-**未完成项**
+**2026-06-05 关闭证据**
 
-- OpenCode、OMO、OMC、OpenSpec、Superpowers Pass 2 未完成；
-- Cursor、Windsurf、Cline/Roo、Devin、OpenHands、Goose、Aider 是否纳入/延期尚未形成决策；
-- Claude Code 完整 engine 非官方公开，必须把该边界作为永久限制，不能伪装完成源码深读；
-- 现有报告中的“终版/完整/可直接迁移”仍需统一审计；
-- 缺统一测试/运行证据矩阵。
+- `stage2-pass2-evidence-2026-06-05.json` 固定五项目 commit、扫描边界、代表性测试命令/结果与 P1 范围决策；
+- `18-0-五项目Pass2与统一证据矩阵` 完成五项目八步审计、十一项目统一矩阵和过度声明复核；
+- 五项目代表性测试最终结果：OpenCode 147 pass/1 skip、OMO 94 pass、OMC 37 pass、OpenSpec 195 pass、Superpowers 56 pass，均 0 fail；
+- Cursor/Windsurf/Devin 排除源码 Pass 2；Roo/OpenHands/Goose/Aider 纳入 E4 baseline；Cline 延期独立 Pass 2；
+- Claude Code 完整 engine 非官方公开作为永久边界，不伪装完成源码深读。
 
 **完成 Gate**
 
@@ -154,11 +154,10 @@
 
 ## 4. 正确执行顺序
 
-下一位 AI 必须从**最早未完成阶段 Stage 2**继续，而不是直接从 Stage 6 开始：
+下一位 AI 必须从**最早未完成阶段 Stage 2.5**继续，而不是直接从 Stage 6 开始：
 
 ```text
 Stage 0 一致性维护
-→ Stage 2 P0 竞品 Pass 2 / 范围决策
 → Stage 2.5 E3 协议与 Cache
 → Stage 3 全量综合与 E4 输入
 → Stage 4 架构定稿

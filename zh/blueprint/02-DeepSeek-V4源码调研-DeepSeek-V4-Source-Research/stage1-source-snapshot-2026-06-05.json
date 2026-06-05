@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0",
+  "captured_at": "2026-06-05",
+  "purpose": "Pin the official sources used for Stage 1 current-fact calibration. API documentation claims remain time-sensitive and are not empirical API results.",
+  "evidence_classes": {
+    "E1": "Official product or model-card claim without independent reproduction",
+    "E2": "Pinned official source artifact inspected at a fixed revision",
+    "E3": "Repeatable controlled API experiment",
+    "E4": "Repeatable real-task benchmark"
+  },
+  "official_open_weight_sources": {
+    "deepseek-v4-pro": {
+      "repository": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro",
+      "revision": "89d501aed998d33fa4f4702102ec1bb2331e10f6",
+      "last_modified": "2026-05-06T04:18:44.000Z",
+      "evidence_class": "E2",
+      "files": {
+        "README.md": "87521b09505a221a44d8bfa824c848b00d9cfcf0",
+        "config.json": "025a1ca59cb255296f274d4ef5e0ea632a0d6384",
+        "encoding/README.md": "f9bf68d953bb81a1532b52c3663d390ac1409bc8",
+        "inference/model.py": "167ade8fdb35c0fbaabf4735b6696ef7a32f1588",
+        "inference/kernel.py": "ea7976fa1b4a549306ce57d7a1a78f4798b222b8",
+        "DeepSeek_V4.pdf_sha256": "8a03dadae71894de1515da33e296f0df1dbeed3e7f4bf0badd087f9af77f29e9"
+      }
+    },
+    "deepseek-v4-flash": {
+      "repository": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash",
+      "revision": "6976c7ff1b30a1b2cb7805021b8ba4684041f136",
+      "last_modified": "2026-05-06T04:18:09.000Z",
+      "evidence_class": "E2",
+      "files": {
+        "README.md": "87521b09505a221a44d8bfa824c848b00d9cfcf0",
+        "config.json": "284fd93ee753efde32e00960cdb1bc15410d5ab4",
+        "encoding/README.md": "f9bf68d953bb81a1532b52c3663d390ac1409bc8",
+        "inference/model.py": "167ade8fdb35c0fbaabf4735b6696ef7a32f1588",
+        "inference/kernel.py": "ea7976fa1b4a549306ce57d7a1a78f4798b222b8",
+        "DeepSeek_V4.pdf_sha256": "8a03dadae71894de1515da33e296f0df1dbeed3e7f4bf0badd087f9af77f29e9"
+      }
+    }
+  },
+  "official_api_document_snapshots": {
+    "models_and_pricing": {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "retrieved_html_sha256": "38107703007067c2a9ed80d7783b12a2aebfca945504f45ff66178ae5699516c",
+      "evidence_class": "E1",
+      "observed_claims": {
+        "models": [
+          "deepseek-v4-flash",
+          "deepseek-v4-pro"
+        ],
+        "context_length": "1M",
+        "max_output": "384K",
+        "flash_usd_per_1m_tokens": {
+          "cache_hit_input": 0.0028,
+          "cache_miss_input": 0.14,
+          "output": 0.28
+        },
+        "pro_usd_per_1m_tokens": {
+          "cache_hit_input": 0.003625,
+          "cache_miss_input": 0.435,
+          "output": 0.87
+        }
+      },
+      "temporal_limit": "Prices are mutable. The displayed price is an official claim at capture time, not an empirically verified invoice."
+    },
+    "context_caching": {
+      "url": "https://api-docs.deepseek.com/guides/kv_cache",
+      "retrieved_html_sha256": "1bbe5089b6004b71e575de3d518c00c246262e767b54dd352318362518006dcb",
+      "evidence_class": "E1",
+      "observed_claims": [
+        "Disk context caching is enabled by default.",
+        "A hit requires a fully matching persisted prefix unit.",
+        "The service exposes prompt_cache_hit_tokens and prompt_cache_miss_tokens.",
+        "Caching is best effort and persistence duration is not guaranteed."
+      ]
+    },
+    "thinking_mode": {
+      "url": "https://api-docs.deepseek.com/guides/thinking_mode",
+      "retrieved_html_sha256": "36377dbdf0a602a7ac49961dc7913a2c4be6d71c13a7fcce153c8fe3793310b3",
+      "evidence_class": "E1",
+      "observed_claims": [
+        "Thinking defaults to enabled.",
+        "Supported reasoning effort values are high and max, with compatibility mappings.",
+        "reasoning_content must be replayed for tool-call turns.",
+        "Several sampling parameters are documented as ineffective in thinking mode."
+      ]
+    },
+    "change_log": {
+      "url": "https://api-docs.deepseek.com/updates/",
+      "retrieved_html_sha256": "e1398e5d5e2c9a425e602f3d71070a1c6ae9844722ed1f1c5425dfe550b21848",
+      "evidence_class": "E1",
+      "observed_claims": [
+        "DeepSeek V4 API support was announced on 2026-04-24.",
+        "OpenAI ChatCompletions and Anthropic-compatible interfaces are documented.",
+        "Legacy deepseek-chat and deepseek-reasoner names are scheduled for retirement on 2026-07-24."
+      ]
+    }
+  },
+  "retrieval_method": {
+    "model_metadata": "GET https://huggingface.co/api/models/{repo}?blobs=true",
+    "api_docs": "GET official page, record access date and SHA-256 of retrieved HTML",
+    "live_api": "Not run during Stage 1 because DEEPSEEK_API_KEY was not present"
+  }
+}

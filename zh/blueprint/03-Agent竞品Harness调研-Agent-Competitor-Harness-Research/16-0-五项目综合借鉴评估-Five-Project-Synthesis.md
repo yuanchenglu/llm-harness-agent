@@ -1,11 +1,13 @@
 # 16-0 OpenCode / OMO / OMC / OpenSpec / Superpowers 综合借鉴评估
 
+> 本 Pass 1 综合评估已由 2026-06-05 的 [`18-0-五项目Pass2与统一证据矩阵`](./18-0-五项目Pass2与统一证据矩阵-Five-Project-Pass2-Uniform-Evidence-Matrix.md) 校准。以下架构建议是候选设计，不代表 E4 已证明收益。
+
 ## 1. 目的与总评
 
 这五个项目不是同一层面的直接竞品，而是恰好覆盖了现代 Agent 产品栈的五个关键层级：
 
 ```text
-OpenCode        = 可 fork 的 Agent Runtime 与多端产品骨架
+OpenCode        = Adapter/Fork 候选 Agent Runtime 与多端产品骨架
 Oh My OpenAgent = Harness 增强、工具可靠性、并行与持续执行
 Oh My ClaudeCode= Teams-first 编排状态机与可观测性
 OpenSpec        = 可版本化的需求/设计/任务 artifact 协议
@@ -126,7 +128,7 @@ OpenSpec 和分层 AGENTS.md 提供稳定可寻址内容；后台 Agent/fresh su
 
 | ADR | 建议决策 |
 |---|---|
-| Runtime 底座 | 先用 OpenCode 做 fork Spike，再与自研成本比较，不立即承诺正式 fork |
+| Runtime 底座 | 先用 OpenCode 做 Adapter/Fork Spike，再与自研成本和 E4 结果比较，不立即承诺正式 fork |
 | Workflow 协议 | 兼容 OpenSpec，但扩展 checkpoint/evidence schema |
 | 编排控制 | runtime 强制单一 loop owner，team/qa/persistence 都是可替换策略 |
 | Skills | 借鉴 Superpowers，流程强制尽量由状态机/权限实现而非只靠 prompt |

@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0",
+  "assessed_at": "2026-06-05",
+  "method": {
+    "source_boundary": "Official repositories only; fixed commits; source-file counts are scan scope, not proof of exhaustive reading.",
+    "evidence_levels": {
+      "A0": "Fixed-commit runtime path plus executed test evidence",
+      "A1": "Fixed-commit implementation source without executed test evidence",
+      "A2": "Fixed-commit official documentation/configuration",
+      "B": "Engineering inference from A-level evidence",
+      "N": "Not found in official open source"
+    },
+    "test_rule": "A passing representative suite proves the named path at the fixed commit, not production maturity or DeepSeek V4 fitness."
+  },
+  "p0_pass2": [
+    {
+      "project": "OpenCode",
+      "repository": "https://github.com/anomalyco/opencode",
+      "branch": "dev",
+      "commit": "cb65926c822b2339c260d8b94002f9aafb9ac83a",
+      "source_files_scanned": 2378,
+      "test_files_detected": 490,
+      "command": "cd packages/opencode && bun test test/session/compaction.test.ts test/permission/next.test.ts test/tool/task.test.ts",
+      "result": {
+        "passed": 147,
+        "skipped": 1,
+        "failed": 0
+      },
+      "covered_paths": [
+        "session compaction and token accounting",
+        "permission rule evaluation and approval lifecycle",
+        "child/background task lifecycle"
+      ]
+    },
+    {
+      "project": "Oh My OpenAgent",
+      "repository": "https://github.com/code-yeongyu/oh-my-openagent",
+      "branch": "dev",
+      "commit": "e0541ccfe668c1c6d1aa6b3bf0320e27d23ad282",
+      "source_files_scanned": 2845,
+      "test_files_detected": 1033,
+      "command": "bun test src/features/boulder-state/storage.test.ts src/features/team-mode/integration.test.ts src/tools/hashline-edit/validation.test.ts src/hooks/claude-code-hooks/execute-http-hook-security.test.ts",
+      "result": {
+        "passed": 94,
+        "skipped": 0,
+        "failed": 0
+      },
+      "covered_paths": [
+        "persistent boulder state",
+        "team runtime create/resume/orphan/cleanup/concurrency",
+        "hashline stale-reference validation",
+        "HTTP hook transport security"
+      ],
+      "environment_note": "A prior frozen install attempt reported an optional native package extraction problem; the selected suites executed successfully with the available dependency tree."
+    },
+    {
+      "project": "Oh My ClaudeCode",
+      "repository": "https://github.com/Yeachan-Heo/oh-my-claudecode",
+      "branch": "main",
+      "commit": "3e945671dcf3ed1c1bcc422862815f92c1999143",
+      "source_files_scanned": 3299,
+      "test_files_detected": 1125,
+      "command": "npm run test:run -- src/hooks/team-pipeline src/team/__tests__/phase-controller.test.ts src/team/__tests__/governance-enforcement.test.ts src/team/__tests__/worktree-runtime-e2e.test.ts",
+      "result": {
+        "passed": 37,
+        "skipped": 0,
+        "failed": 0
+      },
+      "covered_paths": [
+        "team pipeline transitions and guards",
+        "phase controller",
+        "governance approval enforcement",
+        "multi-worker worktree merge E2E"
+      ],
+      "environment_note": "npm reported that better-sqlite3 does not yet declare Node 26 support; selected suites still passed."
+    },
+    {
+      "project": "OpenSpec",
+      "repository": "https://github.com/Fission-AI/OpenSpec",
+      "branch": "main",
+      "commit": "1b06fddd59d8e592d5b5794a1970b22867e85b1f",
+      "source_files_scanned": 277,
+      "test_files_detected": 91,
+      "command": "npx --yes pnpm@10.17.1 exec vitest run test/core/artifact-graph/*.test.ts test/commands/artifact-workflow.test.ts",
+      "result": {
+        "passed": 195,
+        "skipped": 0,
+        "failed": 0
+      },
+      "covered_paths": [
+        "artifact graph/schema/dependency state",
+        "workflow instructions",
+        "CLI artifact workflow integration"
+      ],
+      "environment_note": "The first attempt used an unsupported directory filter and lacked pnpm on PATH; the pinned pnpm rerun built the project and passed."
+    },
+    {
+      "project": "Superpowers",
+      "repository": "https://github.com/obra/superpowers",
+      "branch": "main",
+      "commit": "6fd4507659784c351abbd2bc264c7162cfd386dc",
+      "source_files_scanned": 8,
+      "test_files_detected": 2,
+      "command": "node --test tests/brainstorm-server/server.test.js tests/brainstorm-server/ws-protocol.test.js",
+      "result": {
+        "passed": 56,
+        "skipped": 0,
+        "failed": 0
+      },
+      "covered_paths": [
+        "brainstorm server integration",
+        "WebSocket protocol"
+      ],
+      "environment_note": "The ws test dependency was installed in tests/brainstorm-server before the final clean pass."
+    }
+  ],
+  "p1_scope_decisions": [
+    {
+      "project": "Cursor",
+      "decision": "exclude_from_source_pass2",
+      "reason": "No complete official open-source engine; retain product/docs comparison only."
+    },
+    {
+      "project": "Windsurf",
+      "decision": "exclude_from_source_pass2",
+      "reason": "No complete official open-source engine; retain product/docs comparison only."
+    },
+    {
+      "project": "Devin",
+      "decision": "exclude_from_source_pass2",
+      "reason": "No complete official open-source engine; retain product/docs comparison only."
+    },
+    {
+      "project": "Roo Code",
+      "repository": "https://github.com/RooCodeInc/Roo-Code",
+      "head_commit_observed": "b867ec9145750d0ae1ff7f02d35406e9bf2a0b16",
+      "decision": "include_as_e4_runtime_baseline",
+      "reason": "Representative open-source member of the Cline/Roo extension family; useful for UI/runtime comparison."
+    },
+    {
+      "project": "Cline",
+      "repository": "https://github.com/cline/cline",
+      "head_commit_observed": "a209825116dca469c80af4be53989638dd329f38",
+      "decision": "defer_separate_pass2",
+      "reason": "Roo Code covers the shared extension-family questions for current architecture decisions; revisit only when a family-specific claim matters."
+    },
+    {
+      "project": "OpenHands",
+      "repository": "https://github.com/All-Hands-AI/OpenHands",
+      "head_commit_observed": "459b00986b28608bb4cd3b02469ae66b76c6a691",
+      "decision": "include_as_e4_runtime_baseline",
+      "reason": "Strong sandboxed autonomous-runtime comparison; full source Pass 2 is not required before the current foundation decision."
+    },
+    {
+      "project": "Goose",
+      "repository": "https://github.com/block/goose",
+      "head_commit_observed": "6251e563479d525398dd59ce5b729d7f8e14c5c9",
+      "decision": "include_as_e4_runtime_baseline",
+      "reason": "Useful desktop/MCP/runtime baseline."
+    },
+    {
+      "project": "Aider",
+      "repository": "https://github.com/Aider-AI/aider",
+      "head_commit_observed": "5dc9490bb35f9729ef2c95d00a19ccd30c26339c",
+      "decision": "include_as_e4_git_edit_baseline",
+      "reason": "Useful deterministic git/edit benchmark baseline."
+    }
+  ]
+}

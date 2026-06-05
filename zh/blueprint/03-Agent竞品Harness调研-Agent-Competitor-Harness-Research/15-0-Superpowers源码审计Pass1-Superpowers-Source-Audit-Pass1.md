@@ -1,8 +1,10 @@
 # 15-0 Superpowers 源码审计 Pass 1
 
+> Pass 2 已于 2026-06-05 完成，固定 commit、运行路径、实测结果与校准结论见 [`18-0-五项目Pass2与统一证据矩阵`](./18-0-五项目Pass2与统一证据矩阵-Five-Project-Pass2-Uniform-Evidence-Matrix.md)。本文件保留为 Pass 1 历史输入；skill 中的强制措辞是否真正执行取决于宿主，关键规则仍需 runtime gate。
+
 ## 1. 目标与结论
 
-Superpowers 是由可组合 skills 构成的软件工程方法论层，覆盖 brainstorming、worktree、计划、子 Agent 开发、TDD、代码审查与分支收尾。它通过“自动触发且属于强制流程”的技能，把 Agent 从自由发挥约束到可验证工程流程。
+Superpowers 是由可组合 skills 构成的软件工程方法论层，覆盖 brainstorming、worktree、计划、子 Agent 开发、TDD、代码审查与分支收尾。它通过声明为自动触发/强制流程的技能，把 Agent 从自由发挥约束到更可验证的工程流程；实际强制力仍取决于宿主。
 
 **核心判断：**Superpowers 是五个对象中最值得直接吸收为 DeepSeek Agent 默认工程技能包的项目。它证明高质量 Agent 不一定依赖更复杂的核心 loop，也可以依靠少量清晰、可组合、可测试的流程原语提升可靠性。风险是规则过强会降低小任务效率，且 skill 是否真正被执行仍受宿主遵循能力影响。
 

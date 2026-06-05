@@ -1,10 +1,12 @@
 # 11-0 OpenCode 源码审计 Pass 1
 
+> Pass 2 已于 2026-06-05 完成，固定 commit、运行路径、实测结果与校准结论见 [`18-0-五项目Pass2与统一证据矩阵`](./18-0-五项目Pass2与统一证据矩阵-Five-Project-Pass2-Uniform-Evidence-Matrix.md)。本文件保留为 Pass 1 历史输入。
+
 ## 1. 目标与结论
 
 OpenCode 不是“又一个终端聊天壳”，而是一套模型无关、前后端分层、可被插件扩展的开源 Coding Agent 平台。它同时覆盖 TUI、CLI、Web、桌面端、IDE、SDK、Server、插件与企业能力，是五个对象中最接近 DeepSeek Agent 可选产品底座的项目。
 
-**核心判断：**优先把 OpenCode 当作“可 fork 的 Agent Runtime + 多端产品骨架”，而不是仅当竞品功能清单。最值得借鉴的是 provider/model 抽象、primary/subagent 体系、细粒度权限、child session、隐藏系统 agent、server/SDK/plugin 边界；最需要补齐的是 DeepSeek V4 原生缓存布局、Flash/Pro/Thinking 路由、reasoning_content 生命周期和 checkpoint-gated review。
+**核心判断：**优先把 OpenCode 当作“Adapter/Fork 候选 Agent Runtime + 多端产品骨架”，而不是仅当竞品功能清单；是否作为最终底座必须由 E4 对比决定。最值得借鉴的是 provider/model 抽象、primary/subagent 体系、细粒度权限、child session、隐藏系统 agent、server/SDK/plugin 边界；最需要补齐的是 DeepSeek V4 原生缓存布局、Flash/Pro/Thinking 路由、reasoning_content 生命周期和 checkpoint-gated review。
 
 ## 证据与状态说明
 
