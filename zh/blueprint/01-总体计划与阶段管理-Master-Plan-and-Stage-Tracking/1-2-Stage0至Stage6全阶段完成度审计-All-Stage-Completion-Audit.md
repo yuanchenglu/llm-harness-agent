@@ -2,7 +2,7 @@
 
 > 初始审计日期：2026-06-04
 > 最近复核：2026-06-05
-> 当前结论：Stage 0–2 已完成；Stage 2.5 是最早未完成阶段。Stage 2 的完成表示固定源码边界与竞品范围已闭环，不表示 E3 API、E4 真实任务或底座选择已完成。
+> 当前结论：Stage 0–5 已完成；Stage 6 研究 MVP Gate 已完成；最早未完成项是 `6-release`。不得声明生产发布完成，直到 Production Release Gate 有完整兼容、安装包、签名/卸载、rollback 与发布决策证据。
 
 ## 1. 审计方法
 
@@ -24,11 +24,11 @@
 | Stage 0 项目总纲与交接 | **completed（本次修正后）** | 已有目标、阶段、机器 Gate、全阶段提示词和一致性检查；后续只需维护 |
 | Stage 1 DeepSeek V4 模型事实 | **completed** | 固定来源、当前事实、外推分离、高影响 Harness 结论复核与 unknowns register 已完成；E3/E4 未知项已转交后续阶段 |
 | Stage 2 竞品/Harness 调研 | **completed** | 固定快照 Pass 2、P1 范围决策、统一证据矩阵与过度声明复核完成；Claude Code engine 不公开作为永久边界 |
-| Stage 2.5 协议与 Cache 实证 | **in_progress** | Harness 基础设施存在，但只有降级后的 E2 Pilot；缺 Flash/Pro E3 协议矩阵、跨时段 Cache 与可提交 evidence bundle |
-| Stage 3 架构对比与借鉴 | **draft** | 只有部分项目矩阵和 Gap Analysis v0.1；缺全量对比矩阵、设计模式总结、不可照搬清单与 E4 数据 |
-| Stage 4 产品战略与技术架构 | **draft** | 当前只有短篇假设性架构 v0.1；Cache ROI、路由、planner/reviewer、底座选择均未由 E3/E4 支撑 |
-| Stage 5 PRD / UX / 研发拆解 | **research_mvp_spec** | 当前文档面向研究型 CLI；缺桌面端/Agent Mode/Code Mode 的完整 UX、生产 Runtime Spec、威胁模型、验收标准和可执行拆解 |
-| Stage 6 Fork / 整合 / MVP | **in_progress** | 只读 MVP 和 OpenCode 源码 Spike 完成；生产安全、恢复、真实任务、Live Adapter 和最终底座 ADR 未完成 |
+| Stage 2.5 协议与 Cache 实证 | **completed** | E3 Flash/Pro 协议矩阵、Prefix Cache 跨时间验证与脱敏 evidence bundle 已完成 |
+| Stage 3 架构对比与借鉴 | **completed** | 全量 Harness 矩阵、设计模式/反模式、证据化借鉴决策和 E4 输入已完成 |
+| Stage 4 产品战略与技术架构 | **completed** | E3/E4 约束后的产品战略、Cache、Flash/Pro 路由、runtime foundation ADR 和生产架构规格已完成 |
+| Stage 5 PRD / UX / 研发拆解 | **completed** | 生产 PRD、桌面双模式 UX、Runtime API/Data、威胁模型、验收标准与可执行拆解已完成 |
+| Stage 6 Fork / 整合 / MVP | **research_mvp_completed_release_not_passed** | 研究 MVP、OpenCode fixed-source live probe、安全写入、恢复、E4 20/20 与 install/uninstall smoke 已完成；Production Release Gate 未通过 |
 
 ## 3. 分阶段证据与缺口
 
@@ -99,10 +99,14 @@
 
 - 可重复 runner、dry-run、manifest、脱敏 trace 结构、请求预算保护；
 - 历史 E2 Pilot 和科研严谨性复核。
+- E3 Flash/Pro protocol/cache/cross-time live bundle；
+- 可提交的脱敏 evidence bundle 索引。
 
-**未完成项与 Gate**
+**完成 Gate**
 
-- 详见 `18-1-科研严谨性复核与阶段重评`；必须完成 Flash/Pro E3、Cache 跨时段实验和可复算 evidence bundle。
+- Flash/Pro E3 协议矩阵通过；
+- Prefix Cache 跨时间验证完成；
+- 结果以 manifest、summary 和脱敏 trace 提交。
 
 ### Stage 3：架构对比与借鉴评估
 
@@ -110,15 +114,15 @@
 
 - 五项目分层综合评估；
 - 六项目校准后综合结论；
-- Gap Analysis v0.1。
+- Gap Analysis v1.0；
+- 全量 Harness 矩阵、模式/反模式、借鉴/改造/拒绝矩阵；
+- E3/E4 数据对架构判断的修订。
 
-**未完成项**
+**完成 Gate**
 
-- 全量项目统一维度矩阵；
-- Agent Harness 设计模式和反模式；
-- 可借鉴、需改造、不可照搬的证据化清单；
-- E3/E4 数据对架构判断的修订；
-- OpenCode Adapter / 自研 / Fork 的定量比较。
+- 全量项目统一维度矩阵完成；
+- 可借鉴、需改造、不可照搬的证据化清单完成；
+- E4 输入进入 Stage 6 验收闭环。
 
 ### Stage 4：产品战略与技术架构
 
@@ -126,43 +130,43 @@
 
 - 产品定位和分层架构 v0.1；
 - 若干可逆 ADR。
+- E3/E4 约束后的架构定稿；
+- Flash/Pro 路由、Cache、runtime foundation ADR 与生产架构规格。
 
-**未完成项**
+**完成 Gate**
 
-- 完整产品战略、用户价值、桌面/CLI 边界、竞争策略；
-- 由 E3/E4 支撑的 Cache、reasoning、Flash/Pro 路由和编排决策；
-- 数据模型、接口、部署、可观测性、安全、迁移与风险架构；
-- 最终底座 ADR 和可执行技术路线图。
+- 产品战略、用户价值、桌面/CLI 边界与竞争策略完成；
+- Cache、reasoning、Flash/Pro 路由和编排决策有 E3/E4 支撑；
+- 数据模型、接口、部署、可观测性、安全、迁移与风险架构完成。
 
 ### Stage 5：PRD、UX 与研发拆解
 
 **已有证据**
 
 - 研究型只读 CLI MVP 范围和初步研发拆解。
-
-**未完成项**
-
-- 桌面端、Agent Mode、Code Mode 的完整 PRD 与信息架构；
-- 权限、diff、checkpoint、cost/cache telemetry、任务中心等 UX；
-- Runtime/API/data schema 生产规格；
-- 威胁模型、失败模式、兼容性、发布和回滚计划；
+- 生产 PRD、桌面双模式 UX、Runtime API/Data、威胁模型；
 - Epic/Story/验收标准/依赖/估算的可执行拆解。
+
+**完成 Gate**
+
+- 桌面端、Agent Mode、Code Mode 的完整 PRD 与信息架构完成；
+- 权限、diff、checkpoint、cost/cache telemetry、任务中心等 UX 完成；
+- Runtime/API/data schema 生产规格、威胁模型、失败模式、发布和回滚计划完成。
 
 ### Stage 6：Fork、整合与 MVP
 
-详见 `7-2-Stage6-完成定义与阻塞项.md`。现状仍是 `in_progress`，不能因 Stage 6 子提示词存在而假定前置阶段完成。
+详见 `7-2-Stage6-完成定义与阻塞项.md`。现状是 `research_mvp_completed_release_not_passed`：研究 MVP Gate 已完成，Production Release Gate 未通过。
 
 ## 4. 正确执行顺序
 
-下一位 AI 必须从**最早未完成阶段 Stage 2.5**继续，而不是直接从 Stage 6 开始：
+下一位 AI 必须从**最早未完成项 `6-release`**继续，不能重新打开已关闭阶段，也不能把研究 MVP 结果写成生产发布：
 
 ```text
-Stage 0 一致性维护
-→ Stage 2.5 E3 协议与 Cache
-→ Stage 3 全量综合与 E4 输入
-→ Stage 4 架构定稿
-→ Stage 5 生产 PRD / UX / 拆解
-→ Stage 6 Fork / 整合 / MVP Gate
+Stage 0–5 状态一致性维护
+→ Stage 6 Production Release Gate
+→ Windows / desktop installer / signing / uninstall compatibility drills
+→ release rollback drill
+→ production release decision
 ```
 
-允许并行推进不依赖前置结论的安全基础设施，但不得提前定稿后续阶段，也不得把并行实现写成阶段完成。
+允许维护研究 MVP 代码和证据文档，但不得把缺少外部平台兼容证据的状态标记为生产发布完成。
