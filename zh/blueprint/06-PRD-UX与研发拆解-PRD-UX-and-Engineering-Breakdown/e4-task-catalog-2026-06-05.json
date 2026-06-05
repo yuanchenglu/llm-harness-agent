@@ -1,0 +1,122 @@
+[
+  {
+    "task_id": "T01",
+    "category": "single-file-bug",
+    "prompt": "Fix add_one so it adds exactly one.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T01 --workspace <fixture>"
+  },
+  {
+    "task_id": "T02",
+    "category": "single-file-bug",
+    "prompt": "Fix is_even for even integers.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T02 --workspace <fixture>"
+  },
+  {
+    "task_id": "T03",
+    "category": "single-file-bug",
+    "prompt": "Fix the greeting punctuation.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T03 --workspace <fixture>"
+  },
+  {
+    "task_id": "T04",
+    "category": "single-file-bug",
+    "prompt": "Return the last item instead of the first.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T04 --workspace <fixture>"
+  },
+  {
+    "task_id": "T05",
+    "category": "parameter-validation",
+    "prompt": "Reject an empty username.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T05 --workspace <fixture>"
+  },
+  {
+    "task_id": "T06",
+    "category": "parameter-validation",
+    "prompt": "Reject negative limits.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T06 --workspace <fixture>"
+  },
+  {
+    "task_id": "T07",
+    "category": "parameter-validation",
+    "prompt": "Require a non-empty search query.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T07 --workspace <fixture>"
+  },
+  {
+    "task_id": "T08",
+    "category": "add-test",
+    "prompt": "Add a regression test for double.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T08 --workspace <fixture>"
+  },
+  {
+    "task_id": "T09",
+    "category": "add-test",
+    "prompt": "Add a regression test for slugify.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T09 --workspace <fixture>"
+  },
+  {
+    "task_id": "T10",
+    "category": "cross-file-feature",
+    "prompt": "Add a service function that formats a user.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T10 --workspace <fixture>"
+  },
+  {
+    "task_id": "T11",
+    "category": "cross-file-feature",
+    "prompt": "Expose the parser from the package.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T11 --workspace <fixture>"
+  },
+  {
+    "task_id": "T12",
+    "category": "cross-file-feature",
+    "prompt": "Add a config default and reader.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T12 --workspace <fixture>"
+  },
+  {
+    "task_id": "T13",
+    "category": "call-chain-bug",
+    "prompt": "Fix the wrapper to forward the value.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T13 --workspace <fixture>"
+  },
+  {
+    "task_id": "T14",
+    "category": "call-chain-bug",
+    "prompt": "Fix the repository call argument.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T14 --workspace <fixture>"
+  },
+  {
+    "task_id": "T15",
+    "category": "small-refactor",
+    "prompt": "Extract a reusable full_name helper.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T15 --workspace <fixture>"
+  },
+  {
+    "task_id": "T16",
+    "category": "small-refactor",
+    "prompt": "Replace the duplicated constant with LIMIT.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T16 --workspace <fixture>"
+  },
+  {
+    "task_id": "T17",
+    "category": "checkpoint-resume",
+    "prompt": "Complete the pending second step without changing step one.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T17 --workspace <fixture>"
+  },
+  {
+    "task_id": "T18",
+    "category": "permission-recovery",
+    "prompt": "Write only the approved output file.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T18 --workspace <fixture>"
+  },
+  {
+    "task_id": "T19",
+    "category": "stale-patch",
+    "prompt": "Update the version after re-reading the current file.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T19 --workspace <fixture>"
+  },
+  {
+    "task_id": "T20",
+    "category": "test-failure-fix",
+    "prompt": "Fix the implementation while preserving the regression test.",
+    "acceptance_command": "PYTHONPATH=src python -m deepseek_agent.e4 verify --task T20 --workspace <fixture>"
+  }
+]

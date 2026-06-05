@@ -1,0 +1,632 @@
+{
+  "schema_version": "1.0",
+  "adapter": "deterministic-mock",
+  "task_count": 20,
+  "successes": 20,
+  "success_rate": 1.0,
+  "mock_result": true,
+  "rows": [
+    {
+      "task_id": "T01",
+      "category": "single-file-bug",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 1,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "63abe68bda40f139a49e1e698386096abe2cf845e75bc0948a92d2ca40b547e2",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "calc.py"
+        ],
+        "expected_changed_paths": [
+          "calc.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T02",
+      "category": "single-file-bug",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 1,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "0b1c6a9995afb689d987fbc0268e154b3e400c086a6de1dc6568fda242cc1efa",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "numbers.py"
+        ],
+        "expected_changed_paths": [
+          "numbers.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T03",
+      "category": "single-file-bug",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "a1b1cca5d7e809a6e9a1c286afcafd794a492b86bee46bb62af0d0cf22282cac",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "greet.py"
+        ],
+        "expected_changed_paths": [
+          "greet.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T04",
+      "category": "single-file-bug",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "4257a7d1ab7a6b914af1552f0cfab3209caf107ffe8975aeee832fbcbe8d8337",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "items.py"
+        ],
+        "expected_changed_paths": [
+          "items.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T05",
+      "category": "parameter-validation",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "b2463f586951dcee2dbaf36633a5eaa777a372845932c544e28fa855e1e4e3aa",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "user.py"
+        ],
+        "expected_changed_paths": [
+          "user.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T06",
+      "category": "parameter-validation",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "64c942c433242035a9968685093f5e62a87e54f0345ee2424a77a9c36acbb47f",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "limit.py"
+        ],
+        "expected_changed_paths": [
+          "limit.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T07",
+      "category": "parameter-validation",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "1b826c9b2ca597da9440d6e5af7af693eabf6cc69c3a2a2fc23082b93c33ef92",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "search.py"
+        ],
+        "expected_changed_paths": [
+          "search.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T08",
+      "category": "add-test",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "dd1160145808423a85dc2778aa677bc62a18b24773d0aa0ada999b1d1f3da1e9",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "test_maths.py"
+        ],
+        "expected_changed_paths": [
+          "test_maths.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T09",
+      "category": "add-test",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "28f03311f9f4883c4e5804e8f9a31fce0b79eef0dbdd7ee14c27e6d21f8d0a52",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "test_slug.py"
+        ],
+        "expected_changed_paths": [
+          "test_slug.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T10",
+      "category": "cross-file-feature",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "af37a025a52fedd56e533b24b5671aa3c14692126f1cfb1e79732d275d8e2811",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "service.py"
+        ],
+        "expected_changed_paths": [
+          "service.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T11",
+      "category": "cross-file-feature",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "e9c2e8365ce781b1bc433958cee54e55e1068e31c8d443dc5a99b5bfb8ea6b4e",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "pkg/__init__.py"
+        ],
+        "expected_changed_paths": [
+          "pkg/__init__.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T12",
+      "category": "cross-file-feature",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 2,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 2,
+      "duration_ms": 1,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "66c90212f9000aea4297dda8c725bdd3b5e93150f44a288e1345c6fc78224052",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "config.py",
+          "reader.py"
+        ],
+        "expected_changed_paths": [
+          "config.py",
+          "reader.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T13",
+      "category": "call-chain-bug",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "b511bec476fdf51e1ead7b58a5691068394023fc976346a49c1d61ee5de5f61e",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "api.py"
+        ],
+        "expected_changed_paths": [
+          "api.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T14",
+      "category": "call-chain-bug",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "f4a4fd7d8707a7d632917588fb3db17627797928b2bae0fa77d160b65804791b",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "service.py"
+        ],
+        "expected_changed_paths": [
+          "service.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T15",
+      "category": "small-refactor",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "d509e8ac9f8344429b128a24ef047c9e59de27763a8f732dff44d3b89b85000f",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "person.py"
+        ],
+        "expected_changed_paths": [
+          "person.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T16",
+      "category": "small-refactor",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "3d099db027b5105481a6d5b0ef889552f689b9ea02858e96b8af7e94c89fa8f7",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "quota.py"
+        ],
+        "expected_changed_paths": [
+          "quota.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T17",
+      "category": "checkpoint-resume",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "cfe1ac3fb7b7b141a85568c3a0f3e582640a31267ee19b11393f543a178bc1ff",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "steps.py"
+        ],
+        "expected_changed_paths": [
+          "steps.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T18",
+      "category": "permission-recovery",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "1bbab308e0171f76b45ea9fe8b80feb72c4520a988be2e8dbed678b391b62406",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "output.txt"
+        ],
+        "expected_changed_paths": [
+          "output.txt"
+        ]
+      }
+    },
+    {
+      "task_id": "T19",
+      "category": "stale-patch",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 0,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "45e328ef39947a351ebaa2e265915df7c6ee17b3a33a49705f6df865f886107d",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "version.py"
+        ],
+        "expected_changed_paths": [
+          "version.py"
+        ]
+      }
+    },
+    {
+      "task_id": "T20",
+      "category": "test-failure-fix",
+      "difficulty": "small",
+      "success": true,
+      "tests_passed": true,
+      "first_completion": true,
+      "tool_calls": 1,
+      "error_tool_calls": 0,
+      "approvals": 0,
+      "rollbacks": 0,
+      "steps": 1,
+      "duration_ms": 1,
+      "tokens": null,
+      "cache": null,
+      "cost": null,
+      "diff_sha256": "b76a870d174457a6f4301186530a69e2c568f49be4482d84db84cc34c226ddc6",
+      "acceptance": {
+        "success": true,
+        "tests_passed": true,
+        "mismatches": [],
+        "unexpected_paths": [],
+        "missing_paths": [],
+        "changed_paths": [
+          "impl.py"
+        ],
+        "expected_changed_paths": [
+          "impl.py"
+        ]
+      }
+    }
+  ]
+}
