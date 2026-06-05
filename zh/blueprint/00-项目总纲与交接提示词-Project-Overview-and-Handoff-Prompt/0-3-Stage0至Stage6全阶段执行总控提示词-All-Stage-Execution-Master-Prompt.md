@@ -10,8 +10,8 @@
 一、事实优先与禁止事项
 
 1. 不要相信历史回复里的“已完成”。机器真相源是：
-   - docs/LLM-Hermes-Agent/zh/blueprint/stage-gates.json
-   - docs/LLM-Hermes-Agent/zh/blueprint/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
+   - docs/llm-harness-agent/zh/blueprint/stage-gates.json
+   - docs/llm-harness-agent/zh/blueprint/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
    - 固定 commit 源码、官方文档、测试、manifest、脱敏 evidence bundle 和真实任务验收结果。
 2. 当前最早未完成阶段是 Stage 2.5。原则执行顺序：Stage 2.5 → 3 → 4 → 5 → 6。
 3. 可以并行实现不依赖前置结论的安全基础设施，但不能因此提前把后续阶段标为 completed。
@@ -29,7 +29,7 @@ pwd
 git status --short --branch
 git log --oneline -5
 find .. -name AGENTS.md -print
-cat docs/LLM-Hermes-Agent/zh/blueprint/stage-gates.json
+cat docs/llm-harness-agent/zh/blueprint/stage-gates.json
 PYTHONPATH=src python -m unittest discover -s tests -v
 python scripts/check_repo.py
 PYTHONPATH=src python -m deepseek_agent.benchmark all --repeats 5 --dry-run
@@ -37,9 +37,9 @@ PYTHONPATH=src python -m deepseek_agent.benchmark all --repeats 5 --dry-run
 然后阅读：
 
 1. README.md
-2. docs/LLM-Hermes-Agent/zh/blueprint/README.md
-3. docs/LLM-Hermes-Agent/zh/blueprint/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
-4. docs/LLM-Hermes-Agent/zh/theory/research-method.md
+2. docs/llm-harness-agent/zh/blueprint/README.md
+3. docs/llm-harness-agent/zh/blueprint/01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md
+4. docs/llm-harness-agent/zh/theory/research-method.md
 5. 当前最早未完成阶段的 README、计划、证据索引和已有报告
 
 输出本轮执行表：
@@ -101,7 +101,7 @@ Stage 5：生产 PRD、UX 与研发拆解
 
 Stage 6：Fork / 整合 / MVP
 - 到达本阶段后，完整读取并执行：
-  docs/LLM-Hermes-Agent/zh/blueprint/00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-2-Stage6执行总控提示词-Stage6-Execution-Master-Prompt.md
+  docs/llm-harness-agent/zh/blueprint/00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-2-Stage6执行总控提示词-Stage6-Execution-Master-Prompt.md
 - 必须通过底座选择、协议、安全、恢复、质量和发布六个 Gate；
 - 实现 permission policy、sandbox、diff preview/apply/rollback、session/checkpoint/resume；
 - 当前 runtime 与 OpenCode Adapter 通过相同 mock contract 和 E4 任务；

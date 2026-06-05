@@ -76,21 +76,6 @@
 
 ---
 
-## Why Hermes as the Hub
-
-Not because it has been proven to be "the best," but because it combines many system-level capabilities in one long-running Agent architecture and is therefore a useful research subject:
-
-| Capability | Why it matters | Anyone else? |
-|------|-----------|:---:|
-| **Memory and Session Search** | Persist and retrieve preferences and decisions | Other products provide different memory forms and governance |
-| **Skills and Experience Crystallization** | Reuse recurring workflows | Several platforms support skills; automatic extraction quality needs evaluation |
-| **Cronjob** | Scheduled automation — daily summaries, periodic checks | Several platforms schedule work; Hermes is useful for studying integration with a long-running Agent |
-| **Gateway Multi-platform** | Feishu/WeChat/Discord unified entry | ⚠️ OpenClaw is itself a gateway product; Hermes' Gateway is natively integrated with the agent kernel |
-
-These four make Hermes evolve from a "coding tool" into an "Agent Operating System."
-
----
-
 ## About Me
 
 Yuan Chenglu. 10+ years in the DeepinOS open-source community. Product Director at CodingCat → Founder at MiniCoding.
