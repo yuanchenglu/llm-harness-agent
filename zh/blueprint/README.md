@@ -105,7 +105,7 @@ README.md
 - [x] CodeWhale / DeepSeek-TUI 源码审计 Pass 1 完成
 - [x] Claude Code / Codex / Trae / Reasonix / Hermes / CodeWhale 官方源码事实校准完成
 - [x] 纠正 Trae 开源 test-time scaling 与 CodeWhale 完整 three-zone contract 误报
-- [x] DeepSeek API 协议与 Prefix Cache 实验基础设施；历史 Pilot 已降级为 E2，E3/E4 未完成
+- [x] DeepSeek API 协议与 Prefix Cache 实验基础设施；E3 Flash/Pro protocol/cache/cross-time evidence bundle 已完成
 - [x] OpenCode 源码审计 Pass 1 完成
 - [x] Oh My OpenAgent 源码审计 Pass 1 完成
 - [x] Oh My ClaudeCode 源码审计 Pass 1 完成
@@ -152,11 +152,11 @@ README.md
 
 ### Stage 6：代码 Fork / 整合 / MVP 实现（研究 MVP Gate 完成；生产 Release 未通过）
 
-- [x] OpenCode 固定 commit 源码 Spike；installed CLI provider smoke 已完成；fixed-source live probe 缺源码 checkout
+- [x] OpenCode 固定 commit 源码 Spike；installed CLI provider smoke 与 fixed-source live probe 已完成
 - [x] Fork / Adapter / 自研最终选择：当前采用小型自研 runtime + OpenCode adapter 候选
 - [x] 只读研究型 MVP 实现计划
 - [x] Permission policy / sandbox / diff preview / rollback / session resume
-- [x] 20-task E4 live tiny-fixture benchmark：Flash 18/20，Pro 17/20
+- [x] 20-task E4 live tiny-fixture benchmark：rotated-key final Flash 20/20，Pro 20/20
 - [x] 研究 MVP；[ ] 生产 Release Gate
 
 ---
@@ -168,10 +168,10 @@ README.md
 当前研究阶段顺序已经完成。后续不能写成“生产发布完成”；正确下一步是 Release Gate：
 
 ```text
-Rotate exposed API key
-→ fixed-source OpenCode live probe
-→ expand E4 beyond tiny fixtures and repeat
-→ install/uninstall/compatibility/security release drills
+Windows compatibility drill
+→ desktop installer drill
+→ signing/uninstall drill
+→ release rollback drill
 → production release decision
 ```
 

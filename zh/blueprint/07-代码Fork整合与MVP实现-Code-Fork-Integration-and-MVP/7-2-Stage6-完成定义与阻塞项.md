@@ -20,14 +20,17 @@
 - DeepSeek Flash/Pro E3 protocol/cache/cross-time live bundle；
 - permission policy、workspace sandbox、diff preview、stale hash、rollback；
 - session checkpoint/resume；
-- 20-task E4 live tiny-fixture benchmark；
+- OpenCode fixed-source live probe；
+- rotated-key E4 live tiny-fixture benchmark：Flash 20/20，Pro 20/20；
 - install/uninstall smoke drill。
 
 ## 当前阻塞
 
-- 用户已在 `~/.env:DEEPSEEK_API_KEY_CODEX` 提供新 key；rotated-key E4 复验 Flash/Pro 均 20/20；
-- OpenCode fixed-source live probe 仍缺可复现源码 checkout；当前只完成 installed CLI smoke；
-- E4 tiny-fixture final2 已达到 Flash 20/20，Pro 20/20；
-- 尚未完成 Windows、桌面安装包、签名/卸载、兼容矩阵和 release rollback drill。
+- Production Release Gate 未通过；
+- 尚未完成 Windows 兼容矩阵；
+- 尚未完成桌面安装包验证；
+- 尚未完成签名 / 卸载验证；
+- 尚未完成 release rollback drill；
+- 尚未形成生产发布决策证据。
 
 这些不是可以通过“多写一份文档”绕过的问题。当前仓库可以声明 Stage 6 研究 MVP Gate 完成，但必须保持 Production Release Gate 未通过，直到上述 Gate 有可复现证据。
