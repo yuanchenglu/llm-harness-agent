@@ -3,7 +3,7 @@
 > 版本：v0.1  
 > 日期：2026-06-04  
 > 用途：这是 DeepSeek Agent 项目的总控包 / 交接包。任何 AI 或人接手本项目时，应先阅读本 README，然后按阶段顺序执行任务，并在完成后更新勾选状态。  
-> 当前状态：**Stage 0 与 Stage 1 已完成；当前最早未完成阶段是 Stage 2。Stage 2/2.5 进行中；Stage 3–4 为草案；Stage 5 为研究型 MVP 规格；Stage 6 进行中。完成声明以 `stage-gates.json` 为准。**
+> 当前状态：**Stage 0–5 已完成；Stage 6 研究 MVP Gate 已完成；生产 Release Gate 未通过。当前最早未完成项是 `6-release`。完成声明以 `stage-gates.json` 为准。**
 
 ---
 
@@ -93,9 +93,9 @@ README.md
 - [x] 区分 V4 当前事实、V3/V3.2 外推、产品声明和工程推论
 - [x] 校准高影响 Harness 结论并建立 unknowns register
 
-### Stage 2：Agent 产品 / Harness 竞品调研（进行中）
+### Stage 2：Agent 产品 / Harness 竞品调研（已完成：固定快照与边界内）
 
-> 必须在 Stage 1 当前事实校准后继续关闭 P0 调研 Gate。
+> 已完成 P0 固定 commit Pass 2、统一运行/测试矩阵、P1 范围决策和过度声明复核；E4 真实任务收益不属于本阶段完成声明。
 
 - [x] Claude Code 第一轮预研完成；源码深读未完成
 - [x] OpenAI Codex 第一轮预研完成；源码深读未完成
@@ -112,18 +112,19 @@ README.md
 - [x] OpenSpec 源码审计 Pass 1 完成
 - [x] Superpowers 源码审计 Pass 1 完成
 - [x] 五项目综合借鉴评估完成
-- [ ] 五项目源码审计 Pass 2：核心 loop / hooks / team state / schema / skills tests
-- [ ] 其余第二优先级竞品补充调研：Cursor、Windsurf、Cline/Roo、Devin、OpenHands、Goose、Aider
+- [x] 五项目源码审计 Pass 2：核心 loop / hooks / team state / schema / skills tests
+- [x] 其余第二优先级竞品逐项完成纳入 / 延期 / 排除决策
+- [x] 建立十一项目统一运行/测试证据矩阵和机器可读证据清单
 
 ### Stage 3：竞品架构对比与可借鉴性评估
 
 - [x] OpenCode / OMO / OMC / OpenSpec / Superpowers 分层能力与借鉴矩阵
-- [ ] 全量 Agent Harness 对比矩阵
-- [ ] Agent Harness 设计模式总结
-- [ ] 哪些可借鉴 / 哪些不可照搬
-- [x] DeepSeek Agent Gap Analysis v0.1 草案（待 E4 真实任务 benchmark）
+- [x] 全量 Agent Harness 对比矩阵
+- [x] Agent Harness 设计模式总结
+- [x] 哪些可借鉴 / 哪些不可照搬
+- [x] DeepSeek Agent Gap Analysis v1.0（已接入 E3/E4 tiny-fixture 输入）
 
-### Stage 4：DeepSeek Agent 产品战略与技术架构 v0.1（草案，未定稿）
+### Stage 4：DeepSeek Agent 产品战略与技术架构 v1.0（研究 MVP 定稿）
 
 - [x] 产品背景与定位 v0.1
 - [x] 模型侧事实与实测边界
@@ -137,8 +138,9 @@ README.md
 - [x] 研发路线图
 - [x] 风险与取舍
 - [x] PRD / 代码整合计划
+- [x] E3/E4 约束后的 Flash/Pro、Cache、Runtime 底座 ADR 定稿
 
-### Stage 5：PRD / UX / 研发拆解（研究型 MVP v0.1，非生产 PRD）
+### Stage 5：PRD / UX / 研发拆解（生产规格与可执行验收）
 
 - [x] DeepSeek Agent PRD v0.1
 - [x] CLI MVP UX / IA
@@ -146,13 +148,16 @@ README.md
 - [x] Runtime Spec v0.1
 - [x] Engineering Breakdown
 - [x] Roadmap
+- [x] 生产 PRD、桌面双模式 UX、Runtime API/Data、威胁模型、可执行验收拆解
 
-### Stage 6：代码 Fork / 整合 / MVP 实现（进行中）
+### Stage 6：代码 Fork / 整合 / MVP 实现（研究 MVP Gate 完成；生产 Release 未通过）
 
-- [x] OpenCode 固定 commit 源码 Spike；是否 Fork 待统一 benchmark
-- [ ] Fork / Adapter / 自研最终选择（待 E4 数据）
+- [x] OpenCode 固定 commit 源码 Spike；installed CLI provider smoke 已完成；fixed-source live probe 缺源码 checkout
+- [x] Fork / Adapter / 自研最终选择：当前采用小型自研 runtime + OpenCode adapter 候选
 - [x] 只读研究型 MVP 实现计划
-- [x] 只读研究型 MVP 开发；[ ] 生产 MVP
+- [x] Permission policy / sandbox / diff preview / rollback / session resume
+- [x] 20-task E4 live tiny-fixture benchmark：Flash 18/20，Pro 17/20
+- [x] 研究 MVP；[ ] 生产 Release Gate
 
 ---
 
@@ -160,15 +165,14 @@ README.md
 
 新的 AI 或人员接手时，必须使用：[Stage 0–6 全阶段执行总控提示词](00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-3-Stage0至Stage6全阶段执行总控提示词-All-Stage-Execution-Master-Prompt.md)。
 
-当前不能直接跳到 Stage 6。正确顺序是：
+当前研究阶段顺序已经完成。后续不能写成“生产发布完成”；正确下一步是 Release Gate：
 
 ```text
-Stage 2 P0 竞品 Pass 2 / 范围决策
-→ Stage 2.5 E3 协议与 Cache
-→ Stage 3 全量综合
-→ Stage 4 架构定稿
-→ Stage 5 生产 PRD / UX / 拆解
-→ Stage 6 Fork / 整合 / MVP Gate
+Rotate exposed API key
+→ fixed-source OpenCode live probe
+→ expand E4 beyond tiny fixtures and repeat
+→ install/uninstall/compatibility/security release drills
+→ production release decision
 ```
 
 详细依据见：[Stage 0–6 全阶段完成度审计](01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md)。Stage 6 子提示词只有在到达 Stage 6 时使用。
@@ -590,7 +594,7 @@ local-first / cloud / endpoint 部署差异
   - `15-0-Superpowers源码审计Pass1-Superpowers-Source-Audit-Pass1.md`
 - [x] 新增综合分层与迁移优先级报告：`16-0-五项目综合借鉴评估-Five-Project-Synthesis.md`。
 - [x] 初步明确五层借鉴关系：OpenCode Runtime、OMO Harness 增强、OMC 编排状态机、OpenSpec Artifact 协议、Superpowers 工程技能方法论。
-- [ ] 下一步执行五项目 Pass 2，并通过统一 prototype benchmark 验证成功率、成本、cache hit、返工与人工干预。
+- [x] 五项目 Pass 2、统一证据矩阵与 P1 范围决策已完成；真实任务收益统一转交 Stage 3/6 E4。
 
 
 ---

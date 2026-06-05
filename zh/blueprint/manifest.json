@@ -1,22 +1,22 @@
 {
   "schema_version": "2.0",
   "package": "DeepSeek Agent project handoff",
-  "version": "v2.2-stage1-calibrated",
+  "version": "v3.0-research-mvp-gated",
   "date": "2026-06-05",
   "truth_source": "stage-gates.json",
-  "earliest_incomplete_stage": "2",
-  "current_status": "Stage 0 and Stage 1 are complete. Stage 2 is the earliest incomplete stage; Stage 2.5 and Stage 6 are in progress, Stage 3–4 are drafts, and Stage 5 is a research MVP specification.",
+  "earliest_incomplete_stage": "6-release",
+  "current_status": "Stage 0–5 and the Stage 6 research MVP gate are complete. Stage 6 production release gate is not passed.",
   "stage_status": {
     "0": "completed",
     "1": "completed",
-    "2": "in_progress",
-    "2.5": "in_progress",
-    "3": "draft",
-    "4": "draft",
-    "5": "research_mvp_spec",
-    "6": "in_progress"
+    "2": "completed",
+    "2.5": "completed",
+    "3": "completed",
+    "4": "completed",
+    "5": "completed",
+    "6": "research_mvp_completed_release_not_passed"
   },
-  "next_task": "Complete Stage 2 P0 competitor Pass 2, P1 scope decisions, the uniform runtime/test evidence matrix, and remaining overclaim audit.",
+  "next_task": "Do not claim production release. Run Windows/installer/desktop compatibility release drills.",
   "master_prompt": "00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-3-Stage0至Stage6全阶段执行总控提示词-All-Stage-Execution-Master-Prompt.md",
   "stage6_subprompt": "00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-2-Stage6执行总控提示词-Stage6-Execution-Master-Prompt.md"
 }

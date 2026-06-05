@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.bak-*
+
+# OS generated files
+ehthumbs.db
+Thumbs.db
