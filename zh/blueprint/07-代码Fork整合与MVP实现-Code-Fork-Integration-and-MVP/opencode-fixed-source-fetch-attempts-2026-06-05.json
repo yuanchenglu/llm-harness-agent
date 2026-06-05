@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-06-05T02:05:00Z",
+  "purpose": "Evidence for why opencode_fixed_source_live_probe remains open.",
+  "target_repository": "https://github.com/anomalyco/opencode",
+  "target_commits": [
+    "cb65926c822b2339c260d8b94002f9aafb9ac83a",
+    "7f54b1bfb83b57fd3cdab063fe7808f55d49fcfe"
+  ],
+  "observations": [
+    {
+      "command": "git ls-remote https://github.com/anomalyco/opencode.git refs/heads/dev HEAD",
+      "result": "reachable",
+      "head": "9211ef7e95b7cd55f08b27b066d635cc42cbb362"
+    },
+    {
+      "command": "git ls-remote https://github.com/anomalyco/opencode.git cb65926c822b2339c260d8b94002f9aafb9ac83a",
+      "result": "no advertised ref output"
+    },
+    {
+      "command": "git fetch --depth 1 origin cb65926c822b2339c260d8b94002f9aafb9ac83a",
+      "result": "transport failure",
+      "error_class": "RPC failed / early EOF"
+    },
+    {
+      "command": "git -c http.version=HTTP/1.1 fetch --filter=blob:none --depth 1 origin cb65926c822b2339c260d8b94002f9aafb9ac83a",
+      "result": "transport failure",
+      "error_class": "SSL_ERROR_SYSCALL"
+    },
+    {
+      "command": "curl -L https://codeload.github.com/anomalyco/opencode/tar.gz/cb65926c822b2339c260d8b94002f9aafb9ac83a",
+      "result": "success",
+      "artifact": "temporary tarball checkout used for fixed-source live probe"
+    }
+  ],
+  "conclusion": "Git fetch was unreliable in this environment, but GitHub codeload tarball acquisition succeeded. The fixed-source live probe was subsequently run; see opencode-fixed-source-live-summary-2026-06-05.json."
+}

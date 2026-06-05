@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-06-05T02:18:00Z",
+  "source_result": "benchmarks/results/e4-live-deepseek-final2-2026-06-05.json",
+  "task_count": 20,
+  "models": {
+    "deepseek-v4-flash": {
+      "successes": 20,
+      "runs": 20,
+      "success_rate": 1.0,
+      "exact_reference_matches": 10,
+      "failed_tasks": []
+    },
+    "deepseek-v4-pro": {
+      "successes": 20,
+      "runs": 20,
+      "success_rate": 1.0,
+      "exact_reference_matches": 10,
+      "failed_tasks": []
+    }
+  },
+  "method": "Live DeepSeek JSON patch adapter with semantic behavior verifier, expected path constraints, rollback on failed verifier, and verifier-guided retry.",
+  "limitations": [
+    "Tiny deterministic fixtures only.",
+    "Does not prove large-repository performance.",
+    "Uses an API key that was exposed in conversation context; key must be rotated before production release evidence."
+  ]
+}

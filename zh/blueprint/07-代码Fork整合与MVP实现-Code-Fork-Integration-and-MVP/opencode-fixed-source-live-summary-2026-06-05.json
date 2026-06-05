@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-06-05T02:13:00Z",
+  "source_result": "benchmarks/results/opencode-live-fixed-source-2026-06-05.json",
+  "repository": "https://github.com/anomalyco/opencode",
+  "commit": "cb65926c822b2339c260d8b94002f9aafb9ac83a",
+  "source_acquisition": "GitHub codeload tarball",
+  "repeats": 5,
+  "models": {
+    "deepseek-v4-flash": {
+      "current_runtime_successes": "5/5",
+      "opencode_successes": "5/5",
+      "opencode_event_types": ["step_finish", "step_start", "text"],
+      "current_runtime_latency_ms_median": 837,
+      "opencode_latency_ms_median": 10091
+    },
+    "deepseek-v4-pro": {
+      "current_runtime_successes": "5/5",
+      "opencode_successes": "5/5",
+      "opencode_event_types": ["step_finish", "step_start", "text"],
+      "current_runtime_latency_ms_median": 1352,
+      "opencode_latency_ms_median": 11749
+    }
+  },
+  "conclusion": "Fixed-source OpenCode live direct-provider smoke passed for read-only exact-marker prompts on Flash and Pro. This closes the fixed-source live probe gate, but it is not an E4 task-quality benchmark and does not make OpenCode the final production foundation."
+}

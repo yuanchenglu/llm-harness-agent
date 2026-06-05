@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-06-05T02:25:00Z",
+  "source_result": "benchmarks/results/e4-live-deepseek-rotated-key-2026-06-05.json",
+  "key_source": "~/.env:DEEPSEEK_API_KEY_CODEX",
+  "key_handling": "The plaintext key was not written to the repository. Only structural result summaries are committed.",
+  "task_count": 20,
+  "models": {
+    "deepseek-v4-flash": {
+      "successes": 20,
+      "runs": 20,
+      "success_rate": 1.0,
+      "failed_tasks": []
+    },
+    "deepseek-v4-pro": {
+      "successes": 20,
+      "runs": 20,
+      "success_rate": 1.0,
+      "failed_tasks": []
+    }
+  },
+  "conclusion": "Rotated-key live E4 evidence preserves the final 20/20 result for both Flash and Pro."
+}

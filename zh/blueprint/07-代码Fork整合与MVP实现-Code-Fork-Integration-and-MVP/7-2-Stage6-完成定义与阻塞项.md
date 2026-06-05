@@ -17,12 +17,17 @@
 - workspace path escape 防护与敏感字段脱敏测试；
 - 可审计 Benchmark Runner 的离线基础设施；
 - OpenCode 固定 commit 源码审计与两个 targeted tests。
+- DeepSeek Flash/Pro E3 protocol/cache/cross-time live bundle；
+- permission policy、workspace sandbox、diff preview、stale hash、rollback；
+- session checkpoint/resume；
+- 20-task E4 live tiny-fixture benchmark；
+- install/uninstall smoke drill。
 
 ## 当前阻塞
 
-- 用户此前提供的 API Key 已暴露在对话中，科研与安全规范要求先轮换，不能继续把它用于新的确认性实验；
-- 尚无经用户确认的真实代码任务集、成功判定器与实验预算；
-- OpenCode live direct-provider Adapter 需要新 Key 才能与当前 runtime 做公平对照；
-- 写操作安全层与 session resume 尚未实现。
+- 用户已在 `~/.env:DEEPSEEK_API_KEY_CODEX` 提供新 key；rotated-key E4 复验 Flash/Pro 均 20/20；
+- OpenCode fixed-source live probe 仍缺可复现源码 checkout；当前只完成 installed CLI smoke；
+- E4 tiny-fixture final2 已达到 Flash 20/20，Pro 20/20；
+- 尚未完成 Windows、桌面安装包、签名/卸载、兼容矩阵和 release rollback drill。
 
-这些不是可以通过“多写一份文档”绕过的问题。当前仓库必须保持 Stage 6 `in_progress`，直到 Gate 有可复现证据。
+这些不是可以通过“多写一份文档”绕过的问题。当前仓库可以声明 Stage 6 研究 MVP Gate 完成，但必须保持 Production Release Gate 未通过，直到上述 Gate 有可复现证据。

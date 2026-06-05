@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-06-05T02:06:48.915006+00:00",
+  "source_result": "benchmarks/results/release-drill-2026-06-05.json",
+  "platform": "darwin",
+  "selected_python": "/opt/homebrew/bin/python3.13",
+  "checks": {
+    "create_isolated_venv": true,
+    "pip_install_current_package": true,
+    "deepseek_agent_help": true,
+    "deepseek_bench_help": true,
+    "session_checkpoint_create": true,
+    "pip_uninstall": true,
+    "checkpoint_retained_after_uninstall": true
+  },
+  "result": "pass",
+  "limitations": [
+    "Single-machine smoke drill only.",
+    "Does not prove Windows compatibility.",
+    "Does not prove production E4 task quality.",
+    "Does not exercise signed installers or desktop packaging."
+  ]
+}
