@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "run_id": "20260604T182318Z-cross-time-wave-0-82654f40",
+  "suite": "cross-time",
+  "models": [
+    "deepseek-v4-flash",
+    "deepseek-v4-pro"
+  ],
+  "repeats": 5,
+  "planned_request_upper_bound": 10,
+  "experiment_id": "deepseek-v4-e3-2026-06-05",
+  "wave": "wave-0",
+  "warning": "E3 within the recorded endpoint/account/time window; not production E5 or task-quality E4.",
+  "deepseek-v4-flash": {
+    "C50.cross-time-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1150,
+        "min": 1062,
+        "max": 1295
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"content_bytes\": 3, \"content_sha256\": \"798640599597df7a8daa32b1132f07850a68b5e71bd295650399a38074f52804\", \"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"content_bytes\": 4, \"content_sha256\": \"c846dd8ba29356027d1c0330fa7b6a51d094940f9f36d9ceb7b1bedfccfd19e0\", \"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": [],
+      "semantic_marker": {
+        "checked": 0,
+        "present": 0,
+        "rate": null
+      }
+    }
+  },
+  "deepseek-v4-pro": {
+    "C50.cross-time-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 904,
+        "min": 616,
+        "max": 1337
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"content_bytes\": 3, \"content_sha256\": \"798640599597df7a8daa32b1132f07850a68b5e71bd295650399a38074f52804\", \"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"content_bytes\": 4, \"content_sha256\": \"c846dd8ba29356027d1c0330fa7b6a51d094940f9f36d9ceb7b1bedfccfd19e0\", \"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": [],
+      "semantic_marker": {
+        "checked": 0,
+        "present": 0,
+        "rate": null
+      }
+    }
+  }
+}

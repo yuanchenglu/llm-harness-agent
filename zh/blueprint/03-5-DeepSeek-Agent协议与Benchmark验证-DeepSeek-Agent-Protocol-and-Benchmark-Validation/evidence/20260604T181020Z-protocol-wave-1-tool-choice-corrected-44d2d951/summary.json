@@ -1,0 +1,698 @@
+{
+  "schema_version": "1.0",
+  "run_id": "20260604T181020Z-protocol-wave-1-tool-choice-corrected-44d2d951",
+  "suite": "protocol",
+  "models": [
+    "deepseek-v4-flash",
+    "deepseek-v4-pro"
+  ],
+  "repeats": 5,
+  "planned_request_upper_bound": 210,
+  "experiment_id": "deepseek-v4-e3-2026-06-05",
+  "wave": "wave-1-tool-choice-corrected",
+  "warning": "E3 within the recorded endpoint/account/time window; not production E5 or task-quality E4.",
+  "deepseek-v4-flash": {
+    "P01.nonthinking": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1136,
+        "min": 948,
+        "max": 1297
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P02.thinking-high": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1284,
+        "min": 1222,
+        "max": 1475
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P03.thinking-max": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1377,
+        "min": 1084,
+        "max": 1544
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 435,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P04.ignored-temperature": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1271,
+        "min": 1021,
+        "max": 1527
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P05.invalid-parameter": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1337,
+        "min": 1093,
+        "max": 1789
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P06.tools-omitted": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1071,
+        "min": 905,
+        "max": 1319
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P07.tools-empty": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1031,
+        "min": 1013,
+        "max": 1623
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P08.strict-tool": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1467,
+        "min": 1270,
+        "max": 1788
+      },
+      "cache": {
+        "hit_tokens": 1280,
+        "miss_tokens": 140,
+        "hit_rate": 0.9014084507042254
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P09.invalid-tool-schema": {
+      "runs": 5,
+      "successes": 0,
+      "success_rate": 0.0,
+      "statuses": {
+        "400": 5
+      },
+      "latency_ms": {
+        "median": null,
+        "min": null,
+        "max": null
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 0,
+        "hit_rate": null
+      },
+      "response_shapes": [
+        "{\"choices\": [], \"top_level_fields\": [\"error\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P10.parallel-tools": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1748,
+        "min": 1273,
+        "max": 1807
+      },
+      "cache": {
+        "hit_tokens": 1280,
+        "miss_tokens": 355,
+        "hit_rate": 0.7828746177370031
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\", \"calculate\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P11.streaming": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1404,
+        "min": 1229,
+        "max": 1694
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 50,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [], \"top_level_fields\": [\"stream_evidence\", \"usage\"]}"
+      ],
+      "stream_shapes": [
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 31, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 356, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 31, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 414, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 32, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 209, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 34, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 382, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 37, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 426, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ]
+    },
+    "P20.ordinary-reasoning": {
+      "runs": 15,
+      "successes": 15,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 15
+      },
+      "latency_ms": {
+        "median": 1383,
+        "min": 1141,
+        "max": 2125
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 222,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"length\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P21.tool-reasoning": {
+      "runs": 15,
+      "successes": 15,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 15
+      },
+      "latency_ms": {
+        "median": 1369,
+        "min": 1075,
+        "max": 1787
+      },
+      "cache": {
+        "hit_tokens": 4352,
+        "miss_tokens": 1091,
+        "hit_rate": 0.799559066691163
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P22.sequential-tools": {
+      "runs": 15,
+      "successes": 15,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 15
+      },
+      "latency_ms": {
+        "median": 1393,
+        "min": 1246,
+        "max": 1754
+      },
+      "cache": {
+        "hit_tokens": 2304,
+        "miss_tokens": 1904,
+        "hit_rate": 0.5475285171102662
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"calculate\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P30.runtime-adapter": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 85,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"adapter_ok\": true, \"has_content\": true, \"steps\": 1}"
+      ],
+      "stream_shapes": []
+    }
+  },
+  "deepseek-v4-pro": {
+    "P01.nonthinking": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1086,
+        "min": 553,
+        "max": 2159
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P02.thinking-high": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1460,
+        "min": 1361,
+        "max": 1806
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P03.thinking-max": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1830,
+        "min": 1444,
+        "max": 2160
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 435,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P04.ignored-temperature": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1588,
+        "min": 1473,
+        "max": 1884
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P05.invalid-parameter": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1561,
+        "min": 1440,
+        "max": 1734
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P06.tools-omitted": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1030,
+        "min": 861,
+        "max": 1203
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P07.tools-empty": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 917,
+        "min": 654,
+        "max": 1168
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 40,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P08.strict-tool": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1745,
+        "min": 1580,
+        "max": 2043
+      },
+      "cache": {
+        "hit_tokens": 1024,
+        "miss_tokens": 396,
+        "hit_rate": 0.7211267605633803
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P09.invalid-tool-schema": {
+      "runs": 5,
+      "successes": 0,
+      "success_rate": 0.0,
+      "statuses": {
+        "400": 5
+      },
+      "latency_ms": {
+        "median": null,
+        "min": null,
+        "max": null
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 0,
+        "hit_rate": null
+      },
+      "response_shapes": [
+        "{\"choices\": [], \"top_level_fields\": [\"error\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P10.parallel-tools": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 2179,
+        "min": 2085,
+        "max": 2423
+      },
+      "cache": {
+        "hit_tokens": 1280,
+        "miss_tokens": 355,
+        "hit_rate": 0.7828746177370031
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\", \"calculate\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P11.streaming": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1587,
+        "min": 1492,
+        "max": 1728
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 50,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [], \"top_level_fields\": [\"stream_evidence\", \"usage\"]}"
+      ],
+      "stream_shapes": [
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 23, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 302, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 33, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 311, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 34, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 358, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 42, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 139, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"delta_fields\": [\"content\", \"reasoning_content\", \"role\"], \"event_count\": 42, \"finish_reasons\": [\"stop\"], \"first_event_ms\": 163, \"has_content\": true, \"has_reasoning_content\": true, \"tool_names\": [], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ]
+    },
+    "P20.ordinary-reasoning": {
+      "runs": 15,
+      "successes": 15,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 15
+      },
+      "latency_ms": {
+        "median": 1680,
+        "min": 1378,
+        "max": 3323
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 220,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"length\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P21.tool-reasoning": {
+      "runs": 15,
+      "successes": 15,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 15
+      },
+      "latency_ms": {
+        "median": 1491,
+        "min": 1357,
+        "max": 2056
+      },
+      "cache": {
+        "hit_tokens": 4608,
+        "miss_tokens": 853,
+        "hit_rate": 0.8438015015564915
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P22.sequential-tools": {
+      "runs": 15,
+      "successes": 15,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 15
+      },
+      "latency_ms": {
+        "median": 1955,
+        "min": 1322,
+        "max": 2296
+      },
+      "cache": {
+        "hit_tokens": 2304,
+        "miss_tokens": 1926,
+        "hit_rate": 0.5446808510638298
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"calculate\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}",
+        "{\"choices\": [{\"finish_reason\": \"tool_calls\", \"has_content\": false, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\", \"tool_calls\"], \"tool_names\": [\"lookup\"]}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "P30.runtime-adapter": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 85,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"adapter_ok\": true, \"has_content\": true, \"steps\": 1}"
+      ],
+      "stream_shapes": []
+    }
+  }
+}

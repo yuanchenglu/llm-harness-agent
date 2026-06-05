@@ -1,0 +1,1118 @@
+{
+  "schema_version": "1.0",
+  "run_id": "20260604T181647Z-cache-cache-wave-0-6f981398",
+  "suite": "cache",
+  "models": [
+    "deepseek-v4-flash",
+    "deepseek-v4-pro"
+  ],
+  "repeats": 5,
+  "planned_request_upper_bound": 260,
+  "experiment_id": "deepseek-v4-e3-2026-06-05",
+  "wave": "cache-wave-0",
+  "warning": "E3 within the recorded endpoint/account/time window; not production E5 or task-quality E4.",
+  "deepseek-v4-flash": {
+    "C01.exact-probe": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1084,
+        "min": 1002,
+        "max": 1313
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C01.exact-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1006,
+        "min": 888,
+        "max": 1540
+      },
+      "cache": {
+        "hit_tokens": 5888,
+        "miss_tokens": 9252,
+        "hit_rate": 0.38890356671070014
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C02.common-branch-b": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1091,
+        "min": 957,
+        "max": 1500
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C02.common-probe-c": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1074,
+        "min": 988,
+        "max": 1271
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C02.common-seed-a": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1109,
+        "min": 987,
+        "max": 1567
+      },
+      "cache": {
+        "hit_tokens": 8832,
+        "miss_tokens": 6308,
+        "hit_rate": 0.5833553500660502
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C10.tools-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1068,
+        "min": 957,
+        "max": 1349
+      },
+      "cache": {
+        "hit_tokens": 16640,
+        "miss_tokens": 50,
+        "hit_rate": 0.9970041941282205
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C10.tools-reversed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1483,
+        "min": 934,
+        "max": 2039
+      },
+      "cache": {
+        "hit_tokens": 15488,
+        "miss_tokens": 1202,
+        "hit_rate": 0.9279808268424206
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C10.tools-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1127,
+        "min": 988,
+        "max": 1344
+      },
+      "cache": {
+        "hit_tokens": 15872,
+        "miss_tokens": 818,
+        "hit_rate": 0.9509886159376872
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C11.schema-description-change": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1536,
+        "min": 1013,
+        "max": 1845
+      },
+      "cache": {
+        "hit_tokens": 6400,
+        "miss_tokens": 10290,
+        "hit_rate": 0.3834631515877771
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C11.schema-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1059,
+        "min": 980,
+        "max": 1259
+      },
+      "cache": {
+        "hit_tokens": 16640,
+        "miss_tokens": 50,
+        "hit_rate": 0.9970041941282205
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C11.schema-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1068,
+        "min": 951,
+        "max": 1467
+      },
+      "cache": {
+        "hit_tokens": 6656,
+        "miss_tokens": 10034,
+        "hit_rate": 0.3988016776512882
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.position-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1049,
+        "min": 900,
+        "max": 1105
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.system-change-early": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1034,
+        "min": 886,
+        "max": 1168
+      },
+      "cache": {
+        "hit_tokens": 8832,
+        "miss_tokens": 6323,
+        "hit_rate": 0.5827779610689542
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.system-change-late": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1007,
+        "min": 923,
+        "max": 1115
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 415,
+        "hit_rate": 0.9725801123224315
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.system-change-middle": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1552,
+        "min": 1481,
+        "max": 1611
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 15150,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C13.history-append": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1012,
+        "min": 984,
+        "max": 1194
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 465,
+        "hit_rate": 0.9693776753375041
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C13.history-rewrite": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 971,
+        "min": 913,
+        "max": 1114
+      },
+      "cache": {
+        "hit_tokens": 5888,
+        "miss_tokens": 9312,
+        "hit_rate": 0.3873684210526316
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C13.history-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1030,
+        "min": 997,
+        "max": 1143
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C14.mode-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1056,
+        "min": 921,
+        "max": 1287
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C14.mode-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1077,
+        "min": 934,
+        "max": 1243
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C14.mode-thinking": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1253,
+        "min": 1126,
+        "max": 1561
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C15.json-order-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1053,
+        "min": 857,
+        "max": 1251
+      },
+      "cache": {
+        "hit_tokens": 16000,
+        "miss_tokens": 470,
+        "hit_rate": 0.9714632665452337
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C15.json-order-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1090,
+        "min": 1002,
+        "max": 1165
+      },
+      "cache": {
+        "hit_tokens": 16000,
+        "miss_tokens": 470,
+        "hit_rate": 0.9714632665452337
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C15.json-order-variant": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1052,
+        "min": 955,
+        "max": 1159
+      },
+      "cache": {
+        "hit_tokens": 16000,
+        "miss_tokens": 470,
+        "hit_rate": 0.9714632665452337
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C40.low-concurrency": {
+      "runs": 10,
+      "successes": 10,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 10
+      },
+      "latency_ms": {
+        "median": 1047.5,
+        "min": 942,
+        "max": 1166
+      },
+      "cache": {
+        "hit_tokens": 29440,
+        "miss_tokens": 840,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    }
+  },
+  "deepseek-v4-pro": {
+    "C01.exact-probe": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 920,
+        "min": 831,
+        "max": 957
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C01.exact-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1141,
+        "min": 1013,
+        "max": 1373
+      },
+      "cache": {
+        "hit_tokens": 11776,
+        "miss_tokens": 3364,
+        "hit_rate": 0.7778071334214003
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C02.common-branch-b": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 901,
+        "min": 710,
+        "max": 1010
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C02.common-probe-c": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1025,
+        "min": 924,
+        "max": 1375
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C02.common-seed-a": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1134,
+        "min": 804,
+        "max": 1256
+      },
+      "cache": {
+        "hit_tokens": 11776,
+        "miss_tokens": 3364,
+        "hit_rate": 0.7778071334214003
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C10.tools-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 989,
+        "min": 820,
+        "max": 1039
+      },
+      "cache": {
+        "hit_tokens": 16640,
+        "miss_tokens": 50,
+        "hit_rate": 0.9970041941282205
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C10.tools-reversed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1432,
+        "min": 1013,
+        "max": 2117
+      },
+      "cache": {
+        "hit_tokens": 12288,
+        "miss_tokens": 4402,
+        "hit_rate": 0.736249251048532
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C10.tools-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 953,
+        "min": 720,
+        "max": 1398
+      },
+      "cache": {
+        "hit_tokens": 12544,
+        "miss_tokens": 4146,
+        "hit_rate": 0.7515877771120432
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C11.schema-description-change": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 977,
+        "min": 588,
+        "max": 2083
+      },
+      "cache": {
+        "hit_tokens": 15488,
+        "miss_tokens": 1202,
+        "hit_rate": 0.9279808268424206
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C11.schema-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 994,
+        "min": 898,
+        "max": 1217
+      },
+      "cache": {
+        "hit_tokens": 16640,
+        "miss_tokens": 50,
+        "hit_rate": 0.9970041941282205
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C11.schema-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1002,
+        "min": 904,
+        "max": 1424
+      },
+      "cache": {
+        "hit_tokens": 15872,
+        "miss_tokens": 818,
+        "hit_rate": 0.9509886159376872
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.position-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 988,
+        "min": 854,
+        "max": 1134
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.system-change-early": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1057,
+        "min": 862,
+        "max": 1587
+      },
+      "cache": {
+        "hit_tokens": 2944,
+        "miss_tokens": 12211,
+        "hit_rate": 0.19425932035631804
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.system-change-late": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 983,
+        "min": 858,
+        "max": 1121
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 415,
+        "hit_rate": 0.9725801123224315
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C12.system-change-middle": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1086,
+        "min": 887,
+        "max": 1779
+      },
+      "cache": {
+        "hit_tokens": 0,
+        "miss_tokens": 15150,
+        "hit_rate": 0.0
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C13.history-append": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 987,
+        "min": 968,
+        "max": 1346
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 465,
+        "hit_rate": 0.9693776753375041
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C13.history-rewrite": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1060,
+        "min": 848,
+        "max": 1125
+      },
+      "cache": {
+        "hit_tokens": 11776,
+        "miss_tokens": 3424,
+        "hit_rate": 0.7747368421052632
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C13.history-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1140,
+        "min": 879,
+        "max": 1530
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C14.mode-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1028,
+        "min": 966,
+        "max": 1123
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C14.mode-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1002,
+        "min": 767,
+        "max": 1485
+      },
+      "cache": {
+        "hit_tokens": 5888,
+        "miss_tokens": 9252,
+        "hit_rate": 0.38890356671070014
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C14.mode-thinking": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1467,
+        "min": 1214,
+        "max": 2793
+      },
+      "cache": {
+        "hit_tokens": 14720,
+        "miss_tokens": 420,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": true, \"message_fields\": [\"content\", \"reasoning_content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C15.json-order-exact": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1022,
+        "min": 865,
+        "max": 1169
+      },
+      "cache": {
+        "hit_tokens": 16000,
+        "miss_tokens": 470,
+        "hit_rate": 0.9714632665452337
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C15.json-order-seed": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1007,
+        "min": 989,
+        "max": 1247
+      },
+      "cache": {
+        "hit_tokens": 16000,
+        "miss_tokens": 470,
+        "hit_rate": 0.9714632665452337
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C15.json-order-variant": {
+      "runs": 5,
+      "successes": 5,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 5
+      },
+      "latency_ms": {
+        "median": 1015,
+        "min": 645,
+        "max": 1190
+      },
+      "cache": {
+        "hit_tokens": 16000,
+        "miss_tokens": 470,
+        "hit_rate": 0.9714632665452337
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    },
+    "C40.low-concurrency": {
+      "runs": 10,
+      "successes": 10,
+      "success_rate": 1.0,
+      "statuses": {
+        "200": 10
+      },
+      "latency_ms": {
+        "median": 875.5,
+        "min": 755,
+        "max": 1053
+      },
+      "cache": {
+        "hit_tokens": 29440,
+        "miss_tokens": 840,
+        "hit_rate": 0.9722589167767504
+      },
+      "response_shapes": [
+        "{\"choices\": [{\"finish_reason\": \"stop\", \"has_content\": true, \"has_reasoning_content\": false, \"message_fields\": [\"content\", \"role\"], \"tool_names\": []}], \"top_level_fields\": [\"choices\", \"created\", \"id\", \"model\", \"object\", \"system_fingerprint\", \"usage\"]}"
+      ],
+      "stream_shapes": []
+    }
+  }
+}
