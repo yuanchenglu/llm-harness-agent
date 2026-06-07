@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0",
-  "assessed_at": "2026-06-05",
+  "assessed_at": "2026-06-07",
   "truth_source": "Stage completion requires scope, evidence, usable artifacts, consistent status, validation, and the stage definition of done.",
-  "earliest_incomplete_stage": "6-release",
+  "earliest_incomplete_stage": null,
   "stages": {
     "0": {
       "name": "Project overview and handoff",
@@ -48,9 +48,9 @@
     },
     "6": {
       "name": "Fork, integration, and MVP implementation",
-      "status": "research_mvp_completed_release_not_passed",
-      "passed": ["read_only_research_mvp", "workspace_boundary_tests", "opencode_fixed_commit_source_spike", "opencode_installed_cli_smoke", "opencode_fixed_source_live_probe", "permission_policy", "sandbox", "diff_preview", "rollback", "session_resume", "E4_acceptance_benchmark", "final_foundation_ADR", "install_uninstall_smoke"],
-      "open": ["production_release_gate"]
+      "status": "completed",
+      "passed": ["read_only_research_mvp", "workspace_boundary_tests", "opencode_fixed_commit_source_spike", "opencode_installed_cli_smoke", "opencode_fixed_source_live_probe", "permission_policy", "sandbox", "diff_preview", "rollback", "session_resume", "E4_acceptance_benchmark", "final_foundation_ADR", "install_uninstall_smoke", "cli_doctor_diagnostics", "release_artifact_manifest", "release_safety_drill", "release_observability_smoke", "public_alpha_release_docs", "production_gate_audit", "production_release_gate"],
+      "open": []
     }
   }
 }

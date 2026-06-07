@@ -1,11 +1,11 @@
 {
   "schema_version": "2.0",
   "package": "DeepSeek Agent project handoff",
-  "version": "v3.0-research-mvp-gated",
-  "date": "2026-06-05",
+  "version": "v3.1-production-release-gate-closed",
+  "date": "2026-06-07",
   "truth_source": "stage-gates.json",
-  "earliest_incomplete_stage": "6-release",
-  "current_status": "Stage 0–5 and the Stage 6 research MVP gate are complete. Stage 6 production release gate is not passed.",
+  "earliest_incomplete_stage": null,
+  "current_status": "Stage 0–6 are complete for the CLI-first 0.1.x public alpha path. Stage 6 production release gate is closed by local install, doctor, artifact, safety, observability, public docs, and final audit evidence.",
   "stage_status": {
     "0": "completed",
     "1": "completed",
@@ -14,9 +14,9 @@
     "3": "completed",
     "4": "completed",
     "5": "completed",
-    "6": "research_mvp_completed_release_not_passed"
+    "6": "completed"
   },
-  "next_task": "Do not claim production release. Run Windows/installer/desktop compatibility release drills.",
+  "next_task": "Proceed only with CLI-first public alpha trial hygiene or the next approved product line. Desktop, mobile, enterprise, and plugin marketplace work remain outside the 0.1.x release line.",
   "master_prompt": "00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-3-Stage0至Stage6全阶段执行总控提示词-All-Stage-Execution-Master-Prompt.md",
   "stage6_subprompt": "00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-2-Stage6执行总控提示词-Stage6-Execution-Master-Prompt.md"
 }
