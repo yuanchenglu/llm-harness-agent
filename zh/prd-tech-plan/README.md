@@ -31,6 +31,7 @@
 | 工程执行 | [PRD](02-prd.md)、[技术架构](03-technical-architecture.md)、[版本路线与 Release Gates](04-roadmap-and-release-gates.md) | 哪些能力要做，哪些 gate 必须验证。 |
 | 设计 / 原型 | [产品定位与范围](01-product-and-scope.md)、[UI/UX 与原型说明](05-ui-ux-and-prototype-notes.md) | 核心工作流、页面边界和交互约束是什么。 |
 | 后续 AI 接手 | [中文表达与术语表](00-中文表达与术语表.md)、[整理决策记录](06-decision-log.md) | 当前口径、非目标和不能重开的决策是什么。 |
+| 执行计划接手 | [计划资产](07-plan-assets/README.md) | Runtime、产品化路线和 Desktop 首片该如何落地。 |
 
 完整顺序：
 
@@ -41,6 +42,7 @@
 5. [版本路线与 Release Gates](04-roadmap-and-release-gates.md)
 6. [UI/UX 与原型说明](05-ui-ux-and-prototype-notes.md)
 7. [整理决策记录](06-decision-log.md)
+8. [计划资产](07-plan-assets/README.md)
 
 ## 目录原则
 
@@ -61,4 +63,4 @@
 
 ## 当前最高优先级
 
-`0.1.x` 的目标是关闭 production release gate，把已经成立的 DeepSeek-native runtime foundation 变成可安装、可验证、可诊断、可公开试用的 CLI-first 产品。
+`0.1.x` production release gate 已关闭。当前优先级是维护已发布的 `deepseek_runtime` kernel，并启动 `0.2.x` Desktop Code Workbench 首片；可执行计划见 [计划资产](07-plan-assets/README.md)。
