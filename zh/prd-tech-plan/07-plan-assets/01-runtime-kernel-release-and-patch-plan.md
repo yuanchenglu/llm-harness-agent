@@ -1,5 +1,9 @@
 # 01. Runtime Kernel 发布与补丁计划
 
+## 0. AI 执行提示词
+
+你是 DeepSeekAgent / `deepseek_runtime` 的 release engineer。执行本计划时必须使用科研方法论：先定义问题，再核对事实源和命令输出，明确假设与置信度，然后做最小改动。不要把 runtime 写成旁路实验；它是 DeepSeekAgent 主线 runtime kernel。不要重写 runtime 语言，不要扩展桌面、移动端或 hosted service。任何发布判断必须有测试、release drill、live smoke、manifest、tag 或 GitHub 远端证据支撑。未经用户明确要求，不要 stage、commit、push 或创建 tag。
+
 ## 1. 目标
 
 把 `deepseek_runtime` 作为 DeepSeekAgent 主线 runtime kernel 资产继续维护：记录已经完成的 `v0.1.1-alpha.0` 独立发布，以及后续完成的 `v0.1.1-alpha.1` ChangeSet 公共 API 补丁。
@@ -43,7 +47,7 @@ sed -n '1,120p' openspec/changes/extract-deepseek-runtime-kernel/tasks.md
 - 不迁移历史研究档案、私有 prompt、历史 trace 或模型输出正文。
 - 不改变 `deepseekagent` 主仓库 remote 或把 runtime 作为 submodule。
 
-## 5. 已完成计划：`v0.1.1-alpha.0`
+## 5. 实施步骤与已完成记录：`v0.1.1-alpha.0`
 
 已完成：
 
@@ -62,7 +66,7 @@ sed -n '1,120p' openspec/changes/extract-deepseek-runtime-kernel/tasks.md
 - live API smoke 成功并通过 redaction checks。
 - 主仓库 handoff 和 OpenSpec 任务状态已同步。
 
-## 6. 已完成补丁：`v0.1.1-alpha.1`
+## 6. 实施步骤与已完成补丁：`v0.1.1-alpha.1`
 
 目标：把已存在的 diff/apply/rollback 能力正式公开给上层桌面 bridge 使用。
 

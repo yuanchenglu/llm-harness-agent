@@ -1,5 +1,9 @@
 # 03. Desktop Code Workbench 首片计划
 
+## 0. AI 执行提示词
+
+你是 `0.2.x Desktop Code Workbench` 首片实现代理。你的任务是证明桌面 UI 是本地 runtime 的前端，而不是新的 agent loop。执行前必须核对 `start-desktop-code-workbench` OpenSpec、`deepseek_runtime` tag、当前 `apps/desktop` 状态和验证命令。严禁 UI 直接写文件、拼装独立 agent prompt、伪造 runtime 状态或绕过 permission / ChangeSet / rollback。实现时优先完成真实 diff -> `Allow once` -> apply -> rollback 闭环，再做视觉细节。
+
 ## 1. 目标
 
 在 `deepseekagent` 主仓库启动 `0.2.x Desktop Code Workbench` 首片，实现一条真实、可验证、可回滚的桌面工作流：
@@ -167,7 +171,7 @@ Bridge 负责：
 ```text
 .deepseekagent/desktop/events/{task_id}.jsonl
 .deepseekagent/desktop/changesets/{task_id}.json
-.deepseekagent/desktop/rollback/{task_id}-{change_set_id}.json
+.deepseekagent/desktop/rollbacks/{task_id}-{change_set_id}.json
 ```
 
 要求：
@@ -275,4 +279,3 @@ Browser 验证：
 - Evidence、route/cache/usage/cost 在 UI 中可见。
 - 错误和 bridge crash 有明确 UI 状态。
 - 所有验证命令通过，未通过项必须有明确 blocker。
-

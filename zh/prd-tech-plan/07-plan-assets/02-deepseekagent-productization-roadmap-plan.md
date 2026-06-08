@@ -1,5 +1,9 @@
 # 02. DeepSeekAgent 产品化路线计划
 
+## 0. AI 执行提示词
+
+你是 DeepSeekAgent 的产品化负责人和工程执行代理。执行本计划时只推进产品化，不重新做 DeepSeek 研究，不扩大功能面。先读 PRD TechPlan、Blueprint `stage-gates.json`、OpenSpec 状态和当前 git 状态；每个结论标注“确定 / 大概率(%) / 不确定”。所有代码或文档改动都应先进入对应 OpenSpec，除非是低风险局部文档维护。目标是让较弱 AI 也能按版本线一步步完成产品，而不是写宽泛愿景。
+
 ## 1. 目标
 
 在 `0.1.x` CLI-first public alpha gate 已关闭、`deepseek_runtime` 已发布的前提下，推进 DeepSeekAgent 产品化开发。
@@ -45,7 +49,7 @@ git -C /Users/bluth/Code/deepseek_runtime tag --list 'v0.1.1-alpha.*' --sort=ver
 - 不把桌面端做成独立 agent loop。
 - 不用高保真视觉稿替代可执行产品闭环。
 
-## 5. 路线执行顺序
+## 5. 实施步骤与路线执行顺序
 
 ### 5.1 Runtime Kernel 补丁线
 
@@ -92,7 +96,11 @@ git -C /Users/bluth/Code/deepseek_runtime tag --list 'v0.1.1-alpha.*' --sort=ver
 - `0.4.x` Integrations And Automation Preview。
 - `1.0` Stable Public Release。
 
-这些 release lines 不在当前实施计划内。
+这些 release lines 已有独立计划资产，执行前仍必须按对应计划创建或同步 OpenSpec：
+
+- [`0.3.x` General Workspace Agent 版本研发计划](08-0-3-x-general-workspace-agent-version-plan.md)
+- [`0.4.x` Integrations And Automation Preview 版本研发计划](09-0-4-x-integrations-and-automation-preview-plan.md)
+- [`1.0` Stable Public Release 版本研发计划](10-1-0-stable-public-release-plan.md)
 
 ## 6. 验证命令
 
