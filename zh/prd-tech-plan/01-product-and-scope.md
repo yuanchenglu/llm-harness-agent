@@ -2,7 +2,7 @@
 
 ## 1. 一句话定位
 
-DeepSeekAgent 是面向开发者和高频 AI 工作者的 DeepSeek-native 本地 Agent runtime / 工作台：基于 DeepSeek V4 的协议、长上下文、Prefix Cache、Flash / Pro 路由和 reasoning 边界做 harness 层深度优化，以真实项目任务的可验证完成率为第一指标，先以 CLI/runtime 发布，再走向桌面 Code Workbench 和通用本地工作区。
+DeepSeekAgent 是面向开发者和高频 AI 工作者的 DeepSeek-native 本地 Agent runtime / 工作台。产品定位为双轨并行路线：一方面作为独立前沿的研究型工作台（走向桌面 Code Workbench 和通用本地工作区），另一方面以 deepseek_runtime 为通信内核渐进式集成入 Kun 等成熟宿主引擎，从而以更低摩擦力驱动开发者环境。其基于 DeepSeek V4 的协议、长上下文、Prefix Cache、Flash / Pro 路由和 reasoning 边界做 harness 层深度优化，以真实项目任务的可验证完成率为第一指标，先以 CLI/runtime 发布。
 
 公开表达可以压缩为：
 
@@ -70,6 +70,7 @@ DeepSeekAgent 必须做到：
 - MCP/tool integration preview。
 - Local automation with approval and audit。
 - Stable release packaging、install、upgrade、uninstall、diagnostics。
+- deepseek_runtime 通信内核与宿主（如 Kun）的桥接与适配。
 
 ### 5.2 当前明确不做
 

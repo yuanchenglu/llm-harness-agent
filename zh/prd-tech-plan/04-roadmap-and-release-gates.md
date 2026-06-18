@@ -115,6 +115,8 @@ Gate：
 
 ### 3.4 `0.4.x` Integrations And Automation Preview
 
+状态（确定，2026-06-17）：已实现并归档，主规格为 `openspec/specs/integrations-automation-preview/spec.md`，归档 change 为 `openspec/changes/archive/2026-06-17-start-integrations-automation-preview`。
+
 目标：在本地工作台、Memory / Skill、PlanGraph 成立后，安全接入外部工具、MCP、定时任务和轻量审批。
 
 必须做：
@@ -129,6 +131,7 @@ Gate：
 - notification bridge。
 - remote approval for pre-generated actions。
 - automation audit log。
+- deepseek_runtime 与成熟宿主（如 Kun）的桥接与协议适配。
 
 明确不做：
 
@@ -147,6 +150,8 @@ Gate：
 - remote approval token tests。
 - tool context / evidence checks。
 - 自动化任务报告 completion evidence、approval intervention 和每成功任务成本。
+- Kun 宿主桥接集成测试通过，无静默回退。
+- Python 桥接在当前本地目标平台完成集成验证；跨平台兼容矩阵进入 `1.0` 稳定发布准备。
 
 ### 3.5 `1.0` Stable Public Release
 

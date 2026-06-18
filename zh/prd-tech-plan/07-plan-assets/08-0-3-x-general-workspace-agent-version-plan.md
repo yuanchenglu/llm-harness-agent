@@ -4,6 +4,12 @@
 
 你是 `0.3.x General Workspace Agent` 的版本负责人。你必须在 `0.2.x` Code Workbench 成立后再扩展到通用本地工作区。不要把它做成聊天壳；它仍然是 runtime-first、evidence-first、local-first 的工作台。先核对 `0.2.x` gate、PRD TechPlan、Memory / Skill / PlanGraph 的架构约束，再创建 OpenSpec。所有 artifact、Memory、Skill、PlanStep 都必须可审计、可删除、可恢复，不得破坏 DeepSeek prefix cache discipline。
 
+当前状态（确定，2026-06-10）：
+
+- `0.3.x` 已实现并归档：`openspec/changes/archive/2026-06-09-start-general-workspace-agent`。
+- 主规格已同步为 `openspec/specs/general-workspace-agent/spec.md`。
+- 不要重新执行 `start-general-workspace-agent`；后续修复必须新建补丁 OpenSpec。
+
 ## 1. 目标
 
 `0.3.x` 的目标是从代码工作台扩展到通用本地工作区，让用户处理本地文件、文档、报告和长期项目知识。
@@ -27,23 +33,27 @@
 - Runtime 仍是唯一 agent loop。
 - Evidence ledger、route/cache/usage/cost 必须继续可见。
 - Memory / Skill / Tool catalog 不能破坏 byte-stable prefix。
+- `start-general-workspace-agent` 已完成并归档，当前文件作为历史计划、回归边界和后续 patch 参考。
 
 前置 gate：
 
-- `0.2.x` Desktop Code Workbench gate 已通过，或有明确延期豁免。
+- `0.2.x` Desktop Code Workbench gate 已通过。
 - Desktop/CLI 已能展示 task evidence 和 cost。
 - ChangeSet / approval / rollback 语义没有回归。
+- `0.3.x` main spec strict validate 通过。
 
 需要重新核验：
 
-- 当前 runtime 是否已有 Memory / Skill / PlanStep 数据对象或需要新增。
-- 当前 event log 格式是否足以承载 artifact 和 PlanGraph。
-- 文档解析依赖是否会引入安全或隐私风险。
+- 后续 patch 是否需要新增数据迁移。
+- 后续 patch 是否影响 `0.2.x` diff/approval/rollback。
+- 后续文档解析依赖是否会引入安全或隐私风险。
 
 验证命令：
 
 ```bash
 python3 scripts/check_repo.py
+openspec validate general-workspace-agent --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-general-workspace-agent"
 rg -n "Project Memory|Skill index|PlanGraph|Review Gate|EvidenceEvent|PlanStep" \
   docs/llm-harness-agent/zh/prd-tech-plan \
   docs/llm-harness-agent/zh/blueprint
@@ -74,13 +84,13 @@ rg -n "Project Memory|Skill index|PlanGraph|Review Gate|EvidenceEvent|PlanStep" 
 
 ### 5.1 OpenSpec
 
-建议 change：
+历史 change：
 
 ```text
 start-general-workspace-agent
 ```
 
-OpenSpec 必须包含：
+OpenSpec 已包含：
 
 1. Artifact requirement。
 2. Memory lifecycle requirement。
@@ -93,7 +103,8 @@ OpenSpec 必须包含：
 验证：
 
 ```bash
-openspec validate start-general-workspace-agent --type change --strict
+openspec validate general-workspace-agent --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-general-workspace-agent"
 ```
 
 ### 5.2 Artifact manager
@@ -137,7 +148,7 @@ rg -n "artifact_id|source_refs|evidence_ids" apps src tests
 验证：
 
 ```bash
-python3 -m unittest discover -s tests -v
+PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
 ### 5.4 Project Memory
@@ -233,11 +244,11 @@ rg -n "Review Gate|Needs Review|unresolved|recommended action" src apps tests
 
 ```bash
 python3 scripts/check_repo.py
-openspec validate start-general-workspace-agent --type change --strict
-python3 -m unittest discover -s tests -v
+openspec validate general-workspace-agent --type spec --strict
+PYTHONPATH=src python3 -m unittest discover -s tests -v
 cd apps/desktop && npm run test && npm run build && npm run e2e
 rg -n "Artifact|Project Memory|Skill index|PlanGraph|Review Gate|cost per successful task" \
-  docs/llm-harness-agent/zh/prd-tech-plan apps src tests
+  docs/llm-harness-agent/zh/prd-tech-plan apps src tests openspec/specs/general-workspace-agent
 ```
 
 ## 7. 完成定义
@@ -252,4 +263,3 @@ rg -n "Artifact|Project Memory|Skill index|PlanGraph|Review Gate|cost per succes
 - 长期任务能汇总完成率、恢复结果、人工接管和 token/cost。
 - 所有新增能力不破坏 `0.2.x` diff/approval/rollback。
 - 测试、build、E2E 和 `check_repo.py` 通过。
-

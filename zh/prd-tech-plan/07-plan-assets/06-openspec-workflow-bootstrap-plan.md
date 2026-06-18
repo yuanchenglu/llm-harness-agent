@@ -24,6 +24,8 @@
 - 当前已有 OpenSpec change 示例：
   - `extract-deepseek-runtime-kernel`
   - `start-desktop-code-workbench`
+  - `harden-desktop-code-workbench`
+  - `start-general-workspace-agent`
   - `align-completion-first-positioning`
   - `improve-zh-doc-readability-and-glossary`
 
@@ -81,14 +83,20 @@ sed -n '1,220p' openspec/config.yaml
 已完成事实：
 
 1. Runtime 抽取使用 `extract-deepseek-runtime-kernel` change。
-2. Desktop 首片使用 `start-desktop-code-workbench` change。
-3. 文档中文可读性和 completion-first 定位也通过 change 维护过。
+2. Desktop 首片使用 `start-desktop-code-workbench` change，已归档。
+3. Desktop hardening 使用 `harden-desktop-code-workbench` change，已归档。
+4. General Workspace Agent 使用 `start-general-workspace-agent` change，已归档。
+5. Integrations And Automation Preview 使用 `start-integrations-automation-preview` change，已归档。
+6. 文档中文可读性和 completion-first 定位也通过 change 维护过。
 
 复核命令：
 
 ```bash
 find openspec/changes -maxdepth 2 -type f \( -name 'proposal.md' -o -name 'tasks.md' \) | sort
-openspec instructions apply --change start-desktop-code-workbench --json
+openspec validate desktop-code-workbench-first-slice --type spec --strict
+openspec validate general-workspace-agent --type spec --strict
+openspec validate integrations-automation-preview --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-desktop-code-workbench|harden-desktop-code-workbench|start-general-workspace-agent|start-integrations-automation-preview"
 ```
 
 ## 6. 实施步骤：后续执行
@@ -96,10 +104,9 @@ openspec instructions apply --change start-desktop-code-workbench --json
 当计划资产进入实现阶段时：
 
 1. 定义 change 名：
-   - `harden-desktop-code-workbench`
-   - `start-general-workspace-agent`
-   - `start-integrations-automation-preview`
-   - `prepare-stable-public-release`
+   - 当前 UI 收口：`refresh-consumer-desktop-ui`。
+   - 稳定发布准备：`prepare-stable-public-release`。
+   - 已归档历史示例：`start-desktop-code-workbench`、`harden-desktop-code-workbench`、`start-general-workspace-agent`、`start-integrations-automation-preview`。
 2. 创建 proposal：
    - Why。
    - What changes。

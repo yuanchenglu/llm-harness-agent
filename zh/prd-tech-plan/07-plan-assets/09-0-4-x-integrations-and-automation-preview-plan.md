@@ -4,6 +4,14 @@
 
 你是 `0.4.x Integrations And Automation Preview` 的版本负责人。只有在 `0.3.x` 本地工作区、Memory、Skill、PlanGraph 成立后，才能接入外部工具和自动化。你的首要责任是安全边界：工具 schema、权限、drift、health、schedule、notification、remote approval 和 audit。不要做公开插件市场、云端常驻、多租户或无审批副作用。所有外部工具输出都是非信任输入。
 
+当前状态（确定，2026-06-17）：
+
+- 本计划对应 `0.4.x` 主线已实现并归档。
+- `0.3.x` 已归档，主规格为 `openspec/specs/general-workspace-agent/spec.md`。
+- `start-integrations-automation-preview` 已归档到 `openspec/changes/archive/2026-06-17-start-integrations-automation-preview`。
+- 主规格已同步到 `openspec/specs/integrations-automation-preview/spec.md`。
+- 后续不要把新工作塞回该 archived change；0.4 只接受明确 patch，1.0 准备走 `prepare-stable-public-release`。
+
 ## 1. 目标
 
 `0.4.x` 的目标是在本地工作台成熟后，安全预览外部集成和本地自动化。
@@ -28,10 +36,14 @@
 - PRD TechPlan 明确 `0.4.x` 必须做 MCP client、local tool catalog、schema fingerprint、drift detection、permission profiles、health check、local scheduled tasks、notification bridge、remote approval、automation audit log。
 - PRD TechPlan 明确 `0.4.x` 不做公开插件市场、云端常驻、无审批自动副作用、企业 policy center、多租户。
 - Runtime-first、Evidence-first、Policy-enforced、Recoverable 仍然是全局约束。
+- `0.3.x` General Workspace Agent 已归档到 `openspec/changes/archive/2026-06-09-start-general-workspace-agent`。
+- `0.4.x` Integrations And Automation Preview 已归档到 `openspec/changes/archive/2026-06-17-start-integrations-automation-preview`。
+- `openspec/specs/integrations-automation-preview/spec.md` strict validate 通过。
 
 前置 gate：
 
 - `0.3.x` Artifact、Memory、Skill、PlanGraph、Review Gate 已通过。
+- `openspec/specs/general-workspace-agent/spec.md` strict validate 通过。
 - Tool / Skill index 不破坏 prefix cache discipline。
 - Evidence ledger 能承载外部工具调用。
 
@@ -46,6 +58,7 @@
 
 ```bash
 python3 scripts/check_repo.py
+openspec validate general-workspace-agent --type spec --strict
 rg -n "MCP|tool schema|drift|scheduled|notification|approval|audit" \
   docs/llm-harness-agent/zh/prd-tech-plan \
   docs/llm-harness-agent/zh/blueprint
@@ -71,7 +84,7 @@ rg -n "MCP|tool schema|drift|scheduled|notification|approval|audit" \
 - 不做无审批自动副作用。
 - 不允许外部 tool 直接绕过 ChangeSet / permission / rollback。
 
-## 5. 实施步骤
+## 5. 实施步骤与完成事实
 
 ### 5.1 OpenSpec
 
@@ -81,7 +94,7 @@ rg -n "MCP|tool schema|drift|scheduled|notification|approval|audit" \
 start-integrations-automation-preview
 ```
 
-OpenSpec 必须包含：
+OpenSpec 已包含：
 
 1. MCP client requirement。
 2. Tool catalog requirement。
@@ -93,10 +106,11 @@ OpenSpec 必须包含：
 8. Automation audit log requirement。
 9. Security scenarios。
 
-验证：
+归档后复核：
 
 ```bash
-openspec validate start-integrations-automation-preview --type change --strict
+openspec validate integrations-automation-preview --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-integrations-automation-preview"
 ```
 
 ### 5.2 MCP client and tool catalog
@@ -232,8 +246,10 @@ rg -n "automation audit|trigger|task template hash|redaction" src apps tests
 
 ```bash
 python3 scripts/check_repo.py
-openspec validate start-integrations-automation-preview --type change --strict
-python3 -m unittest discover -s tests -v
+openspec validate integrations-automation-preview --type spec --strict
+openspec validate desktop-code-workbench-first-slice --type spec --strict
+openspec validate general-workspace-agent --type spec --strict
+PYTHONPATH=src python3 -m unittest discover -s tests -v
 cd apps/desktop && npm run test && npm run build && npm run e2e
 rg -n "MCP|schema_hash|drift|permission profile|scheduled|notification|remote approval|automation audit" \
   docs/llm-harness-agent/zh/prd-tech-plan apps src tests
@@ -241,7 +257,7 @@ rg -n "MCP|schema_hash|drift|permission profile|scheduled|notification|remote ap
 
 ## 7. 完成定义
 
-`0.4.x` 完成必须满足：
+`0.4.x` 完成必须满足，且 2026-06-17 已按归档流程确认：
 
 - MCP connection test 通过。
 - Tool schema fingerprint 和 drift detection 有测试。
@@ -252,4 +268,4 @@ rg -n "MCP|schema_hash|drift|permission profile|scheduled|notification|remote ap
 - 自动化报告 completion evidence、approval intervention 和每成功任务成本。
 - 无审批自动副作用被测试拒绝。
 - `0.3.x` Artifact / Memory / PlanGraph 不回归。
-
+- `start-integrations-automation-preview` 不再出现在 active OpenSpec list。

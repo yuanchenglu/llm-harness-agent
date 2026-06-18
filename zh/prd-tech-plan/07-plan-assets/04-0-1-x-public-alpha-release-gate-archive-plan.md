@@ -130,7 +130,7 @@ rg -n "ready_to_close_gate|production_gate_closed|commit_hygiene_clean|productio
 
 ```bash
 python3 scripts/check_repo.py
-python3 -m unittest discover -s tests -v
+PYTHONPATH=src python3 -m unittest discover -s tests -v
 python3 scripts/release_gate_audit.py --help
 rg -n "0\\.1\\.x|Public Alpha|production_release_gate|release artifact|doctor" \
   docs/prd-tech-plan README.md docs/llm-harness-agent/zh/prd-tech-plan

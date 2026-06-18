@@ -22,6 +22,19 @@
 
 ## 阅读顺序
 
+## 当前状态快照
+
+确定：
+
+| 计划线 | 当前状态 | 正确执行入口 |
+| --- | --- | --- |
+| Runtime kernel | `v0.1.1-alpha.0` 与 `v0.1.1-alpha.1` 已发布记录在本目录。 | 后续只做 runtime patch 计划，不重复抽取。 |
+| `0.1.x` Public Alpha | release gate 已关闭，作为历史归档和补丁参考。 | 新 public CLI 行为改动必须另开 OpenSpec。 |
+| `0.2.x` Desktop Code Workbench | 首片和 hardening 已完成并归档：`2026-06-08-start-desktop-code-workbench`、`2026-06-09-harden-desktop-code-workbench`。 | 后续只做明确 patch，不把新工作塞回旧 change。 |
+| `0.3.x` General Workspace Agent | 已实现并归档：`2026-06-09-start-general-workspace-agent`；主规格在 `openspec/specs/general-workspace-agent/spec.md`。 | 后续只做 patch。 |
+| `0.4.x` Integrations And Automation Preview | 已实现并归档：`2026-06-17-start-integrations-automation-preview`；主规格在 `openspec/specs/integrations-automation-preview/spec.md`。 | 后续只做 patch，不把新工作塞回旧 change。 |
+| `1.0` Stable Public Release | 已实现并归档：`2026-06-18-refresh-consumer-desktop-ui`、`2026-06-18-prepare-stable-public-release`；主规格在 `openspec/specs/consumer-desktop-ui/spec.md` 与 `openspec/specs/stable-public-release/spec.md`。 | 剩余是 commit / tag / remote release notes；新功能必须另开 OpenSpec。 |
+
 ### 基础规则
 
 1. [计划资产写作标准](00-plan-asset-writing-standard.md)
@@ -30,16 +43,16 @@
 
 2. [Runtime Kernel 发布与补丁计划](01-runtime-kernel-release-and-patch-plan.md)
 3. [DeepSeekAgent 产品化路线计划](02-deepseekagent-productization-roadmap-plan.md)
-4. [`0.1.x` Public Alpha Release Gate 归档计划](04-0-1-x-public-alpha-release-gate-archive-plan.md)
-5. [PRD TechPlan 分层归档计划](05-prd-tech-plan-layered-archive-plan.md)
-6. [OpenSpec 工作流与 Artifact Gate 归档计划](06-openspec-workflow-bootstrap-plan.md)
-
-### 当前与后续版本研发计划
-
-7. [Desktop Code Workbench 首片计划](03-desktop-code-workbench-first-slice-plan.md)
+4. [Desktop Code Workbench 首片计划](03-desktop-code-workbench-first-slice-plan.md)
+5. [`0.1.x` Public Alpha Release Gate 归档计划](04-0-1-x-public-alpha-release-gate-archive-plan.md)
+6. [PRD TechPlan 分层归档计划](05-prd-tech-plan-layered-archive-plan.md)
+7. [OpenSpec 工作流与 Artifact Gate 归档计划](06-openspec-workflow-bootstrap-plan.md)
 8. [`0.2.x` Desktop Code Workbench 版本研发计划](07-0-2-x-desktop-code-workbench-version-plan.md)
 9. [`0.3.x` General Workspace Agent 版本研发计划](08-0-3-x-general-workspace-agent-version-plan.md)
 10. [`0.4.x` Integrations And Automation Preview 版本研发计划](09-0-4-x-integrations-and-automation-preview-plan.md)
+
+### 当前与后续版本研发计划
+
 11. [`1.0` Stable Public Release 版本研发计划](10-1-0-stable-public-release-plan.md)
 
 ## 维护规则

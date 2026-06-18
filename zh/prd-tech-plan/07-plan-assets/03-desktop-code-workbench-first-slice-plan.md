@@ -4,6 +4,12 @@
 
 你是 `0.2.x Desktop Code Workbench` 首片实现代理。你的任务是证明桌面 UI 是本地 runtime 的前端，而不是新的 agent loop。执行前必须核对 `start-desktop-code-workbench` OpenSpec、`deepseek_runtime` tag、当前 `apps/desktop` 状态和验证命令。严禁 UI 直接写文件、拼装独立 agent prompt、伪造 runtime 状态或绕过 permission / ChangeSet / rollback。实现时优先完成真实 diff -> `Allow once` -> apply -> rollback 闭环，再做视觉细节。
 
+当前状态（确定，2026-06-10）：
+
+- 本计划对应首片已完成并归档：`openspec/changes/archive/2026-06-08-start-desktop-code-workbench`。
+- 主规格已同步为 `openspec/specs/desktop-code-workbench-first-slice/spec.md`。
+- 不要重新执行 `start-desktop-code-workbench`；后续修复必须新建补丁 OpenSpec。
+
 ## 1. 目标
 
 在 `deepseekagent` 主仓库启动 `0.2.x Desktop Code Workbench` 首片，实现一条真实、可验证、可回滚的桌面工作流：
@@ -29,11 +35,14 @@
 - Code 是 `0.2.x` 主线；助理模式是 `0.3.x` 主线；连接手机不是当前主线。
 - 技术栈已收敛为 React + TypeScript、Electron first、Local HTTP/SSE bridge。
 - 首片需要真实 diff/apply/rollback，因此依赖 runtime 后续公开 ChangeSet API。
+- `start-desktop-code-workbench` 已归档，后续只作为历史计划和回归边界参考。
 
 验证命令：
 
 ```bash
 python3 scripts/check_repo.py
+openspec validate desktop-code-workbench-first-slice --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-desktop-code-workbench"
 rg -n "Desktop Code Workbench|Local HTTP/SSE|React \\+ TypeScript|Electron|diff review|rollback" \
   docs/llm-harness-agent/zh/prd-tech-plan
 ```
@@ -66,19 +75,20 @@ rg -n "Desktop Code Workbench|Local HTTP/SSE|React \\+ TypeScript|Electron|diff 
 
 ### 5.1 OpenSpec
 
-1. 创建 change：`start-desktop-code-workbench`。
-2. 写清 proposal、design、tasks、spec delta。
-3. OpenSpec 必须说明：
+1. 历史 change 是 `start-desktop-code-workbench`，当前已归档。
+2. 主规格是 `desktop-code-workbench-first-slice`。
+3. OpenSpec 已说明：
    - UI 通过 local runtime bridge 启动任务。
    - UI 不伪造 runtime 状态。
    - diff/apply/rollback 由 bridge 调 runtime safety API。
    - 首片只覆盖 Code 工作台。
+4. 如果后续要改首片能力，创建新的补丁 change，不要恢复旧 active change。
 
 验证：
 
 ```bash
-openspec status --change start-desktop-code-workbench
-openspec validate start-desktop-code-workbench --type change --strict
+openspec validate desktop-code-workbench-first-slice --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-desktop-code-workbench"
 ```
 
 ### 5.2 Desktop 工程骨架
@@ -253,6 +263,7 @@ E2E：
 
 ```bash
 python3 scripts/check_repo.py
+openspec validate desktop-code-workbench-first-slice --type spec --strict
 cd apps/desktop
 npm run test
 npm run build
@@ -269,7 +280,8 @@ Browser 验证：
 
 首片只有在以下条件全部满足时才算完成：
 
-- `start-desktop-code-workbench` OpenSpec strict validate 通过。
+- `desktop-code-workbench-first-slice` main spec strict validate 通过。
+- `start-desktop-code-workbench` 归档目录可找到。
 - Desktop 可以通过 bridge 创建任务。
 - UI 状态来自 bridge/runtime，不是 hard-coded mock。
 - Agent 可以提出 ChangeSet。

@@ -4,6 +4,12 @@
 
 你是 `0.2.x Desktop Code Workbench` 版本负责人。你的目标是把首片闭环推进成可试用的桌面 Code 工作台，而不是扩成通用助理或移动连接。先核对 `03-desktop-code-workbench-first-slice-plan.md`、`start-desktop-code-workbench` OpenSpec、`apps/desktop` 当前状态和 PRD TechPlan。任何 UI 状态必须来自 bridge/runtime；任何写入必须经过 ChangeSet、approval、rollback。不要做 Assistant mode、phone connection、团队共享、插件市场或 hosted service。
 
+当前状态（确定，2026-06-10）：
+
+- `0.2.x` 首片和 hardening 已完成并归档：`2026-06-08-start-desktop-code-workbench`、`2026-06-09-harden-desktop-code-workbench`。
+- 主规格为 `openspec/specs/desktop-code-workbench-first-slice/spec.md`。
+- 不要重新执行 `start-desktop-code-workbench` 或 `harden-desktop-code-workbench`；后续只允许新建明确 patch change。
+
 ## 1. 目标
 
 在 `0.2.x` 中，把 Desktop 首片从“证明真实 diff/apply/rollback 闭环”推进到“开发者可以实际使用的桌面 Code 工作台 alpha”。
@@ -26,11 +32,10 @@
 - runtime truth 在 Python；desktop 只是 runtime 前端。
 - `deepseek-runtime` 需要通过 tag pin 使用。
 - `start-desktop-code-workbench` 已定义首片范围：workspace inspect、task create、SSE、ChangeSet proposal、approval、rollback。
+- `harden-desktop-code-workbench` 已完成 bridge hardening、Task Center / Task Detail、runtime manager、diagnostics、alpha packaging 和 version gate。
 
 需要重新核验：
 
-- `apps/desktop` 当前实现是否已提交。
-- `start-desktop-code-workbench` 是否已 archive。
 - `deepseek_runtime` 最新可用 tag 是否仍是桌面依赖期望版本。
 - 当前 Node / Python / Playwright 环境是否能跑完整 gate。
 
@@ -38,7 +43,8 @@
 
 ```bash
 git status --short --branch
-openspec instructions apply --change start-desktop-code-workbench --json
+openspec validate desktop-code-workbench-first-slice --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-desktop-code-workbench|harden-desktop-code-workbench"
 cd apps/desktop && npm run test && npm run build && npm run e2e
 python3 scripts/check_repo.py
 ```
@@ -72,11 +78,12 @@ python3 scripts/check_repo.py
 2. 检查 `runtime_bridge/requirements.txt` 是否 pin 到已验证 runtime tag。
 3. 检查 bridge API 是否覆盖 `/health`、workspace inspect、tasks、events、approval、rollback。
 4. 检查 UI 是否包含 workspace chooser、task form、event list、evidence panel、diff review。
-5. 若 `start-desktop-code-workbench` 已 all_done，准备 archive；若未 all_done，先完成首片。
+5. 确认 `start-desktop-code-workbench` 和 `harden-desktop-code-workbench` 已在 archive 中。
 
-建议 OpenSpec：
+历史 OpenSpec：
 
 ```text
+start-desktop-code-workbench
 harden-desktop-code-workbench
 ```
 
@@ -184,7 +191,8 @@ python3 ../../scripts/check_repo.py
 
 ```bash
 python3 scripts/check_repo.py
-openspec validate harden-desktop-code-workbench --type change --strict
+openspec validate desktop-code-workbench-first-slice --type spec --strict
+find openspec/changes/archive -maxdepth 2 -type d | rg "start-desktop-code-workbench|harden-desktop-code-workbench"
 cd apps/desktop
 npm run test
 npm run build
@@ -196,7 +204,7 @@ rg -n "deepseek-runtime @ git\\+https://github.com/7colorai/deepseek_runtime.git
 
 `0.2.x` 完成必须满足：
 
-- `0.2.x` 对应 OpenSpec change strict validate 通过。
+- `0.2.x` 对应 OpenSpec changes 已归档，main spec strict validate 通过。
 - Desktop 可从干净 clone 安装依赖并启动。
 - UI 可选择工作区、创建任务、查看 task detail。
 - UI 可见 evidence、route/cache/usage/cost。
@@ -205,4 +213,3 @@ rg -n "deepseek-runtime @ git\\+https://github.com/7colorai/deepseek_runtime.git
 - `npm run test`、`npm run build`、`npm run e2e` 通过。
 - `python3 scripts/check_repo.py` 通过。
 - 未完成项明确延期到 `0.3.x` 或后续 patch，不藏在文档里。
-
