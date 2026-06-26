@@ -1,9 +1,31 @@
 # DeepSeek Agent 项目交接包 README
 
-> 版本：v0.1  
-> 日期：2026-06-04  
-> 用途：这是 DeepSeek Agent 项目的总控包 / 交接包。任何 AI 或人接手本项目时，应先阅读本 README，然后按阶段顺序执行任务，并在完成后更新勾选状态。  
-> 当前状态：**Stage 0–5 已完成；Stage 6 研究 MVP Gate 已完成；生产 Release Gate 未通过。当前最早未完成项是 `6-release`。完成声明以 `stage-gates.json` 为准。**
+> 版本：v0.1
+> 日期：2026-06-04
+> 用途：这是 DeepSeek Agent 项目的总控包 / 交接包。任何 AI 或人接手本项目时，应先阅读本 README，然后按阶段顺序执行任务，并在完成后更新勾选状态。
+> 当前状态：**Stage 0–5 已完成；Stage 6 研究 MVP Gate 已完成；生产 Release Gate 已关闭；当前没有最早未完成项。完成声明以 `stage-gates.json` 为准。**
+
+---
+
+## 0. 中文阅读说明
+
+本文档包是 DeepSeek Agent 的证据库和阶段真相源，不是产品经理友好的轻量说明书。它保留技术术语、实验编号、阶段编号和历史判断，是为了让后来的人能追溯“为什么这么判断”。
+
+如果只是判断当前产品下一步，优先读：
+
+| 目的 | 推荐入口 |
+| --- | --- |
+| 看当前产品化口径和术语 | [PRD TechPlan 中文表达与术语表](../prd-tech-plan/00-中文表达与术语表.md) |
+| 看产品定位和范围 | [PRD TechPlan 产品定位与范围](../prd-tech-plan/01-product-and-scope.md) |
+| 看 0.1.x 下一步 | [PRD TechPlan 版本路线与 Release Gates](../prd-tech-plan/04-roadmap-and-release-gates.md) |
+| 追溯阶段真相 | `stage-gates.json` 和本文档下方阶段计划 |
+
+阅读原则：
+
+- 先看阶段状态，再看具体证据。
+- `确定`、`大概率`、`不确定` 不要混读。
+- 术语不懂时先看 PRD TechPlan 术语表，不要直接改写证据正文。
+- 历史 extracted 文档只作为证据归档，不代表当前产品口径。
 
 ---
 
@@ -150,7 +172,7 @@ README.md
 - [x] Roadmap
 - [x] 生产 PRD、桌面双模式 UX、Runtime API/Data、威胁模型、可执行验收拆解
 
-### Stage 6：代码 Fork / 整合 / MVP 实现（研究 MVP Gate 完成；生产 Release 未通过）
+### Stage 6：代码 Fork / 整合 / MVP 实现（研究 MVP Gate 完成；生产 Release Gate 已关闭）
 
 - [x] OpenCode 固定 commit 源码 Spike；installed CLI provider smoke 与 fixed-source live probe 已完成
 - [x] Fork / Adapter / 自研最终选择：当前采用小型自研 runtime + OpenCode adapter 候选

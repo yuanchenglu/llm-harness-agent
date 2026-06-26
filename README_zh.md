@@ -12,6 +12,18 @@
 2. **Harness 是模型与真实世界之间的协议层、控制层和证据层**。它能放大模型能力，也可能引入新的错误，因此必须基于源码和 benchmark 评估。
 3. **本文档集是理论与调研入口，不是已经完成的产品 benchmark**。长期实践用于提出问题，源码审计用于确认实现，协议与成本实验用于决定哪些结论可以进入 DeepSeek Agent。
 
+## 当前产品化入口
+
+如果你关心 DeepSeekAgent 0.1.x 怎么从研究 MVP 走向公开试用，先读这些中文文档：
+
+| 文档 | 用途 |
+|---|---|
+| [中文表达与术语表](zh/prd-tech-plan/00-中文表达与术语表.md) | 解释 release artifact、production gate、checksum、runtime 等术语在项目推进里的意思 |
+| [PRD TechPlan](zh/prd-tech-plan/README.md) | 当前产品化路线、PRD、技术方案、release gates 和决策记录 |
+| [Blueprint 交接包](zh/blueprint/README.md) | 阶段真相、证据链和历史调研入口 |
+
+阅读顺序：先看 PRD TechPlan 判断下一步，再回到 Blueprint 追溯证据。
+
 ---
 
 ## 核心架构

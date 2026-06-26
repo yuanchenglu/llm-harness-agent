@@ -1,0 +1,85 @@
+```markdown
+# Comprehensive Summary: "Agent Harness for Large Language Model Agents: A Survey"
+
+**Paper:**
+*   **Title:** Agent Harness for Large Language Model Agents: A Survey
+*   **Authors:** Qianyu Meng, Yanan Wang, Liyi Chen, et al.
+*   **Status:** Preprint (v1, submitted 03 April 2026)
+
+## Core Thesis: The Harness, Not the Model, is the Binding Constraint
+
+> "The harness, not the model, is the binding constraint for real-world agent system performance."
+
+The central claim is that agent task execution reliability depends more on the **infrastructure layer (the "agent execution harness")** than on the underlying model's capabilities. The paper provides a formal definition, taxonomy, and systematic analysis of this layer, arguing it is a distinct architectural object requiring dedicated study.
+
+---
+
+## 1. Key Definition: The Formal Framework H=(E,T,C,S,L,V)
+
+An agent harness is formally defined as a six-component runtime governance system:
+
+> **H = (E, T, C, S, L, V)**
+
+- **E — Execution Loop:** Manages the observe-think-act cycle, turn sequencing, termination conditions, and error recovery. Formalized as a **Labeled Transition System (LTS)** with safety (no runaway) and liveness (terminal state reachable) properties.
+- **T — Tool Registry:** A typed, validated catalog of available tools. Routes, monitors, and governs tool invocations.
+- **C — Context Manager:** Governs what information enters the model’s context window. Manages compaction, retrieval, and prioritization strategies.
+- **S — State Store:** Persists task-relevant state across turns and sessions; enables recovery from partial failures.
+- **L — Lifecycle Hooks:** Pre- and post-invocation interception for authentication, logging, policy enforcement, and instrumentation.
+- **V — Evaluation Interface:** Standardized instrumentation for capturing action trajectories, intermediate states, and success signals for offline analysis and cross-harness comparison. **Distinct from operational logging (L).**
+
+**Key Boundaries:**
+- **Minimal Harness:** Implements E and T.
+- **Not a Harness:** *ReAct* (no error recovery, no formal registry). *LangGraph* (framework, absent C/S/L/V).
+- **Module:** *MemGPT* (strong C and S, absent E/T).
+
+---
+
+## 2. Evidence Matrix: Harness Changes > Model Changes
+
+Converging quantitative evidence shows that harness-level changes alone produce dramatic improvements:
+
+| Source Type | Intervention | Performance Change | Model Change? |
+|---|---|---|---|
+| **Practitioner (Pi Research)** | Changed edit-tool format | 6.7% → **68.3%** (10x) | No |
+| **Practitioner (LangChain DeepAgents)** | Middleware, lifecycle hooks, system prompts | 52.8% → **66.5%** (+26%) | No |
+| **Preprint (Meta-Harness, Stanford/MIT)** | Automated agentic search over harness space | **76.4%** on TerminalBench-2 (surpassed hand-coded) | No |
+| **Preprint (AgencyBench)** | Model in native vs. foreign harness | Native ecosystem score significantly higher (e.g., 48.4%) | No |
+| **Practitioner (Vercel)** | Reduced tools from 15 to 2 | 80% → **100%** accuracy | No |
+
+**Key Practitioner Reports:**
+- **OpenAI Codex:** Coined "Harness Engineering". A team built ~1M lines of production code with 0 hand-written code.
+- **Stripe Minions:** ~1,300 PRs/week. Curated tool registries are critical; exposing all tools degrades performance.
+- **OpenClaw PRISM:** First systematic published runtime security layer for an open-source harness.
+
+---
+
+## 3. Historical Evolution: The "Harness Turn"
+
+The harness concept crystallized from three lineages:
+1.  **Software Test Harness (JUnit):** The governance wrapper pattern.
+2.  **RL Environments (OpenAI Gym):** Interface standardization (`step()`/`observe()`).
+3.  **Early LLM Agents (ReAct, AutoGPT, MemGPT):** The failure mode catalog defining what governance is needed.
+
+The **"Harness Turn" (2024–2026)** marks the shift from model-centric research to infrastructure-focused engineering, catalyzed by protocol standardization (MCP, A2A), formalization (AIOS), and large-scale evaluation infra (HAL, AgencyBench).
+
+**Three Engineering Paradigms:**
+- Prompt Engineering (2022-2024): "What text to give?"
+- Context Engineering (2025): "What information to structure?"
+- **Harness Engineering (2026):** "What governance to design?"
+
+---
+
+## 4. Taxonomy of Systems (22 Analyzed)
+
+The **Harness Completeness Matrix** reveals distinct categories:
+
+| Category | Example Systems | Component Coverage |
+|---|---|---|
+| **Full-Stack Harness** | DeepAgents, OpenClaw, OpenHands, AIOS, Claude Code | Full E, T, C, S, L, V (generally) |
+| **Framework** | LangGraph, AutoGen, LlamaIndex | Partial E & T; C, S, L, V are usually absent (delegated) |
+| **Capability Module** | MemGPT (C/S), MCP Servers (T), Voyager (S) | Excellent on 1-2 components; no orchestration |
+| **Evaluation Infra** | HAL, AgencyBench, SWE-bench, OSWorld | Extensive E, V; crucial for field reproducibility |
+
+**Critical Finding from Matrix:** The **V (Evaluation Interface)** and **L (Lifecycle Hook
+
+[... summary truncated for context management ...]
