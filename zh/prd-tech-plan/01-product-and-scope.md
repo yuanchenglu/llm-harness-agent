@@ -2,19 +2,21 @@
 
 ## 1. 一句话定位
 
-DeepSeekAgent 是面向开发者和高频 AI 工作者的 DeepSeek-native 本地 Agent runtime / 工作台。产品定位为双轨并行路线：一方面作为独立前沿的研究型工作台（走向桌面 Code Workbench 和通用本地工作区），另一方面以 deepseek_runtime 为通信内核渐进式集成入 Kun 等成熟宿主引擎，从而以更低摩擦力驱动开发者环境。其基于 DeepSeek V4 的协议、长上下文、Prefix Cache、Flash / Pro 路由和 reasoning 边界做 harness 层深度优化，以真实项目任务的可验证完成率为第一指标，先以 CLI/runtime 发布。
+DeepSeekAgent 是面向财务、行政、产品经理、律师等知识工作者的中文 B 端本地任务客户端。它把 DeepSeek-native runtime 的本地安全、审批、回滚、证据和诊断能力收敛到一个普通业务人员能理解的桌面工作台：选择项目文件夹，描述任务，审查需要写入的变更，并在失败时恢复。
+
+产品底层仍坚持 Runtime-first：CLI、desktop、automation 都只是本地 runtime 的前端。但桌面端的默认体验不再面向服务器运维人员或研究 demo 用户，也不要求用户理解 route、cache、bridge、SSE、ChangeSet 或 raw evidence。
 
 公开表达可以压缩为：
 
 ```text
-目标是让 DeepSeek 在真实项目里更高概率完成任务，并以更低每成功任务成本、更强项目理解和更可控执行交付结果。
+目标是让财务、行政、产品经理和律师能在本地安全地整理资料、生成任务成果、审查高风险写入，并在需要时回滚和诊断。
 ```
 
 价值层级：
 
 1. 可验证完成：完成不是模型自述，而是计划、工具调用、diff、测试、验收器和 evidence 支撑的结果。
 2. 每成功任务成本：省 token 不能以降低正确性、安全或完成率为代价，核心指标是每个成功任务的 token / cost。
-3. 懂项目：通过 workspace scan、Project Memory、Skill、PlanGraph 和稳定上下文布局复用项目约束。
+3. 懂项目：通过项目文件夹、Workspace Scan、Project Memory、Skill、PlanGraph 和稳定上下文布局复用项目约束。
 4. 更可控：所有副作用都受 permission、sandbox、approval、ChangeSet、checkpoint 和 rollback 约束。
 
 ## 2. 项目当前阶段
@@ -23,25 +25,29 @@ DeepSeekAgent 是面向开发者和高频 AI 工作者的 DeepSeek-native 本地
 
 - 研究、竞品、DeepSeek V4 物理特性、产品战略、生产 PRD 和研发拆解已经在 blueprint 中完成。
 - 研究 MVP 已具备本地 runtime、安全、diff、rollback、session resume 等关键基础能力。
-- production release gate 已关闭；下一步是把 CLI-first runtime foundation 收敛为可复用、可安装、可验证的 runtime kernel，而不是“重新找产品方向”。
+- production release gate 已关闭；下一步是把 runtime foundation 和已证明的桌面能力收敛为中文 B 端工作客户端，而不是继续研究型扩散。
 
 ## 3. 目标用户
 
-### 开发者
+### 财务人员
 
-需要让 Agent 在本地代码库里完成需求分析、计划生成、代码修改、测试建议、审查、提交准备和回滚。
+需要整理发票、报销、费用、付款节点、预算材料和审计证据，并能明确看到来源、缺失项和待确认事项。
 
-### 高频 AI 工作者
+### 行政人员
 
-需要让 Agent 整理本地文件、阅读资料、写文档、做调研、分析表格，并把长期项目经验沉淀为 Memory 和 Skill。
+需要整理会议纪要、制度文档、采购记录、资产台账、通知材料和执行跟进清单。
 
-### 早期开源试用者
+### 产品经理
 
-需要一个可安装、可诊断、边界清楚、不会偷偷写文件或泄露密钥的本地 Agent。
+需要整理需求、PRD、竞品材料、评审意见、行动项和版本范围。
 
-### 后续团队试点用户
+### 律师
 
-需要共享项目规则、任务证据、审计记录和安全策略。但这些能力只有在个人版和本地工作台稳定后才进入主线。
+需要整理合同摘要、条款风险清单、事实时间线、材料清单和待确认问题。产品只提供材料整理辅助，不替代法律意见。
+
+### 高级开发者与开源试用者
+
+仍需要可安装、可诊断、边界清楚、不会偷偷写文件或泄露密钥的本地 Agent。Code / diff / diagnostics 作为高级能力保留，但不再压过 B 端默认任务路径。
 
 ## 4. 核心产品承诺
 
@@ -64,7 +70,10 @@ DeepSeekAgent 必须做到：
 - Permission、sandbox、diff preview、apply、rollback。
 - Session、checkpoint、resume。
 - Evidence ledger。
-- Desktop Code Workbench。
+- 中文 B 端 Desktop Workbench。
+- 业务角色任务模板。
+- Task drawer with approval / rollback / diagnostics。
+- Desktop Code Workbench 作为高级入口保留。
 - General Workspace Agent。
 - Project Memory、Skill index/body separation、PlanGraph。
 - MCP/tool integration preview。
@@ -81,6 +90,9 @@ DeepSeekAgent 必须做到：
 - 商业计费。
 - 实时多人协同编辑。
 - 完整移动端客户端。
+- 手机连接作为默认桌面入口。
+- 插件市场。
+- 未验证的 Excel 深度分析、PDF OCR、合同深度解析或自动法律意见。
 - 因为语言偏好而重写 runtime。
 
 ### 5.3 可以后置评估
@@ -98,8 +110,9 @@ DeepSeekAgent 必须做到：
 ### 产品成功
 
 - 用户能安装、配置、运行第一个安全任务。
+- 用户不需要理解 runtime / bridge / cache / route，也能知道下一步该点哪里。
 - 用户知道 Agent 是否完成、依据是什么、读了什么、改了什么、为什么改、怎么撤回。
-- 用户能看见 route、cache、usage、cost 和 evidence。
+- 用户能在高级详情中看见 route、cache、usage、cost 和 evidence。
 - 用户能按任务查看成功/失败、首次完成、人工接管、rollback 和每成功任务成本。
 - 用户能在失败时诊断、回滚或提交有效 issue。
 

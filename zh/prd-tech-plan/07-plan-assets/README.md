@@ -33,7 +33,7 @@
 | `0.2.x` Desktop Code Workbench | 首片和 hardening 已完成并归档：`2026-06-08-start-desktop-code-workbench`、`2026-06-09-harden-desktop-code-workbench`。 | 后续只做明确 patch，不把新工作塞回旧 change。 |
 | `0.3.x` General Workspace Agent | 已实现并归档：`2026-06-09-start-general-workspace-agent`；主规格在 `openspec/specs/general-workspace-agent/spec.md`。 | 后续只做 patch。 |
 | `0.4.x` Integrations And Automation Preview | 已实现并归档：`2026-06-17-start-integrations-automation-preview`；主规格在 `openspec/specs/integrations-automation-preview/spec.md`。 | 后续只做 patch，不把新工作塞回旧 change。 |
-| `1.0` Stable Public Release | 已实现并归档：`2026-06-18-refresh-consumer-desktop-ui`、`2026-06-18-prepare-stable-public-release`；主规格在 `openspec/specs/consumer-desktop-ui/spec.md` 与 `openspec/specs/stable-public-release/spec.md`。 | 剩余是 commit / tag / remote release notes；新功能必须另开 OpenSpec。 |
+| `1.0` Stable Public Release | 已实现并归档：`2026-06-18-refresh-consumer-desktop-ui`、`2026-06-18-prepare-stable-public-release`；但 consumer UI 定位已被中文 B 端桌面重构取代。 | 当前执行入口是 `11-business-desktop-ui-redesign-plan.md` 与 OpenSpec `redesign-business-desktop-ui`。 |
 
 ### 基础规则
 
@@ -54,6 +54,7 @@
 ### 当前与后续版本研发计划
 
 11. [`1.0` Stable Public Release 版本研发计划](10-1-0-stable-public-release-plan.md)
+12. [中文 B 端桌面 UI 重构计划](11-business-desktop-ui-redesign-plan.md)
 
 ## 维护规则
 
