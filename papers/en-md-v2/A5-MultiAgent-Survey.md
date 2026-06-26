@@ -1,0 +1,1502 @@
+
+<!-- Page 1 -->
+
+A Survey on LLM-based Multi-Agent System:
+Recent Advances and New Frontiers in Application
+Shuaihang Chen 1
+Yuanxing Liu 1
+Wei Han 1
+Weinan Zhang 1 †
+Ting Liu 1
+1 Research Center for Social Computing and Information Retrieval
+Harbin Institute of Technology, China
+{shchen,   yxliu,   whan,   wnzhang,   tliu}@ir.hit.edu.cn
+Abstract
+LLM-based
+Multi-Agent
+Systems
+( LLM-MAS )
+have
+become
+a
+research
+hotspot   since   the   rise   of   large   language
+models ( LLM s).   However, with the continuous
+influx   of   new   related   works,   the   existing
+reviews   struggle   to   capture   them   comprehen-
+sively.   This   paper   presents   a   comprehensive
+survey   of   these   studies.
+We   first   discuss
+the   definition   of   LLM-MAS ,   a   framework
+encompassing   much   of   previous   work.   We
+provide an overview of the various applications
+of   LLM-MAS   in   (i)   solving   complex   tasks,
+(ii)   simulating   specific   scenarios,   and   (iii)
+evaluating   generative   agents.
+Building   on
+previous   studies,   we   also   highlight   several
+challenges   and   propose   future   directions   for
+research in this field.
+1
+Introduction
+Multi-Agent Systems ( MAS ) have seen significant
+expansion owing to its adaptability and ability to
+address complex, distributed challenges ( Balaji and
+Srinivasan ,  2010 ).   Compared to single-agent set-
+tings ( Gronauer and Diepold ,  2022 ),  MAS  provide
+a more accurate representation of the real world, as
+many real-world applications naturally involve mul-
+tiple   decision-makers   interacting   simultaneously.
+However, constrained by traditional reinforcement
+learning ( RL ) agent parameters and the absence of
+general knowledge and capabilities, agents are un-
+able to tackle complex decision-making tasks, such
+as collaborating with other agents for the develop-
+ment   ( Qian   et   al. ,   2024b ).   In   recent   years,   large
+language   models   ( LLM s),   e.g.   Llama   3   ( Dubey
+et al. ,  2024 ), and GPT-4 ( OpenAI et al. ,  2024 ), have
+achieved notable successes, training on a massive
+web corpus ( Radford et al. ).   Compared with  RL ,
+generative   agents,   with   LLM   as   the   core   control
+agents, can be better at reasoning, long-trajectory
+† Corresponding author.
+decision-making, etc., even without training ( Shinn
+et   al. ,   2023 ).   Furthermore,   generative   agents   of-
+fer natural language interfaces for interacting with
+humans,   making these interactions more flexible
+and   easier   to   explain   ( Park   et   al. ,   2023 ).   Based
+on these advantages, LLM-based Multi-Agent Sys-
+tems ( LLM-MAS ) emerged.   Researchers have sur-
+veyed these emerging works and proposed a gen-
+eral framework ( Guo et al. ,  2024 ).   However, as the
+number of related studies continues to grow, some
+works   have   emerged   that   fall   outside   the   scope
+of the original framework.   In this paper,   we pro-
+vide a new perspective based on previous reviews
+of LLM-based Multi-Agent Systems ( LLM-MAS )
+with a focus on recent advancements and discuss
+potential research directions.   We collected 125 pa-
+pers published in top artificial intelligence confer-
+ences, such as *ACL, NeurIPS, AAAI, and ICLR,
+in   2023   and   2024,   along   with   some   unpublished
+yet   valuable   papers   from   arXiv. 1   Based   on   the
+purpose   of   LLM-MAS ,   we   summarize   the   appli-
+cation   of   LLM-MAS   as   task-solving,   simulation
+for   specific   problems,   and   evaluation   of   genera-
+tive agents.   Figure  1  illustrates the framework we
+propose   for   LLM-MAS   application.   (i)   Solving
+complex   tasks.   Multi-agents   will   naturally   split
+tasks into subtasks,   which will improve task per-
+formance.   (ii)   Simulating   for   specific   scenarios.
+Researchers see  LLM-MAS  as a sandbox for simu-
+lating problems in a specific domain.   (iii) Evaluat-
+ing generative agents.   Compared with traditional
+task evaluation,   LLM-MAS  has the capability of
+dynamic   assessment,   which   is   more   flexible   and
+harder for data leakage.   For each category, we will
+discuss representative  LLM-MAS , resources, and
+their evaluation.
+Compared   to   the   previous   survey   ( Guo   et   al. ,
+2024 ;  Li et al. ,  2024d ;  Han et al. ,  2024 ;  Gronauer
+1 The list of papers included in this survey can be found in
+https://github.com/bianhua-12/Multi-generative_
+Agent_System_survey
+1
+arXiv:2412.17481v2  [cs.CL]  7 Jan 2025
+
+---
+
+
+<!-- Page 2 -->
+
+Evaluating
+generative
+agents
+Solving
+complex
+tasks
+Simulating specific
+scenarios
+Evaluating
+Social
+Physical
+Social
+Media
+Economics
+Wireless
+Network
+Game
+Collective Decision-
+Making
+Reasoning
+Framework
+Communication
+Optimization
+Muti-stage
+Speed
+Optimization
+Distributed
+Discussion
+Training
+Strategy
+Emotion
+Fine-Tuning on
+MGAS
+Synthesizing Data
+For Training
+Reinforcement Learning
+ on MGAS
+Self-
+Refine
+Profile
+Reasoning
+LLM-based Multi-
+Agent Systems
+Memory
+Generative agent
+Environment
+Rules
+LLM
+Intervention
+Tools
+Generative agent
+...
+Figure   1:   Overview   of   the   application   framework   and   relationship   of   LLM-MAS,   generative   agent,   and   LLM.
+Dashed-bordered right-angled rectangles represent content aligned with previous surveys, while rounded rectangles
+indicate original contributions introduced in this study.
+and Diepold ,  2022 ), this survey has the following
+distinctive contributions: (i)  A Taxonomy focusing
+on   application   of   LLM-MAS :   we   introduce   a
+more recent taxonomy (taxonomy and difference
+are shown in Figure  1 ) based on the purpose of the
+application of  LLM-MAS .   (ii)  More Resources :
+we analyze open-source frameworks and research
+works with benchmarks or datasets to facilitate the
+research community.   (iii)  Challenges and Future :
+we discuss the challenges in  LLM-MAS , and shed
+light on future research.
+2
+Core Components of LLM-MAS
+LLM-MAS   refer   to   a   system   that   includes   a   col-
+lection of generative agents capable of interacting
+and   collaborating   within   a   shared   environmental
+setting ( Wang et al. ,  2024c ).   We will discuss gener-
+ative agents and the environment in the following.
+2.1
+Generative Agents
+Generative   agents   refer   to   the   components   of
+LLM-MAS  that have role definitions, can perceive
+the environment, make decisions, and perform com-
+plex actions to change the environment ( Wang et al. ,
+2024a ).   They can be a player in a game or a user
+on   social   media   and   have   the   role   of   driving   the
+development of  LLM-MAS  and influencing its re-
+sults.
+Compared   to   traditional   agents,   generative
+agents need to be able to perform more complex be-
+haviors, such as generating complete personalized
+blog   posts   based   on   historical   information   ( Park
+et al. ,  2022 ).   Therefore, in addition to using  LLM s
+as the core, generative agents also require the fol-
+lowing characteristics:   (i)  Profiling  is used to link
+their   behavior   by   describing   roles   in   natural   lan-
+guage   ( Gao   et   al. ,   2023b ),   or   customizing   the
+prompts for each generative agent based on their
+tasks ( Xu et al. ,  2023c ). (ii)  Memory  is used to store
+historical   trajectories   and   retrieve   relevant   mem-
+ories   for   subsequent   agent   actions,   enabling   the
+ability to take long-term actions while solving the
+problem of limited LLM context windows.   There
+usually include three layers of memory:   long-term,
+short-term, and sensory memory ( Park et al. ,  2023 ).
+(iii)  Planning  is to formulate general behavior for
+a   longer   period   of   time   in   the   future   ( Yao   et   al. ,
+2023 ).   (iv)  Action  executes the interaction between
+the generative agent and the environment ( Wang
+et al. ,  2024a ).   Generative agents may be required
+to choose one of several candidate behaviors to ex-
+ecute, such as voting for whom ( Xu et al. ,  2024 ), or
+generate behaviors without mandatory constraints,
+such   as   generating   a   paragraph   of   text   ( Li   et   al. ,
+2023 ).
+Generative agents can communicate with each
+2
+
+
+|  | Politics |
+| --- | --- |
+| Tiny Society |  |
+
+
+
+| LLM | Profile |
+| --- | --- |
+
+
+---
+
+
+<!-- Page 3 -->
+
+other   to   achieve   cooperation   within   the   system.
+The   communication   of   generative   agents   can   be
+roughly   divided   into   two   purposes.   (i)   The   first
+purpose is to achieve collaboration, share the infor-
+mation obtained by themselves with other intelli-
+gent agents, and to some extent, aggregate multiple
+intelligent agents into a complete system, achiev-
+ing   performance   beyond   independent   intelligent
+agents ( Yuan et al. ,  2023 ); (ii) The second purpose
+is to achieve consensus, allowing for greater simi-
+larity in behavior or strategy among some agents,
+thereby enabling faster convergence to Nash equi-
+librium ( Oroojlooy and Hajinezhad ,  2023 ).
+The   type   of   communication   content   can   be
+roughly divided into two types:   natural language
+and   custom   content.   Natural   language   forms   of
+communication have high interpretability and flexi-
+bility.   Still, they are difficult to optimize, making
+them more suitable for pursuing consensus, such as
+Chatdev ( Qian et al. ,  2024b ) and job fair systems
+( Li et al. ,  2023 ).   Custom content may be a vector
+or a discrete signal that no one can understand ex-
+cept for the generative agent in the system.   But this
+form is easy to optimize using policy gradients, so
+it is commonly used for achieving cooperative pur-
+poses, such as the DIAL ( Hausknecht and Stone ,
+2015 ) algorithm and its variables.
+2.2
+Environment
+Environmental   settings   include   rules,   tools,   and
+intervention   interfaces:   (i)   Tools   are   responsible
+for   translating   the   agent’s   action   instruction   into
+specific outcomes.   Generative agents send action
+instructions   to   the   environment   and   the   environ-
+ment converts the instruction into a record that the
+action was taken.   There are different action spaces
+in different scenes.   In the social media scene, the
+action   space   concludes   “like”,   “comment”,   “fol-
+low”, etc. ( Wang et al. ,  2024b ).   In the development
+scene, the action space closes the chat chain ( Qian
+et al. ,  2024b ), which is larger than social networks.
+(ii)   Rules   define   the   mode   of   communication   be-
+tween generative agents or the interaction with the
+environment, directly defining the behavioral struc-
+ture of the entire system.   Based on the scene, there
+are some special rules for the system, such as rules
+of the game ( Xu et al. ,  2024 ;  Chen et al. ,  2024c ) and
+the norm of social behavior ( Park et al. ,  2023 ;  Wang
+et al. ,  2024b ).   Normally, a generative agent in the
+large-scale system has a smaller action space and is
+more easily replaced by a rule-based model ( Mou
+et al. ,  2024 ).   (iii)  Intervention  provides an interface
+for external intervention systems.   This intervention
+can come from any external source, human ( Wang
+et al. ,  2024b ), or a supervision model ( Chen et al. ,
+2024c ), even a generative agent ( Qian et al. ,  2024b ).
+The purpose of an intervention may be to actively
+read   information   from   the   system   ( Wang   et   al. ,
+2024b ),   or   passively   interrupt   the   system   to   pre-
+vent uncontrolled behavior from occurring ( Qian
+et al. ,  2024b ).
+3
+LLM-MAS for Solving Complex Tasks
+Completing a complex task usually requires mul-
+tiple roles,   multiple steps,   and so on.   This is dif-
+ficult for a single agent, but multiple agents work-
+ing together will be well suited to this task ( Islam
+et al. ,  2024 ).   Further, each of these agents can be
+trained independently ( Shen et al. ,  2024 ;  Yu et al. ,
+2024 ).   Compared with a single agent,  LLM-MAS
+can achieve better results.   That is, the multi-agent
+collaboration will improve the overall performance
+( Du et al. ,  2023 ).
+3.1
+Representative LLM-MAS for Solving
+Complex Tasks
+This field is currently a hot research topic. Recently,
+researchers mainly focus on multi-agent reasoning
+frameworks and multi-agent communication opti-
+mization, which will be discussed below.
+LLM-MAS   reasoning   framework.   We   sum-
+marize   three   aspects   by   the   pipeline   of   reason-
+ing, including:   (i) multi-stage framework, (ii) col-
+lective decision-making framework, and (iii) self-
+refine framework.   That is, the multi-stage frame-
+work   refers   to   a   pipeline   where   agents   act   as   se-
+rial problem solvers at different stages ( Qian et al. ,
+2024b ),   while   collective   decision-making   ( Zhao
+et   al. ,   2024c )   refers   to   different   agents   voting
+or   debating   for   one   goal.   Self-Refine   refers   to
+the   mechanism   of   self-reflection   in   LLM-MAS .
+Researchers   propose   a   framework   for   applying
+multi-agents   to   the   natural   sciences   ( Chen   et   al. ,
+2024a )   to   enhance   data   analysis,   model   simula-
+tions,   and   decision-making   processes   ( Yin   et   al. ,
+2024 ).   Zhang et al.  ( 2023a ) propose a framework
+to   achieve   self-adaptation   and   adaptive   coopera-
+tion.   Scaling law in agent cooperation is also ex-
+plored ( Qian et al. ,  2024c ), finding that there is no
+significant pattern.
+LLM-MAS communication optimization.   The
+fully connected communication in  LLM-MAS  can
+lead   to   issues   such   as   combinatorial   explosion
+3
+
+---
+
+
+<!-- Page 4 -->
+
+and   privacy   disclosure.   Based   on   this,   we   sum-
+marize two aspects in Communication Optimiza-
+tion, including:   (i) speed optimization and (ii) dis-
+tributed discussion.   Speed optimization refers to re-
+searchers trying to speed up the communication of
+agents, for example, with non-verbal communica-
+tion ( Liu et al. ,  2024b ) or shorter generation ( Chen
+et al. ,  2024g ).   While distributed discussion refers
+to agents trying to solve tasks without enough infor-
+mation ( Liu et al. ,  2024a ).   Agents need to commu-
+nicate with each other to achieve their goals ( Zhang
+et al. ,  2023a ), even without complete information
+in one agent( Liu et al. ,  2024a ).
+3.2
+Resources of LLM-MAS for Solving
+Complex Tasks
+We   summarize   common   and   open-source   LLM-
+MAS   for   simulation   in   Table   1 ,   including   code,
+dataset, and benchmark.
+Data set.   All datasets of traditional NLP tasks are
+available.   In addition, following ECL ( Qian et al. ,
+2024a ),   Qian   et   al.   ( 2024b )   evaluate   the   quality
+of   generated   software   on   the   SRDD   dataset   and
+systematically   evaluate   agent   capabilities   in   the
+domain of software development.
+Open   source   community.
+The   open-source
+and industrial communities have also contributed
+significantly   to   the   development   of   LLM-MAS.
+MetaGPT   ( Hong   et   al. ,   2023 )   assigns   different
+roles to generative agents to form a collaborative
+entity   for   complex   tasks.   Gao   et   al.   ( 2024 )   pro-
+pose   AgentScope   with   message   exchange   as   its
+core   communication   mechanism.
+In   the   mean-
+time, this work develops a distribution framework
+that   facilitates   seamless   switching   between   local
+and distributed deployments and automatic parallel
+optimization   with   minimal   effort.   Open   AI   pro-
+poses Swarm ( Ope ,  2024 ), an experimental multi-
+agent orchestration framework that is ergonomic
+and lightweight.   Unlike the previously released As-
+sistants API, Swarm gives developers fine-grained
+control   over   context,   steps,   and   tool   calls   rather
+than being hosted.
+3.3
+Evaluation of LLM-MAS for solving
+complex task
+Performance on specific tasks.   Shown as Table
+1 ,   the   performance   of   LLM-MAS   can   be   evalu-
+ated by specific tasks, which is intuitive and con-
+venient.   For example,   in an APP system ( Zhang
+et   al. ,   2023b ),   the   average   number   of   steps   and
+tools used by an agent to complete a specific task
+are considered as indicators; in BOLAA ( Liu et al. ,
+2023c ), the recall and QA accuracy of intelligent
+physical examination retrieval are also considered
+as evaluation indicators; in the Werewolf game ( Xu
+et   al. ,   2023c ),   the   win   rate   of   virtual   players   is
+naturally   also   an   evaluation   indicator;   in   the   job
+fair system ( Li et al. ,  2023 ) , the proportion of cor-
+rectly recruited target job seekers by the recruiting
+party is also an evaluation indicator; in the auction
+system ( Chen et al. ,  2024c ), the Spearman corre-
+lation coefficient between the predicted and actual
+prices of goods, as well as the skills of bidders, are
+also measured by TrueSkill scores ( Graepel et al. ,
+2007 );   in   Stanford   Town   ( Park   et   al. ,   2023 ),   the
+quality   of   behaviors   generated   by   virtual   agents
+and human agents is manually sorted and evaluated
+using TrueSkill; in urban simulation systems ( Xu
+et al. ,  2023a ), the success rate of completing spe-
+cific tasks such as navigation is also an evaluation
+metric.
+Communication cost analysis.   The paramount
+concern lies in the operational cost of the system.
+Given that a substantial proportion of contemporary
+systems incorporate  LLM s as a pivotal module, the
+additional expenditure incurred during system op-
+eration   has   emerged   as   a   pivotal   area   of   interest.
+As an illustrative example,  Mou et al.  ( 2024 ) uti-
+lize the actual runtime of the system as a pivotal
+metric, underscoring the significance of managing
+this operational overhead.
+4
+LLM-MAS for Simulating Specific
+Scenarios
+This   section   will   illustrate   the   application   for
+LLM-MAS   in   simulation.
+Researchers   apply
+agents   to   simulate   a   certain   scenario   to   study   its
+impact   on   a   specific   subject   like   social   science.
+On the one hand, compared with rule-based meth-
+ods ( Chuang and Rogers ,  2023 ), generative agents
+with natural language communication can be more
+intuitive for humans.   On the other hand, environ-
+ment determines the properties of the simulation,
+which is the core of the entire simulation.
+4.1
+Representative LLM-MAS for Simulating
+Specific Scenarios
+The typical scenarios for  LLM-MAS  simulations
+are   described   as   follows.   We   will   introduce   the
+following work according to the subject.
+Social domain.   Social large-scale experiments
+in   the   real   world   have   high   costs,   and   the   sheer
+4
+
+---
+
+
+<!-- Page 5 -->
+
+Table 1:   Codes and Benchmarks in LLM-MAS for solving tasks studies.   “No Code” or “No Benchmark” means the
+code or benchmark is unavailable.
+Field
+SubField
+Paper
+Code
+Dataset and Benchmark
+Reasoning
+Framework
+Muti-stage
+( Qian et al. ,  2024b )
+Code Link
+SRDD
+( Du et al. ,  2024 )
+Code Link
+SRDD
+( Yue et al. ,  2024 )
+Code Link
+SMART (self)
+( Liu et al. ,  2023c )
+Code Link
+WebShop
+( Lin et al. ,  2024 )
+Code Link
+FG-C, CG-O
+( Islam et al. ,  2024 )
+Code Link
+HumanEval, EvalPlus, MBPP,
+APPS, xCodeEval, CodeContest
+( Shen et al. ,  2024 )
+Code Link
+ToolBench, ToolAlpaca
+Collective
+Decision-Making
+( Zhao et al. ,  2024c )
+Code Link
+MCQA
+( Cheng et al. ,  2024 )
+Code Link
+ESConv dataset, P4G dataset
+( Liang et al. ,  2024 )
+Code Link
+MT-Bench
+( Lei et al. ,  2024 )
+Code Link
+MATH
+( Zhang et al. ,  2024a )
+Code Link
+MMLU, MATH, Chess Move Validity
+( Wang et al. ,  2024d )
+Code Link
+TriviaQA
+Self-Refine
+( Wang et al. ,  2024c )
+Code Link
+FOLIO-wiki
+( Chen et al. ,  2024e )
+Code Link
+StrategyQA, CSQA, GSM8K, AQuA,
+MATH, Date Understanding, ANLI
+( Chen et al. ,  2024a )
+Code Link
+TriviaQA
+( Tang et al. ,  2024 )
+Code Link
+Trans-Review,AutoTransform,T5-Review
+( Zhang et al. ,  2023a )
+Code Link
+Overcooked-AI
+Communication
+Optimization
+Speed Optimization
+( Liu et al. ,  2024b )
+No Code
+HotpotQA,NarrativeQA,MultifieldQA
+Distributed
+( Chen et al. ,  2024f )
+Code Link
+TriviaQA, Natural Questions,
+HotpotQA, 2WikiMultiHopQA
+( Liu et al. ,  2024a )
+Code Link
+InformativeBench
+scale   of   social   participation   can   sometimes   esca-
+late   into   violence   and   destruction,   posing   poten-
+tial   ramifications   ( Mou   et   al. ,   2024 ).   Therefore,
+it   is   necessary   to   simulate   in   the   virtual   environ-
+ment; simulation can solve the problem of exces-
+sive overhead in the real environment and can sim-
+ulate the process in the real world for a long time
+at   a   faster   speed   ( Li   et   al. ,   2024a ).   At   the   same
+time,   the   whole   process   can   be   easily   repeated,
+which is conducive to further research. Researchers
+have done a lot of work to simulate social media
+scenarios.   Based   on   the   social   media   simulation
+archetype   ( Park   et   al. ,   2022 ),   Park   et   al.   ( 2023 )
+propose Stanford Town, which leads to a one-day
+simulation   of   the   life   of   25   agents   with   different
+occupations in a small American town. At the same
+time, there was work on emotional propagation in-
+fluence   ( Gao   et   al. ,   2023b ),   information   cocoon
+room based on recommendation scenario research
+( Wang   et   al. ,   2024b ),   and   study   of   social   move-
+ments   ( Mou   et   al. ,   2024 ).   Researchers   propose
+Urban   Generative   Intelligence   (UGI)   ( Xu   et   al. ,
+2023a ) to address specific urban issues and simu-
+late complex urban systems, providing a multidis-
+ciplinary approach to understanding and managing
+urban   complexity.   Li   et   al.   ( 2024a )   study   doctor
+agent evolution method by hospital simulation.   Be-
+cause doctor agent training is both inexpensive and
+highly   effective,   this   work   can   quickly   scale   up
+the agent to handle tens of thousands of cases in
+just   a   few   days,   a   task   that   would   take   a   human
+doctor years to complete.  Pan et al.  ( 2024 ) propose
+a   huge   scale   of   agent   simulation,   increasing   the
+number of agents to  10 6 .   In social game,like Were-
+wolf ( Xu et al. ,  2024 ) , Avalon ( Lan et al. ,  2024 ) ,
+and Minecraft ( Gong et al. ,  2024 ) for  LLM-MAS
+simulation are attempted.   Further, some game com-
+panies like Netease are also actively experimenting
+with LLM-MAS in their games.
+Physical   domain.
+For   the   physical   domain,
+the applications for generative agent simulation in-
+clude mobility behaviors, transportation ( Gao et al. ,
+2023a ),   wireless   networks,   etc.   However,   there
+is limited research in the area of multi-generative
+agents.   Zou et al.  ( 2023 ) explore the application
+of multiple agents in the wireless field, proposing
+a framework where multiple on-device agents can
+interact with the environment and exchange knowl-
+edge to solve a complex task together.
+5
+
+---
+
+
+<!-- Page 6 -->
+
+4.2
+Resources for LLM-MAS simulation
+We
+summarize
+common
+and
+open-source
+LLM-MAS   for   simulation   in   Table   2 ,   including
+code and benchmarks.
+To prove the effectiveness of the simulation, that
+is, to fit the reality, researchers usually evaluate the
+simulation system by simulating real data.   There-
+fore, a realistic dataset with dense users and records
+is very important for evaluation simulation ( Mou
+et al. ,  2024 ).   An ideal dataset will be dense:   that
+is, data with a smaller number of users on the same
+scale can better evaluate the simulation capability
+of the LLM-MAS.
+For Benchmark,  Du and Zhang  ( 2024 ) propose
+WWQA   based   on   werewolf   scenarios   to   evalu-
+ate the agent’s capability in a werewolf scenario.
+SoMoSiMu-Bench   ( Mou   et   al. ,   2024 )   provides
+evaluation benchmarks focusing on individual user
+behavior and social simulation system results.
+4.3
+Evaluation of LLM-MAS simulation
+We will discuss the evaluation based on indicators
+used for assessing LLM-MAS as a whole, rather
+than the capabilities of individual agents.
+Consistency.   LLM-MAS   necessitate   a   robust
+congruence with the real world to ensure the deriva-
+tion of meaningful and insightful experimental out-
+comes.   In the context of simulation systems, exem-
+plified by UGI ( Xu et al. ,  2023a ), the primary objec-
+tive lies in faithfully replicating specific real-world
+scenarios.   When employed for training agents like
+SMART ( Yue et al. ,  2024 ), only those agents that
+have undergone rigorous training within a virtual
+environment that closely mirrors the real environ-
+ment   can   be   deemed   suitable   for   deployment   in
+real-world   settings.   Similarly,   when   utilized   for
+evaluation   purposes,   such   as   in   AgentSims   ( Lin
+et al. ,  2023 ), the attainment of authentic and reli-
+able evaluation results is contingent upon the vir-
+tual environment maintaining a high degree of con-
+sistency with its real-world counterpart.   Finally, in
+the system for collecting data such as BOLAA ( Liu
+et al. ,  2023c ), consistency also ensures the validity
+of the data.   Therefore, an important performance
+measure of LLM-MAS is its consistency with the
+real situation.
+Information dissemination.   Compare the dif-
+ferences between information dissemination behav-
+ior in the system and reality using time series anal-
+ysis   methods.   Information   dissemination   can   to
+some extent reflect the nature of media; therefore,
+a realistic multi-agent system should have a similar
+information dissemination trend to the real world.
+Abdelzaher et al.  ( 2020 ) compare the changes in
+the number of events occurring each day in an on-
+line social media simulation environment; S3 ( Gao
+et   al. ,   2023b )   compare   the   number   of   users   who
+are aware of a certain event every day, as well as
+the changes in emotional density and support rate
+for that event every day; a similar approach is also
+used in Stanford Town ( Park et al. ,  2023 ).
+5
+LLM-MAS for Evaluating Generative
+Agents
+With  LLM s prevailing in the community, how to
+evaluate the ability of  LLM s is an open question.
+Existing   evaluation   methods   suffer   from   the   fol-
+lowing   shortcomings:   (i)   constrained   evaluation
+abilities, (ii) vulnerable benchmarks, and (iii) un-
+objective   metrics.   The   complexity   and   diversity
+of  LLM-MAS  have indicated that  LLM-MAS  can
+evaluate  LLM s.   However, how to design specific
+evaluation indicators and evaluation methods has
+puzzled   researchers.   Similarly,   LLM-MAS   can
+also be used in training generative agents.   We sum-
+marize   three   aspects   of   training:   (i)   Supervised
+Fine-Tuning (SFT) (ii) reinforcement learning ( RL )
+(iii) Synthesizing data for training.
+5.1
+Representative LLM-MAS for Evaluating
+Generative Agents
+LLM-MAS   can   provide   rewards   to   agents,   and
+these rewards can be used to evaluate or train gen-
+erative agents, which will be discussed below.
+Evaluation of generative agents.   Researchers
+study   generative   agents   by   putting   them   into
+LLM-MAS . In  LLM-MAS , researchers can further
+study the LLM’s strategic capabilities in different
+scenes, such as long strategic ability ( Chen et al. ,
+2024c ), leadership strategy ( Xu et al. ,  2023c ) and
+competitiveness strategy ( Zhao et al. ,  2024b ).   In
+the emotional field, MuMA-ToM ( Shi et al. ,  2024 )
+is   used   to   evaluate   the   ability   of   agents   to   under-
+stand and reason about human interactions in a real
+home environment through video and text descrip-
+tions.
+Training on generative agents.   Li et al.  ( 2024c )
+enhance   the   data   to
+Supervised   Fine-Tuning
+(SFT) generative agents with  LLM-MAS .  Xu et al.
+( 2023c )   have   created   generative   agents   to   over-
+come the intrinsic bias from  LLM s by proposing
+a novel framework that powers generative agents
+6
+
+---
+
+
+<!-- Page 7 -->
+
+Table 2:   Codes and Benchmarks in LLM-MAS for simulation studies.   “No Code” or “No Benchmark” means the
+code or benchmark is unavailable.
+Domain
+Subdomain
+Paper
+Code
+Dataset and Benchmark
+Social
+Tiny Society
+( Huang et al. ,  2024b )
+No Code
+AdaSociety
+( Chen et al. ,  2024b )
+Code Link
+AgentCourt
+( Park et al. ,  2023 )
+Code Link
+No Benchmark or Dataset
+( Piatti et al. ,  2024 )
+Code Link
+No Benchmark
+( Chuang et al. ,  2024 )
+Code Link
+No Benchmark or Dataset
+Economics
+( Li et al. ,  2024b )
+Code Link
+No Benchmark or Dataset
+Social Media
+( Wang et al. ,  2024b )
+Code Link
+Movielens-1M
+( Gao et al. ,  2023b )
+No Code
+Blog Authorship Corpus
+( Mou et al. ,  2024 )
+Code Link
+SoMoSiMu-Bench(self)
+Game
+( Du and Zhang ,  2024 )
+Code Link
+WWQA
+( Pan et al. ,  2024 )
+Code Link
+No Benchmark or Dataset
+Physical
+Wireless
+( Zou et al. ,  2023 )
+No Code
+No Benchmark or Dataset
+with multi-agent reinforcement learning ( Xu et al. ,
+2023c ).   For   LLM-MAS ,   Yue   et   al.   ( 2024 )   split
+complex trajectories in knowledge-intensive tasks
+into   subtasks,   proposing   a   co-training   paradigm
+of   the   multi-agent   framework,   Long-   and   Short-
+Trajectory Learning, which ensures synergy while
+keeping the fine-grained performance of each agent.
+RLHF   has   been   criticized   for   its   high   cost.   Liu
+et al.  ( 2023a ) propose an alignment scheme based
+on a multi-agent system, effectively addressing in-
+stability   and   reward   gaming   concerns   associated
+with   reward-based   RL   optimization.   Either   way,
+LLM-MAS   are   essentially   viewed   as   an   environ-
+ment in  RL  with different ways of getting rewards
+from the environment.
+5.2
+Resources of LLM-MAS for evaluations
+Table   3   shows   the   work   with   code,   dataset,   and
+benchmark we summarize, serving as a reference
+for future researchers.
+6
+Challenges and Future Directions
+While previous work on  LLM-MAS  has obtained
+many remarkable successes, this field is still at its
+initial stage, and there are several significant chal-
+lenges that need to be addressed in its development.
+In the following, we outline several key challenges
+along with potential future directions.
+6.1
+Challenges posed by generative agents
+Generative
+agents
+are
+an
+integral
+part
+of
+LLM-MAS .   However, the generative agents have
+some shortcomings due to the inherent characteris-
+tics of the base model  LLM s, which will be care-
+fully discussed below.
+Challenges.   (i) Generalized alignment for simu-
+lation ( Liu et al. ,  2023a ). When the agents are lever-
+aged for real-world simulation, a perfect generative
+agent should be able to depict diverse traits ( Wang
+et al. ,  2024a ) honestly.   However, due to the train-
+ing method of the foundation model ( OpenAI et al. ,
+2024 ), generative agents usually cannot be aligned
+with mock objects.   (ii) Hallucination.   Generative
+agents have a certain probability of hallucination
+in   their   interaction   with   other   agents   ( Du   et   al. ,
+2023 ).   Various enhancement methods can allevi-
+ate   this   problem   but   cannot   solve   it   (iii)   Lack   of
+sufficient   long   text   capability.   When   processing
+complex information, generative agents forget the
+input information because of the lack of long-text
+ability ( Zhao et al. ,  2024a ).
+Future directions.   The improvement of the abil-
+ity of a single agent or the ability of the base model
+has   always   been   a   hot   topic.   Researchers   have
+focused on enhancing alignment, reducing halluci-
+nation, and improving the ability of long text.   The
+proposal of the new generation of Open AI model
+o1 ( Int ,  2024 ), provides researchers with new ideas,
+that is, to use  more complex reasoning  to enhance
+the ability of the model.
+6.2
+Challenges posed by interactions
+Due   to   the   complexity,   autoregressive,   and   other
+characteristics of  LLM-MAS , there are many prob-
+lems in the practical application of the system. Two
+main problems,  Efficiency explosion , and  Accumu-
+lative Effect , are listed in the following.
+7
+
+---
+
+
+<!-- Page 8 -->
+
+Table 3:   Codes and Benchmarks in LLM-MAS for evaluation studies.   “No Code” or “No Benchmark” means the
+code or benchmark is unavailable.
+Domain
+Subdomain
+Paper
+Code
+Dataset and Benchmark
+Evaluation of
+generative agents
+Strategy
+( Liu et al. ,  2023b )
+Code Link
+AGENTBENCH
+( Bandi and Harrasse ,  2024 )
+No Code
+MT-Bench
+( Chan et al. ,  2023 )
+Code Link
+ChatEval
+( Chen et al. ,  2024d )
+Code Link
+LLMARENA
+( Xu et al. ,  2023b )
+Code Link
+MAgIC
+( Huang et al. ,  2024a )
+Code Link
+MLAgentBench
+( Chen et al. ,  2024c )
+Code Link
+AUCARENA
+Emotion
+( Zhang et al. ,  2024b )
+Code Link
+PsySafe
+( Shi et al. ,  2024 )
+Code Link
+MuMA-ToM
+Training on
+generative agents
+SFT on LLM-MAS
+( Li et al. ,  2024c )
+Code Link
+MT-Bench, AlpacaEval
+MARL on LLM-MAS
+( Xu et al. ,  2023c )
+No Code
+No dataset or benchmark
+Synthesized Ddata
+( Liu et al. ,  2023a )
+Code Link
+HH, Moral Stories, MIC,
+ETHICS-Deontology, TruthfulQA
+Efficiency explosion.   Due to their autoregres-
+sive architecture,  LLM s typically have slow infer-
+ence speeds.   However, generative agents need to
+query  LLM s for each action multiple times, such
+as   extracting   information   from   memory,   making
+plans before taking actions, and so on.   When the
+LLM-MAS  scales up, this problem will be magni-
+fied,   especially   for   generative   agents   that   have   a
+large action space.   SoMoSiMu-Bench ( Mou et al. ,
+2024 ) replaces the edge generative agents with rule-
+based agents,   alleviating this problem.   However,
+for  LLM-MAS  with a complex action space in gen-
+erative agents, this problem remains unsolved.
+Accumulative   Effect.
+Since   each   round   of
+LLM-MAS   is   based   on   the   results   of   the   previ-
+ous   round,   and   LLM-MAS   have   a   great   impact
+on the subsequent results.   Researchers have used
+a rule-based model for intermediate error correc-
+tion ( Chen et al. ,  2024c ), but there is still a lot of
+room for improvement.   IOA ( Chen et al. ,  2024f )
+proposed an Internet-like communication architec-
+ture,   which   made   LLM-MAS   more   scalable   and
+enhanced the adaptability to dynamic tasks.
+Future directions.   Industry academia has been
+making efforts to reduce the communication cost
+of   LLM-MAS ,   such   as   alignment-based   method
+OPTIMA ( Chen et al. ,  2024g ) and Industrialized
+parallel message method AgentScope ( Gao et al. ,
+2024 ),   but   it   is   still   in   the   basic   stage   and   has   a
+large research space.
+6.3
+Challenges of Evaluating for LLM-MAS
+Lack   of   Objective   metrics   for   group   behavior.
+As shown in Section  4.3 , due to the diversity, com-
+plexity,   and   unpredictability   of   multi-agent   envi-
+ronments,   it   is   difficult   to   obtain   sufficiently   de-
+tailed, specific, and direct system evaluation indi-
+cators   from   current   work   at   the   population   level.
+At   present,   researchers   mainly   compare   the   dis-
+tribution   of   the   system   and   real   environments   to
+evaluate   LLM-MAS ,   which   lacks   details   for   the
+LLM-MAS running process.
+Automated evaluation and benchmark.   Dif-
+ferent  LLM-MAS  of the same kind cannot be com-
+pared   because   of   the   lack   of   a   benchmark   for
+LLM-MAS .   Further, there is a lack of a common
+benchmark framework for both individual and total-
+based evaluation, that can be used to evaluate most
+LLM-MAS.
+Future   directions.
+Studying   large-scale
+LLM-MAS  will be a new research hotspot,   from
+which researchers will evaluate and discover new
+scale effects.   In the meantime, common test bench-
+marks and evaluation methods will also emerge in
+future research.
+7
+Conclusion
+In   this   survey,   we   systematically   summarize   ex-
+isting   research   in   the   LLM-based   Multi-Agent
+Systems   ( LLM-MAS )   field.   We   present   and   re-
+view these studies from three application aspects:
+task-solving,   simulation,   and   evaluation   of   the
+LLM-MAS .   We   provide   a   detailed   taxonomy   to
+draw   connections   among   the   existing   research,
+summarizing   the   major   techniques   and   their   de-
+velopment histories for each of these aspects.   In
+addition to reviewing the previous work, we also
+propose several challenges in this field, which are
+expected to guide potential future directions.
+8
+
+---
+
+
+<!-- Page 9 -->
+
+Limitations
+We   have   made   our   best   effort,   but   some   lim-
+itations   may   still   exist.
+Due   to   page   limita-
+tions,   we   can   only   provide   a   brief   summary   of
+each method without exhaustive technical details.
+On   the   other   hand,   we   primarily   collect   studies
+from   *ACL,   NeurIPS,   ICLR,   AAAI,   and   arXiv,
+and   there   is   a   chance   that   we   may   have   missed
+some   important   work   published   in   other   venues.
+In   application,   we   primarily   list   representative
+LLM-MAS   resources   with   open   code   in   Table   1 ,
+Table  2 ,   and Table  3 .   More complete papers can
+be   found   in   https://github.com/bianhua-12/
+Multi-generative_Agent_System_survey .   We
+recognize the timeliness of our work, and we will
+stay abreast of discussions within the research com-
+munity, updating opinions and supplementing over-
+looked work in the future.
+Acknowledgments
+This   research   was   supported   by   the   National
+Key   Research   and   Development   Program   (No.
+2022YFF0902100), and the Nature Scientific Foun-
+dation of Heilongjiang Province (YQ2021F006).
+References
+2024.   Introducing OpenAI o1.   https://openai.com/o1/.
+2024.   Openai/swarm.   OpenAI.
+Tarek Abdelzaher, Jiawei Han, Yifan Hao, Andong Jing,
+Dongxin Liu, Shengzhong Liu, Hoang Hai Nguyen,
+David   M   Nicol,   Huajie   Shao,   Tianshi   Wang,   et   al.
+2020.   Multiscale online media simulation with so-
+cialcube.   Computational and Mathematical Organi-
+zation Theory , 26:145–174.
+P. G. Balaji and D. Srinivasan. 2010.   An Introduction
+to   Multi-Agent   Systems .   In   Dipti   Srinivasan   and
+Lakhmi C. Jain, editors,  Innovations in Multi-Agent
+Systems and Applications - 1 , pages 1–27. Springer,
+Berlin, Heidelberg.
+Chaithanya   Bandi   and   Abir   Harrasse.   2024.
+Ad-
+versarial   Multi-Agent   Evaluation   of   Large   Lan-
+guage Models through Iterative Debates .   Preprint ,
+arXiv:2410.04663.
+Chi-Min Chan, Weize Chen, Yusheng Su, Jianxuan Yu,
+Wei   Xue,   Shanghang   Zhang,   Jie   Fu,   and   Zhiyuan
+Liu.   2023.   ChatEval:   Towards   Better   LLM-based
+Evaluators   through   Multi-Agent   Debate .   Preprint ,
+arXiv:2308.07201.
+Guangyao   Chen,   Siwei   Dong,   Yu   Shu,   Ge   Zhang,
+Jaward   Sesay,   Börje   F.   Karlsson,   Jie   Fu,   and
+Yemin   Shi.   2024a.
+AutoAgents:
+A   Frame-
+work   for   Automatic   Agent   Generation .
+Preprint ,
+arXiv:2309.17288.
+Guhong Chen, Liyang Fan, Zihan Gong, Nan Xie, Zix-
+uan Li, Ziqiang Liu, Chengming Li, Qiang Qu, Shi-
+wen Ni, and Min Yang. 2024b.   AgentCourt:   Simulat-
+ing Court with Adversarial Evolvable Lawyer Agents .
+Preprint , arXiv:2408.08089.
+Jiangjie Chen, Siyu Yuan, Rong Ye, Bodhisattwa Prasad
+Majumder, and Kyle Richardson. 2024c.   Put Your
+Money Where Your Mouth Is:   Evaluating Strategic
+Planning and Execution of LLM Agents in an Auc-
+tion Arena .   Preprint , arXiv:2310.05746.
+Junzhe Chen, Xuming Hu, Shuodi Liu, Shiyu Huang,
+Wei-Wei   Tu,   Zhaofeng   He,   and   Lijie   Wen.   2024d.
+LLMArena:   Assessing   Capabilities   of   Large   Lan-
+guage   Models   in   Dynamic   Multi-Agent   Environ-
+ments .   In   Proceedings   of   the   62nd   Annual   Meet-
+ing of the Association for Computational Linguistics
+(Volume 1:   Long Papers) , pages 13055–13077.
+Justin   Chen,   Swarnadeep   Saha,   and   Mohit   Bansal.
+2024e.   ReConcile:   Round-Table   Conference   Im-
+proves   Reasoning   via   Consensus   among   Diverse
+LLMs .   In  Proceedings of the 62nd Annual Meeting
+of the Association for Computational Linguistics (Vol-
+ume 1:   Long Papers) , pages 7066–7085, Bangkok,
+Thailand. Association for Computational Linguistics.
+Weize Chen, Ziming You, Ran Li, Yitong Guan, Chen
+Qian,   Chenyang   Zhao,   Cheng   Yang,   Ruobing   Xie,
+Zhiyuan   Liu,   and   Maosong   Sun.   2024f.
+Inter-
+net   of   Agents:   Weaving   a   Web   of   Heterogeneous
+Agents   for   Collaborative   Intelligence .
+Preprint ,
+arXiv:2407.07061.
+Weize   Chen,   Jiarui   Yuan,   Chen   Qian,   Cheng   Yang,
+Zhiyuan Liu, and Maosong Sun. 2024g.   Optima:   Op-
+timizing Effectiveness and Efficiency for LLM-Based
+Multi-Agent System .   Preprint , arXiv:2410.08115.
+Yi   Cheng,   Wenge   Liu,   Jian   Wang,   Chak   Tou   Leong,
+Yi Ouyang, Wenjie Li, Xian Wu, and Yefeng Zheng.
+2024.
+Cooper:   Coordinating   Specialized   Agents
+towards   a   Complex   Dialogue   Goal .
+Proceedings
+of   the   AAAI   Conference   on   Artificial   Intelligence ,
+38(16):17853–17861.
+Yun-Shiuan   Chuang,   Agam   Goyal,   Nikunj   Harlalka,
+Siddharth Suresh, Robert Hawkins, Sijia Yang, Dha-
+van   Shah,   Junjie   Hu,   and   Timothy   Rogers.   2024.
+Simulating   Opinion   Dynamics   with   Networks   of
+LLM-based Agents .   In  Findings of the Association
+for Computational Linguistics:   NAACL 2024 , pages
+3326–3346,   Mexico   City,   Mexico.   Association   for
+Computational Linguistics.
+Yun-Shiuan   Chuang   and   Timothy   T.   Rogers.   2023.
+Computational Agent-based Models in Opinion Dy-
+namics:   A Survey on Social Simulations and Empiri-
+cal Studies .   Preprint , arXiv:2306.03446.
+9
+
+---
+
+
+<!-- Page 10 -->
+
+Silin Du and Xiaowei Zhang. 2024.   Helmsman of the
+Masses?   Evaluate the Opinion Leadership of Large
+Language Models in the Werewolf Game.   In  First
+Conference on Language Modeling .
+Yilun   Du,   Shuang   Li,   Antonio   Torralba,   Joshua   B.
+Tenenbaum,
+and   Igor   Mordatch.   2023.
+Im-
+proving   Factuality   and   Reasoning   in   Language
+Models   through   Multiagent   Debate .
+Preprint ,
+arXiv:2305.14325.
+Zhuoyun   Du,   Chen   Qian,   Wei   Liu,   Zihao   Xie,   Yifei
+Wang,   Yufan   Dang,   Weize   Chen,   and   Cheng
+Yang.   2024.
+Multi-Agent   Software   Develop-
+ment through Cross-Team Collaboration .   Preprint ,
+arXiv:2406.08979.
+Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey,
+Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman,
+Akhil   Mathur,   et   al.   2024.   The   Llama   3   Herd   of
+Models .   Preprint , arXiv:2407.21783.
+Chen Gao, Xiaochong Lan, Nian Li, Yuan Yuan, Jingtao
+Ding, Zhilun Zhou, Fengli Xu, and Yong Li. 2023a.
+Large   Language   Models   Empowered   Agent-based
+Modeling   and   Simulation:   A   Survey   and   Perspec-
+tives .   Preprint , arXiv:2312.11970.
+Chen Gao, Xiaochong Lan, Zhihong Lu, Jinzhu Mao,
+Jinghua   Piao,   Huandong   Wang,   Depeng   Jin,   and
+Yong Li. 2023b.   S3:   Social-network Simulation Sys-
+tem with Large Language Model-Empowered Agents .
+Preprint , arXiv:2307.14984.
+Dawei Gao, Zitao Li, Xuchen Pan, Weirui Kuang, Zhi-
+jian   Ma,   Bingchen   Qian,   Fei   Wei,   Wenhao   Zhang,
+Yuexiang   Xie,   Daoyuan   Chen,   Liuyi   Yao,   Hongyi
+Peng, Zeyu Zhang, Lin Zhu, Chen Cheng, Hongzhu
+Shi, Yaliang Li, Bolin Ding, and Jingren Zhou. 2024.
+AgentScope: A Flexible yet Robust Multi-Agent Plat-
+form .   Preprint , arXiv:2402.14034.
+Ran Gong, Qiuyuan Huang, Xiaojian Ma, Yusuke Noda,
+Zane Durante, Zilong Zheng, Demetri Terzopoulos,
+Li Fei-Fei, Jianfeng Gao, and Hoi Vo. 2024.   MindA-
+gent:   Emergent   Gaming   Interaction .   In   Findings
+of   the   Association   for   Computational   Linguistics:
+NAACL 2024 , pages 3154–3183, Mexico City, Mex-
+ico. Association for Computational Linguistics.
+Thore Graepel, Tom Minka, and R TrueSkill Herbrich.
+2007.   A   bayesian   skill   rating   system.   Advances
+in Neural Information Processing Systems , 19(569-
+576):7.
+Sven Gronauer and Klaus Diepold. 2022.   Multi-agent
+deep   reinforcement   learning:   A   survey .   Artificial
+Intelligence Review , 55(2):895–943.
+Taicheng Guo, Xiuying Chen, Yaqi Wang, Ruidi Chang,
+Shichao Pei, Nitesh V. Chawla, Olaf Wiest, and Xian-
+gliang Zhang. 2024.   Large Language Model Based
+Multi-agents:   A Survey of Progress and Challenges .
+In   Thirty-Third   International   Joint   Conference   on
+Artificial Intelligence , volume 9, pages 8048–8057.
+Shanshan   Han,   Qifan   Zhang,   Yuhang   Yao,   Weizhao
+Jin,   Zhaozhuo Xu,   and Chaoyang He. 2024.   LLM
+Multi-Agent   Systems:   Challenges   and   Open   Prob-
+lems .   Preprint , arXiv:2402.03578.
+Matthew   Hausknecht   and   Peter   Stone.   2015.
+Deep
+recurrent   q-learning   for   partially   observable   mdps.
+Computer Science .
+Sirui Hong, Mingchen Zhuge, Jonathan Chen, Xiawu
+Zheng, Yuheng Cheng, Ceyao Zhang, Jinlin Wang,
+Zili Wang, Steven Ka Shing Yau, Zijuan Lin, Liyang
+Zhou,   Chenyu   Ran,   Lingfeng   Xiao,   Chenglin   Wu,
+and Jürgen Schmidhuber. 2023.   MetaGPT: Meta Pro-
+gramming for A Multi-Agent Collaborative Frame-
+work .   Preprint , arXiv:2308.00352.
+Qian   Huang,   Jian   Vora,   Percy   Liang,   and   Jure
+Leskovec. 2024a.   MLAgentBench:   Evaluating Lan-
+guage Agents on Machine Learning Experimentation .
+Preprint , arXiv:2310.03302.
+Yizhe   Huang,   Xingbo   Wang,   Hao   Liu,   Fanqi   Kong,
+Aoyang Qin,   Min Tang,   Xiaoxi Wang,   Song-Chun
+Zhu, Mingjie Bi, Siyuan Qi, and Xue Feng. 2024b.
+AdaSociety:   An   Adaptive   Environment   with   So-
+cial   Structures   for   Multi-Agent   Decision-Making .
+Preprint , arXiv:2411.03865.
+Md.   Ashraful   Islam,   Mohammed   Eunus   Ali,   and
+Md Rizwan Parvez. 2024.   MapCoder:   Multi-Agent
+Code Generation for Competitive Problem Solving .
+In   Proceedings   of   the   62nd   Annual   Meeting   of   the
+Association for Computational Linguistics (Volume 1:
+Long Papers) , pages 4912–4944, Bangkok, Thailand.
+Association for Computational Linguistics.
+Yihuai Lan, Zhiqiang Hu, Lei Wang, Yang Wang, De-
+heng Ye, Peilin Zhao, Ee-Peng Lim, Hui Xiong, and
+Hao Wang. 2024.   LLM-Based Agent Society Inves-
+tigation:   Collaboration and Confrontation in Avalon
+Gameplay .   Preprint , arXiv:2310.14985.
+Bin Lei, Yi Zhang, Shan Zuo, Ali Payani, and Caiwen
+Ding. 2024.   MACM: Utilizing a Multi-Agent System
+for Condition Mining in Solving Complex Mathemat-
+ical Problems .   Preprint , arXiv:2404.04735.
+Junkai Li, Siyu Wang, Meng Zhang, Weitao Li, Yungh-
+wei   Lai,   Xinhui   Kang,   Weizhi   Ma,   and   Yang   Liu.
+2024a.
+Agent   Hospital:   A   Simulacrum   of   Hos-
+pital   with   Evolvable   Medical   Agents .
+Preprint ,
+arXiv:2405.02957.
+Nian Li, Chen Gao, Mingyu Li, Yong Li, and Qingmin
+Liao. 2024b.   EconAgent:   Large Language Model-
+Empowered Agents for Simulating Macroeconomic
+Activities .   In  Proceedings of the 62nd Annual Meet-
+ing   of   the   Association   for   Computational   Linguis-
+tics (Volume 1:   Long Papers) , pages 15523–15536,
+Bangkok, Thailand. Association for Computational
+Linguistics.
+Renhao   Li,   Minghuan   Tan,   Derek   F.   Wong,   and   Min
+Yang.   2024c.
+CoEvol:   Constructing   Better   Re-
+sponses   for   Instruction   Finetuning   through   Multi-
+Agent Cooperation .   Preprint , arXiv:2406.07054.
+10
+
+---
+
+
+<!-- Page 11 -->
+
+Xinyi   Li,   Sai   Wang,   Siqi   Zeng,   Yu   Wu,   and Yi   Yang.
+2024d.   A   survey   on   LLM-based   multi-agent   sys-
+tems:   Workflow, infrastructure, and challenges .   Vici-
+nagearth , 1(1):9.
+Yuan Li, Yixuan Zhang, and Lichao Sun. 2023.   MetaA-
+gents:   Simulating   Interactions   of   Human   Behav-
+iors   for   LLM-based   Task-oriented   Coordination
+via   Collaborative   Generative   Agents .
+Preprint ,
+arXiv:2310.06500.
+Tian   Liang,   Zhiwei   He,   Wenxiang   Jiao,   Xing   Wang,
+Yan   Wang,   Rui   Wang,   Yujiu   Yang,   Shuming   Shi,
+and   Zhaopeng   Tu.   2024.
+Encouraging   Divergent
+Thinking in Large Language Models through Multi-
+Agent Debate .   Preprint , arXiv:2305.19118.
+Jiaju Lin, Haoran Zhao, Aochi Zhang, Yiting Wu, Huqi-
+uyue   Ping,   and   Qin   Chen.   2023.   AgentSims:   An
+Open-Source   Sandbox   for   Large   Language   Model
+Evaluation .   Preprint , arXiv:2308.04026.
+Leilei Lin, Yumeng Jin, Yingming Zhou, Wenlong Chen,
+and Chen Qian. 2024.   MAO: A Framework for Pro-
+cess Model Generation with Multi-Agent Orchestra-
+tion .   Preprint , arXiv:2408.01916.
+Ruibo Liu, Ruixin Yang, Chenyan Jia, Ge Zhang, Diyi
+Yang,   and   Soroush   Vosoughi.   2023a.   Training   So-
+cially Aligned Language Models on Simulated Social
+Interactions.   In  The Twelfth International Conference
+on Learning Representations .
+Wei Liu, Chenxi Wang, Yifei Wang, Zihao Xie, Rennai
+Qiu, Yufan Dang, Zhuoyun Du, Weize Chen, Cheng
+Yang, and Chen Qian. 2024a.   Autonomous Agents
+for Collaborative Task under Information Asymme-
+try .   Preprint , arXiv:2406.14928.
+Xiao Liu, Hao Yu, Hanchen Zhang, Yifan Xu, Xuanyu
+Lei,   Hanyu   Lai,   Yu   Gu,   Hangliang   Ding,   Kaiwen
+Men, Kejuan Yang, Shudan Zhang, Xiang Deng, Ao-
+han   Zeng,   Zhengxiao   Du,   Chenhui   Zhang,   Sheng
+Shen,   Tianjun   Zhang,   Yu   Su,   Huan   Sun,   Minlie
+Huang, Yuxiao Dong, and Jie Tang. 2023b.   Agent-
+Bench:   Evaluating   LLMs   as   Agents .
+Preprint ,
+arXiv:2308.03688.
+Yuhan   Liu,   Esha   Choukse,   Shan   Lu,   Junchen   Jiang,
+and   Madan   Musuvathi.   2024b.
+DroidSpeak:   En-
+hancing   Cross-LLM   Communication .
+Preprint ,
+arXiv:2411.02820.
+Zhiwei   Liu,   Weiran   Yao,   Jianguo   Zhang,   Le   Xue,
+Shelby   Heinecke,   Rithesh   Murthy,   Yihao   Feng,
+Zeyuan Chen, Juan Carlos Niebles, Devansh Arpit,
+Ran Xu, Phil Mui, Huan Wang, Caiming Xiong, and
+Silvio Savarese. 2023c.   BOLAA: Benchmarking and
+Orchestrating LLM-augmented Autonomous Agents .
+Preprint , arXiv:2308.05960.
+Xinyi Mou, Zhongyu Wei, and Xuanjing Huang. 2024.
+Unveiling   the   Truth   and   Facilitating   Change:   To-
+wards   Agent-based   Large-scale   Social   Movement
+Simulation .   In  Findings of the Association for Com-
+putational Linguistics ACL 2024 , pages 4789–4809,
+Bangkok, Thailand and virtual meeting. Association
+for Computational Linguistics.
+OpenAI, Josh Achiam, Steven Adler, Sandhini Agarwal,
+Lama   Ahmad,   Ilge   Akkaya,   Florencia   Leoni   Ale-
+man, Diogo Almeida, Janko Altenschmidt, Sam Alt-
+man, et al. 2024.   GPT-4 Technical Report .   Preprint ,
+arXiv:2303.08774.
+Afshin   Oroojlooy   and   Davood   Hajinezhad.   2023.   A
+review of cooperative multi-agent deep reinforcement
+learning.   Applied Intelligence , 53(11):13677–13722.
+Xuchen   Pan,   Dawei   Gao,   Yuexiang   Xie,   Yushuo
+Chen, Zhewei Wei, Yaliang Li, Bolin Ding, Ji-Rong
+Wen,   and   Jingren   Zhou.   2024.   Very   Large-Scale
+Multi-Agent   Simulation   in   AgentScope .   Preprint ,
+arXiv:2407.17789.
+Joon   Sung   Park,   Joseph   C.   O’Brien,   Carrie   J.   Cai,
+Meredith Ringel Morris, Percy Liang, and Michael S.
+Bernstein.   2023.
+Generative   Agents:
+Interac-
+tive   Simulacra   of   Human   Behavior .
+Preprint ,
+arXiv:2304.03442.
+Joon   Sung   Park,   Lindsay   Popowski,   Carrie   J.   Cai,
+Meredith Ringel Morris, Percy Liang, and Michael S.
+Bernstein.   2022.   Social   Simulacra:   Creating   Pop-
+ulated   Prototypes   for   Social   Computing   Systems .
+Preprint , arXiv:2208.04024.
+Giorgio Piatti, Zhijing Jin, Max Kleiman-Weiner, Bern-
+hard Schölkopf, Mrinmaya Sachan, and Rada Mihal-
+cea.   2024.   Cooperate   or   Collapse:   Emergence   of
+Sustainable Cooperation in a Society of LLM Agents .
+Preprint , arXiv:2404.16698.
+Chen Qian, Yufan Dang, Jiahao Li, Wei Liu, Zihao Xie,
+YiFei Wang,   Weize   Chen,   Cheng Yang,   Xin Cong,
+Xiaoyin Che, Zhiyuan Liu, and Maosong Sun. 2024a.
+Experiential   Co-Learning   of   Software-Developing
+Agents .   In  Proceedings of the 62nd Annual Meeting
+of the Association for Computational Linguistics (Vol-
+ume 1:   Long Papers) , pages 5628–5640, Bangkok,
+Thailand. Association for Computational Linguistics.
+Chen Qian, Wei Liu, Hongzhang Liu, Nuo Chen, Yufan
+Dang, Jiahao Li, Cheng Yang, Weize Chen, Yusheng
+Su,   Xin   Cong,   Juyuan   Xu,   Dahai   Li,   Zhiyuan   Liu,
+and Maosong Sun. 2024b.   ChatDev: Communicative
+Agents for Software Development .   In  Proceedings
+of   the   62nd   Annual   Meeting   of   the   Association   for
+Computational Linguistics (Volume 1:   Long Papers) ,
+pages 15174–15186, Bangkok, Thailand. Association
+for Computational Linguistics.
+Chen   Qian,   Zihao   Xie,   Yifei   Wang,   Wei   Liu,   Yu-
+fan Dang, Zhuoyun Du, Weize Chen, Cheng Yang,
+Zhiyuan   Liu,   and   Maosong   Sun.   2024c.
+Scaling
+Large-Language-Model-based Multi-Agent Collabo-
+ration .   Preprint , arXiv:2406.07155.
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan,
+Dario Amodei, and Ilya Sutskever.   Language Models
+are Unsupervised Multitask Learners.
+11
+
+---
+
+
+<!-- Page 12 -->
+
+Weizhou Shen,   Chenliang Li,   Hongzhan Chen,   Ming
+Yan, Xiaojun Quan, Hehong Chen, Ji Zhang, and Fei
+Huang. 2024.   Small LLMs Are Weak Tool Learners:
+A Multi-LLM Agent .   Preprint , arXiv:2401.07324.
+Haojun   Shi,   Suyu   Ye,   Xinyu   Fang,   Chuanyang   Jin,
+Leyla Isik, Yen-Ling Kuo, and Tianmin Shu. 2024.
+MuMA-ToM: Multi-modal Multi-Agent Theory of
+Mind .   Preprint , arXiv:2408.12574.
+Noah   Shinn,   Federico   Cassano,   Ashwin   Gopinath,
+Karthik   Narasimhan,   and   Shunyu   Yao.   2023.   Re-
+flexion:   Language agents with verbal reinforcement
+learning.   Advances in Neural Information Process-
+ing Systems , 36:8634–8652.
+Xunzhu Tang, Kisub Kim, Yewei Song, Cedric Lothritz,
+Bei Li, Saad Ezzini, Haoye Tian, Jacques Klein, and
+Tegawende   F.   Bissyande.   2024.   CodeAgent:   Au-
+tonomous Communicative Agents for Code Review .
+Preprint , arXiv:2402.02172.
+Lei Wang, Chen Ma, Xueyang Feng, Zeyu Zhang, Hao
+Yang,   Jingsen   Zhang,   Zhiyuan   Chen,   Jiakai   Tang,
+Xu Chen, Yankai Lin, Wayne Xin Zhao, Zhewei Wei,
+and Jirong Wen. 2024a.   A survey on large language
+model based autonomous agents .   Frontiers of Com-
+puter Science , 18(6):186345.
+Lei   Wang,   Jingsen   Zhang,   Hao   Yang,   Zhiyuan   Chen,
+Jiakai Tang, Zeyu Zhang, Xu Chen, Yankai Lin, Rui-
+hua Song, Wayne Xin Zhao, Jun Xu, Zhicheng Dou,
+Jun   Wang,   and   Ji-Rong   Wen.   2024b.   User   Behav-
+ior   Simulation   with   Large   Language   Model   based
+Agents .   Preprint , arXiv:2306.02552.
+Qineng Wang, Zihao Wang, Ying Su, Hanghang Tong,
+and Yangqiu Song. 2024c.   Rethinking the Bounds of
+LLM Reasoning:   Are Multi-Agent Discussions the
+Key?   In  Proceedings of the 62nd Annual Meeting of
+the Association for Computational Linguistics (Vol-
+ume 1:   Long Papers) , pages 6106–6131, Bangkok,
+Thailand. Association for Computational Linguistics.
+Zhenhailong   Wang,   Shaoguang   Mao,   Wenshan   Wu,
+Tao   Ge,   Furu   Wei,   and   Heng   Ji.   2024d.   Unleash-
+ing the Emergent Cognitive Synergy in Large Lan-
+guage Models:   A Task-Solving Agent through Multi-
+Persona   Self-Collaboration .   In   Proceedings   of   the
+2024 Conference of the North American Chapter of
+the Association for Computational Linguistics:   Hu-
+man   Language   Technologies   (Volume   1:   Long   Pa-
+pers) , pages 257–279, Mexico City, Mexico. Associ-
+ation for Computational Linguistics.
+Fengli Xu, Jun Zhang, Chen Gao, Jie Feng, and Yong
+Li. 2023a.   Urban Generative Intelligence (UGI): A
+Foundational Platform for Agents in Embodied City
+Environment .   Preprint , arXiv:2312.11813.
+Lin   Xu,   Zhiyuan   Hu,   Daquan   Zhou,   Hongyu   Ren,
+Zhen   Dong,   Kurt   Keutzer,   See   Kiong   Ng,   and   Ji-
+ashi   Feng.   2023b.   MAgIC:   Investigation   of   Large
+Language Model Powered Multi-Agent in Cognition,
+Adaptability, Rationality and Collaboration .   Preprint ,
+arXiv:2311.08562.
+Yuzhuang Xu, Shuo Wang, Peng Li, Fuwen Luo, Xiao-
+long Wang, Weidong Liu, and Yang Liu. 2024.   Ex-
+ploring Large Language Models for Communication
+Games:   An Empirical Study on Werewolf .   Preprint ,
+arXiv:2309.04658.
+Zelai   Xu,   Chao   Yu,   Fei   Fang,   Yu   Wang,   and   Yi   Wu.
+2023c.   Language Agents with Reinforcement Learn-
+ing for Strategic Play in the Werewolf Game.
+Shunyu   Yao,   Jeffrey   Zhao,   Dian   Yu,   Nan   Du,   Izhak
+Shafran, Karthik Narasimhan, and Yuan Cao. 2023.
+ReAct:   Synergizing Reasoning and Acting in Lan-
+guage Models .   Preprint , arXiv:2210.03629.
+Xiangyu   Yin,   Chuqiao   Shi,   Yimo   Han,   and   Yi   Jiang.
+2024.
+PEAR:   A   Robust   and   Flexible   Automa-
+tion Framework for Ptychography Enabled by Mul-
+tiple   Large   Language   Model   Agents .
+Preprint ,
+arXiv:2410.09034.
+Xiaoyan Yu, Tongxu Luo, Yifan Wei, Fangyu Lei, Yim-
+ing   Huang,   Hao   Peng,   and   Liehuang   Zhu.   2024.
+Neeko:   Leveraging   Dynamic   LoRA   for   Efficient
+Multi-Character   Role-Playing   Agent .
+Preprint ,
+arXiv:2402.13717.
+Haoqi   Yuan,   Chi   Zhang,   Hongcheng   Wang,   Feiyang
+Xie,   Penglin   Cai,   Hao   Dong,   and   Zongqing   Lu.
+2023.   Skill Reinforcement   Learning   and   Planning
+for   Open-World   Long-Horizon   Tasks .
+Preprint ,
+arXiv:2303.16563.
+Shengbin   Yue,   Siyuan   Wang,   Wei   Chen,   Xuanjing
+Huang,   and   Zhongyu   Wei.   2024.
+Synergistic
+Multi-Agent   Framework   with   Trajectory   Learn-
+ing   for   Knowledge-Intensive   Tasks .
+Preprint ,
+arXiv:2407.09893.
+Ceyao   Zhang,   Kaijie   Yang,   Siyi   Hu,   Zihao   Wang,
+Guanghe   Li,   Yihang   Sun,   Cheng   Zhang,   Zhaowei
+Zhang,   Anji Liu,   Song-Chun Zhu,   Xiaojun Chang,
+Junge Zhang, Feng Yin, Yitao Liang, and Yaodong
+Yang. 2023a.   ProAgent:   Building Proactive Cooper-
+ative AI with Large Language Models.   CoRR .
+Chi Zhang, Zhao Yang, Jiaxuan Liu, Yucheng Han, Xin
+Chen, Zebiao Huang, Bin Fu, and Gang Yu. 2023b.
+AppAgent:   Multimodal Agents as Smartphone Users .
+Preprint , arXiv:2312.13771.
+Jintian   Zhang,   Xin   Xu,   Ningyu   Zhang,   Ruibo   Liu,
+Bryan   Hooi,   and   Shumin   Deng.   2024a.   Exploring
+Collaboration Mechanisms for LLM Agents:   A So-
+cial Psychology View .   In  Proceedings of the 62nd
+Annual Meeting of the Association for Computational
+Linguistics (Volume 1:   Long Papers) , pages 14544–
+14607, Bangkok, Thailand. Association for Compu-
+tational Linguistics.
+Zaibin   Zhang,   Yongting   Zhang,   Lijun   Li,   Jing   Shao,
+Hongzhi   Gao,   Yu   Qiao,   Lijun   Wang,   Huchuan   Lu,
+and Feng Zhao. 2024b.   PsySafe:   A Comprehensive
+Framework for Psychological-based Attack, Defense,
+and   Evaluation   of   Multi-agent   System   Safety .   In
+12
+
+---
+
+
+<!-- Page 13 -->
+
+Proceedings of the 62nd Annual Meeting of the As-
+sociation for Computational Linguistics (Volume 1:
+Long Papers) , pages 15202–15231, Bangkok, Thai-
+land. Association for Computational Linguistics.
+Jun Zhao, Can Zu, Hao Xu, Yi Lu, Wei He, Yiwen Ding,
+Tao   Gui,   Qi   Zhang,   and   Xuanjing   Huang.   2024a.
+LongAgent:   Scaling Language Models to 128k Con-
+text   through   Multi-Agent   Collaboration .   Preprint ,
+arXiv:2402.11550.
+Qinlin Zhao, Jindong Wang, Yixuan Zhang, Yiqiao Jin,
+Kaijie Zhu, Hao Chen, and Xing Xie. 2024b.   Com-
+peteAI:   Understanding   the   Competition   Dynamics
+in Large Language Model-based Agents .   Preprint ,
+arXiv:2310.17512.
+Xiutian   Zhao,   Ke   Wang,   and   Wei   Peng.   2024c.
+An   Electoral   Approach   to   Diversify   LLM-based
+Multi-Agent Collective Decision-Making .   Preprint ,
+arXiv:2410.15168.
+Hang Zou, Qiyang Zhao, Lina Bariah, Mehdi Bennis,
+and Merouane Debbah. 2023.   Wireless Multi-Agent
+Generative AI: From Connected Intelligence to Col-
+lective Intelligence .   Preprint , arXiv:2307.02757.
+13
+
+---
