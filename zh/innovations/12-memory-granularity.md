@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-12
 > **LLM + Harness = Agent** · 第 12 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[05 文档 KV Cache 优化结构](05-document-kv-cache.md)
 > **下一篇**：待定
 

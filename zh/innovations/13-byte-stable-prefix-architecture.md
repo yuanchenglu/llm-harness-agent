@@ -4,7 +4,7 @@
 
 > 创新索引: I-13
 > **LLM + Harness = Agent** · 第 13 篇
-> 系列: [LLM + Harness = Agent](../../README_zh.md)
+> 系列: [LLM + Harness = Agent](../../README.md)
 > 关联: [I-04 KV Cache Prefix 硬约束注入](04-kv-cache-prefix.md) · [I-05 文档 KV Cache 优化](05-document-kv-cache.md)
 
 ---

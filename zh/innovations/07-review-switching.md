@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-02
 > **LLM + Harness = Agent** · 第 7 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[06 OKR 增强型 PlanStep + 级联修正引擎](06-okr-planstep-cascade.md)
 > **下一篇**：[08 Scope Creep 检测与自适应拒绝](08-scope-creep.md)
 

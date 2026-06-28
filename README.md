@@ -1,97 +1,109 @@
 # LLM + Harness = Agent
 
-> From model capability to a verifiable Agent system — a theory grounded in practice, source audits, and testable hypotheses
+> 从模型能力到可验证 Agent 系统——基于长期实践、源码审计与待验证实验的理论框架
 
-[**阅读简体中文版**](README_zh.md) · [**⭐ Star this repo**](https://github.com/yuanchenglu/llm-harness-agent) to get notified when new articles drop
+[**English**](README_en.md) · [**简体中文**](README.md)
 
 ---
 
 ## TL;DR
 
-1. **Model capability is not product capability.** Context, tools, permissions, state, and verification can change the reliability, cost, and experience of the same model.
-2. **A Harness is the protocol, control, and evidence layer between a model and the real world.** It can amplify capability or introduce new failure modes, so it must be evaluated with source evidence and benchmarks.
-3. **This repository is a theory and research guide, not a completed product benchmark.** Practice raises questions, source audits confirm implementations, and experiments decide what belongs in DeepSeek Agent.
+1. **模型能力不等于产品能力**。同一个模型经过不同的上下文、工具、权限、状态与验证机制，会表现出明显不同的可靠性、成本和用户体验。
+2. **Harness 是模型与真实世界之间的协议层、控制层和证据层**。它能放大模型能力，也可能引入新的错误，因此必须基于源码和 benchmark 评估。
+3. **本文档集是理论与调研入口，不是已经完成的产品 benchmark**。长期实践用于提出问题，源码审计用于确认实现，协议与成本实验用于决定哪些结论可以进入 DeepSeek Agent。
+
+## 当前产品化入口
+
+如果你关心 DeepSeekAgent 0.1.x 怎么从研究 MVP 走向公开试用，先读这些中文文档：
+
+| 文档 | 用途 |
+|---|---|
+| [中文表达与术语表](zh/prd-tech-plan/00-中文表达与术语表.md) | 解释 release artifact、production gate、checksum、runtime 等术语在项目推进里的意思 |
+| [PRD TechPlan](zh/prd-tech-plan/README.md) | 当前产品化路线、PRD、技术方案、release gates 和决策记录 |
+| [Blueprint 交接包](zh/blueprint/README.md) | 阶段真相、证据链和历史调研入口 |
+
+阅读顺序：先看 PRD TechPlan 判断下一步，再回到 Blueprint 追溯证据。
 
 ---
 
-## Core Architecture
+## 核心架构
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                                                              │
-│   LLM (Probabilistic Engine)     Harness Runtime & Evidence   │
-│   ────────────────────           ────────────────────────────│
+│   LLM (概率推理引擎)           Harness Runtime (控制与证据系统) │
+│   ─────────────              ─────────────────────            │
 │                                                              │
-│   Understand intent    ──→       Persistent Memory            │
-│   Generate code/text  ──→       Tools and Policy             │
-│   Logical reasoning   ──→       State and Orchestration      │
-│   Pattern recognition ──→       Checkpoints and Verification │
-│                                 Routing and Cost Telemetry    │
-│                                 Sandbox, Recovery, Review     │
-│                                 Context Compilation           │
+│   理解用户意图    ──→         持久记忆 (Memory)                │
+│   生成代码/文本  ──→         工具与权限 (Tools + Policy)       │
+│   逻辑推理       ──→         状态与编排 (State + Orchestrator) │
+│   模式识别       ──→         Checkpoint 与验证 (Evidence)     │
+│                             模型路由与成本遥测                 │
+│                             沙箱、恢复与审查                   │
+│                             上下文编译与压缩                   │
 │                                                              │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**One sentence**: The model is a probabilistic inference engine; the Harness connects it to context, tools, permissions, state, and evidence. The CPU/OS analogy is useful for intuition, but it does not replace protocol and runtime analysis.
+**一句话**：模型像概率推理引擎，Harness 则负责把它连接到上下文、工具、权限、状态和证据。CPU/操作系统类比便于理解，但不能代替真实的协议与运行时分析。
 
 ---
 
-## Navigation
+## 导航
 
-### Start Here
+### 推荐先读
 
-| Article | Purpose |
+| 文章 | 用途 |
 |---|---|
-| [DeepSeek Agent Theory Guide](en/theory/theory-guide.md) | A five-layer theory of model, context, tools, orchestration, and evidence |
-| [Research Method and Evidence Calibration](en/theory/research-method.md) | What is source-grounded and what remains a hypothesis |
-| [DeepSeek API and Prefix Cache Benchmark Harness Plan (Chinese)](zh/blueprint/benchmark-harness-plan.md) | Experiment matrix, gates, and decision branches for the next and only execution task |
-| [Product Comparison](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | Product boundaries and use cases |
+| [DeepSeek Agent 理论总纲](zh/theory/theory-guide.md) | 从模型、上下文、工具、编排和证据五层理解产品理论 |
+| [研究方法与事实校准](zh/theory/research-method.md) | 了解哪些观点已被源码确认，哪些仍是待验证假设 |
+| [DeepSeek API 与 Prefix Cache Benchmark Harness 计划](zh/blueprint/benchmark-harness-plan.md) | 下一阶段唯一任务的实验矩阵、验收门槛与结果决策树 |
+| [产品对比](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | 理解不同 Agent 产品的边界与适用场景 |
 
-### Core Innovations (standalone deep-dives)
+### 核心创新点（每篇独立深度文章）
 
-| # | Article | One-liner |
-|---|---------|-----------|
-| [01](en/innovations/01-agent-immune-system.md) | **Agent Immune System** | Prompt instructions inevitably decay — make the harness self-audit and self-repair |
-| [02](en/innovations/02-bidirectional-agent.md) | **Brain Drives the Cerebellum** | From "Harness→LLM" one-way to "LLM⇄Harness" bidirectional flow |
-| [03](en/innovations/03-attention-budget.md) | **Attention Budget Management** | Agent degradation may come from context and attention management, not only the model |
-| [04](en/innovations/04-kv-cache-prefix.md) | **KV Cache Prefix Injection** | Separate stable constraints from compressible history to reduce loss during compaction |
-| [05](en/innovations/05-document-kv-cache.md) | **Document KV Cache Optimization** | Apply the agent's internal optimization to its own document output |
-| [06](en/innovations/06-okr-planstep-cascade.md) | **OKR PlanStep + Cascade Correction** | Upgrade flat checklists to directed dependency graphs with auto-cascade |
-| [07](en/innovations/07-review-switching.md) | **KV Cache-Driven Review Switching** | Review depth as f(KV Cache, Plan complexity), not a fixed threshold |
-| [08](en/innovations/08-scope-creep.md) | **Two-Level Scope Creep Strategy** | Demand creep and technical creep are different diseases — different treatments |
-| [09](en/innovations/09-skills-self-evolution.md) | **Skills Self-Evolution** | Crystallize successful patterns into reusable skills to reduce repeated reasoning |
-| [10](en/innovations/10-intent-routing.md) | **7+1 Intent→Strategy Routing** | Recognize task intent → auto-match interview depth, review standard, execution mode |
-| [11](en/innovations/11-checkpoint-review.md) | **Checkpoint Multi-Round Review** | Use independent snapshots to bound review context instead of replaying full history |
-| [12](en/innovations/12-memory-granularity.md) | **Memory Granularity Control** | Stronger memory isn't always better — convergent tasks need it, divergent tasks don't |
-| [13](en/innovations/13-byte-stable-prefix-architecture.md) | **Byte-Stable Prefix Architecture** | Don't just cache the system prompt — make the whole agent cache-first |
-| [14](en/innovations/14-reasoning-content-stripping.md) | **Reasoning Content Stripping** | Agent should know what NOT to send — every token must justify its existence |
+| # | 文章 | 一句话 |
+|---|------|--------|
+| [01](zh/innovations/01-agent-immune-system.md) | **Agent 免疫系统** | Prompt 指令可能在长任务中失效，让 Harness 自查自修而非让模型硬记 |
+| [02](zh/innovations/02-bidirectional-agent.md) | **大脑主动驱动小脑** | 从「Harness→LLM」单向流变为「LLM⇄Harness」双向主动流 |
+| [03](zh/innovations/03-attention-budget.md) | **注意力预算管理** | Agent 表现退化不一定是模型问题，也可能来自上下文与注意力管理 |
+| [04](zh/innovations/04-kv-cache-prefix.md) | **KV Cache 硬约束前缀注入** | 把稳定约束与可压缩历史分离，降低约束在压缩中丢失的风险 |
+| [05](zh/innovations/05-document-kv-cache.md) | **文档 KV Cache 优化结构** | 把 Agent 内部的优化原理应用到文档规范上——元层面的自指 |
+| [06](zh/innovations/06-okr-planstep-cascade.md) | **OKR 增强型 PlanStep + 级联修正** | Plan 从扁平清单升级为有向依赖图，改一步自动级联修正 |
+| [07](zh/innovations/07-review-switching.md) | **KV Cache 驱动的审查深度切换** | 审查标准不该是固定阈值，应该是 f(KV Cache, Plan 复杂度) |
+| [08](zh/innovations/08-scope-creep.md) | **两层面范围蔓延的分治策略** | 需求蔓延和技术蔓延是两种病，不能用同一种药 |
+| [09](zh/innovations/09-skills-self-evolution.md) | **Skills 自进化闭环** | Agent 完成复杂任务→提议沉淀为 Skill→下次减少重复推理 |
+| [10](zh/innovations/10-intent-routing.md) | **7+1 意图→策略自动切换** | 识别任务意图→自动匹配采访深度/审查标准/执行模式 |
+| [11](zh/innovations/11-checkpoint-review.md) | **Checkpoint 快照驱动的多轮审查** | 用独立快照控制审查上下文，而不是反复携带完整历史 |
+| [12](zh/innovations/12-memory-granularity.md) | **Memory 粒度控制** | Memory 不是越强越好——收敛任务要强记忆，发散任务要弱记忆 |
+| [13](zh/innovations/13-byte-stable-prefix-architecture.md) | **Byte-Stable Prefix 作为架构约束** | 不只是缓存 System Prompt——让整个 Agent 以 Cache 优先 |
+| [14](zh/innovations/14-reasoning-content-stripping.md) | **Reasoning Content 回传陷阱** | Agent 应该知道什么不该回传——每个 Token 都要证明自己的存在价值 |
 
-### Product Analysis
+### 产品分析
 
-| Article | Content |
+| 文章 | 内容 |
 |------|------|
-| [9 Agent Products: Calibrated Comparison](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | Calibrated comparison of Hermes / ClaudeCode / OpenCode / Codex / OpenClaw / Cursor / Coze / pi agent / CodeWhale + agent matrix division of labor |
-| [DeepSeek-Reasonix Deep Analysis](zh/blueprint/03-Agent竞品Harness调研-Agent-Competitor-Harness-Research/7-a-Reasonix-PrefixCache架构深度分析.md) | Source-code level analysis + three-way comparison (Hermes vs CodeWhale) + 9 DeepSeek Prefix Cache optimizations |
+| [9 款 Agent 产品校准对比](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | Hermes / ClaudeCode / OpenCode / Codex / OpenClaw / Cursor / Coze / pi agent / CodeWhale 的校准对比 + Agent 矩阵分工 |
+| [DeepSeek-Reasonix 深度分析](zh/blueprint/03-Agent竞品Harness调研-Agent-Competitor-Harness-Research/7-a-Reasonix-PrefixCache架构深度分析.md) | Reasonix 源码级技术分析 + Hermes vs CodeWhale 三方对比 + 9 个 DeepSeek Prefix Cache 优化 |
 
 ---
 
-## About Me
+## 关于我
 
-Yuan Chenglu. 10+ years in the DeepinOS open-source community. Product Director at CodingCat → Founder at MiniCoding.
+袁成路。DeepinOS 开源社区十年，编程猫产品总监 → 迷你编程创始人。
 
-Now running an agent matrix across 5 machines: 3 R&D squads (OpenCode / ClaudeCode / CodeX) + 1 marketing squad (OpenClaw), with Hermes as the CEO orchestrating everything. Multiple rounds of Volcano Engine Hermes Agent internal beta testing.
+现在用 5 台机器跑 Agent 矩阵：3 个研发小组（OpenCode / ClaudeCode / CodeX）+ 1 个市场运营组（OpenClaw），由 Hermes 做 CEO 统一调度。多期参与火山方舟 Hermes Agent 内部众测。
 
-I believe LLM + Harness = Agent. Models and Harnesses evolve together. DeepSeek introduces new model capabilities and cost structures; the next task is turning them into dependable products through verifiable systems engineering.
-
----
-
-## Get Involved
-
-- **Technical discussion / opportunities**: yuanchenglu001@gmail.com
-- **GitHub Issues**: Disagree with an innovation point? Open an Issue with your reasoning chain
-- **License**: [CC BY-NC-SA 4.0](LICENSE.md) — non-commercial sharing and adaptation with attribution and share-alike required. See [CONTRIBUTING.md](CONTRIBUTING.md)
+我相信 LLM + Harness = Agent。模型和 Harness 会共同演进。DeepSeek 提供了新的模型能力与成本结构，现在需要用可验证的系统工程把这些能力变成可靠产品。
 
 ---
 
-*This is the entry point for the "LLM + Harness = Agent" series. Each innovation article can be read independently and they interconnect. Start from 01 — they share the same core logic: "separate what can't be lost from what can be compressed."*
+## 参与讨论
+
+- **深度技术交流 / 工作机会**：yuanchenglu001@gmail.com
+- **GitHub Issue**：对任何创新点有不同看法，开 Issue 讨论
+- **协议**：[CC BY-NC-SA 4.0](LICENSE.md) — 允许非商业分享和改编，需署名并以相同方式共享。详见 [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+*本文为「LLM + Harness = Agent」系列的总入口。每篇创新点文章都可以独立阅读，也互相关联。建议从 01 开始，按顺序读——它们共享同一个核心逻辑：「把不可丢失的和可以压缩的分开」。*

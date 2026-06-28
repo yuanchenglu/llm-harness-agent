@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-08
 > **LLM + Harness = Agent** · 第 10 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[09 Skills 自进化闭环](09-skills-self-evolution.md)
 > **下一篇**：[11 Checkpoint 快照驱动的多轮审查](11-checkpoint-review.md)
 
