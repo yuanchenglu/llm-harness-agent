@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-06
 > **LLM + Harness = Agent** · 第 4 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[03 注意力预算管理](03-attention-budget.md)
 > **下一篇**：[05 文档 KV Cache 优化结构](05-document-kv-cache.md)
 

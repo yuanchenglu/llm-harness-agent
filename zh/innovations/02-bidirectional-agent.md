@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-09
 > **LLM + Harness = Agent** · 第 2 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[01 Agent 免疫系统](01-agent-immune-system.md)
 > **下一篇**：[03 注意力预算管理](03-attention-budget.md)
 

@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-07
 > **LLM + Harness = Agent** · 第 9 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[08 两层面范围蔓延的分治策略](08-scope-creep.md)
 > **下一篇**：[10 7+1 意图→策略自动切换](10-intent-routing.md)
 

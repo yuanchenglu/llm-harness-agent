@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-13
 > **LLM + Harness = Agent** · 第 1 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **下一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent.md)
 
 ---

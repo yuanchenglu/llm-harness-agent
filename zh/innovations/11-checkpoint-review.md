@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-12
 > **LLM + Harness = Agent** · 第 11 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[10 意图路由：7+1 意图→策略自动切换](10-intent-routing.md)
 > **下一篇**：[12 Memory 粒度控制](12-memory-granularity.md)
 

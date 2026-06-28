@@ -4,7 +4,7 @@
 
 > 创新索引: I-14
 > **LLM + Harness = Agent** · 第 14 篇
-> 系列: [LLM + Harness = Agent](../../README_zh.md)
+> 系列: [LLM + Harness = Agent](../../README.md)
 > 关联: [I-13 Byte-Stable Prefix 架构](13-byte-stable-prefix-architecture.md)
 
 ---

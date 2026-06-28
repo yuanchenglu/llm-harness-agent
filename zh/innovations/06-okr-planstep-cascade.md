@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-01, I-03
 > **LLM + Harness = Agent** · 第 6 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[05 文档 KV Cache 优化结构](05-document-kv-cache.md)
 > **下一篇**：[07 审查切换引擎](07-review-switching.md)
 

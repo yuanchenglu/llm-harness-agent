@@ -4,7 +4,7 @@
 
 > **创新点索引**：I-10, I-11
 > **LLM + Harness = Agent** · 第 3 篇
-> **系列**：[LLM + Harness = Agent](../../README_zh.md)
+> **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent.md)
 > **下一篇**：[04 KV Cache 硬约束前缀注入](04-kv-cache-prefix.md)
 
