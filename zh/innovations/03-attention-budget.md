@@ -30,9 +30,9 @@
 
 根因不在模型能力，在 Transformer 架构的注意力机制。
 
-Transformer 的自注意力计算复杂度为 O(n²)：每个 token 的注意力权重需要在全量 token 序列上分配。当序列长度为 128K 时，你 System Prompt 里最关键的那几句——「不要改 config 文件」「必须用 Python 3.11」「每次修改后跑测试」——在注意力权重中，被后面几万字的对话内容「淹没」了。
+Transformer 的自注意力在标准实现中计算复杂度为 O(n²)：每个 token 的注意力权重需要在全量 token 序列上分配。当序列长度为 128K 时，你 System Prompt 里最关键的那几句——「不要改 config 文件」「必须用 Python 3.11」「每次修改后跑测试」——在注意力权重中，被后面几万字的对话内容「淹没」了。
 
-这不是 DeepSeek 的问题，不是 GPT 的问题，不是 Claude 的问题。是 Transformer 架构的物理边界。
+> **补充说明**：DeepSeek V4 通过 CSA（Compressed Sparse Attention）+ HCA（Heavily Compressed Attention）+ MQA（1 KV head）大幅降低了实际推理复杂度（官方数据：1M context 下仅需 V3.2 的 27% FLOPs + 10% KV cache）。但注意力稀释的数学本质不变——softmax 权重分配仍随序列增长被稀释，问题只是来得更晚。
 
 **为什么更大的 Context Window 解决不了这个问题**：1M Context Window 只是把注意力稀释从「第 15 轮开始」推迟到「第 50 轮开始」。问题本身没有消失——注意力权重随序列长度增长而衰减的数学关系 O(1/L) 不因窗口上限提高而改变。窗口越大，你能产生越长（也越容易被稀释淹没）的对话，反而可能让用户更难感知到衰退的临界点。
 
@@ -204,6 +204,8 @@ Claude Code 和 Hermes 简单压缩的核心问题相同：它们都在注意力
 | 每次任务 Skill 加载 Token 消耗 | 10K-40K（全量） | 2K-5K（按需） |
 | 每次任务节省 Token | — | **8K-35K** |
 | 主 Agent 上下文膨胀速度 | 基线 | **降低 ~60%** |
+
+> **数据说明**：自测数据，基于 DeepSeek V4 Pro，v0.x 版本，混合重构+新建+bug修复三类任务各 20 次独立运行。实验环境、代码和统计检验待补充。需独立复现。
 
 **关键结论**：模型没有任何变化。同一个 DeepSeek V4 Pro。唯一的变量是 Harness 层如何管理注意力预算。但有效智能的差异是显著的——用户体感上，有预算管理的 Agent 「更聪明」，不是因为模型更强，是因为模型在做的每一件事上都有更充足的注意力。
 
