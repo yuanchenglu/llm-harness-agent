@@ -42,7 +42,7 @@
 | **Claude Code** | 回传 thinking blocks（Anthropic 要求，tool-call 连续性） | 零 — Anthropic cache 覆盖 signed thinking blocks |
 | **Hermes** | 存入 `assistant_msg["reasoning"]`，包含在消息历史中 | Provider 依赖；未专门 strip |
 | **CodeWhale** | 未专门文档化 | 未知 |
-| **Reasonix** | **显式 strip** reasoning_content in `buildRequest()` | 源码注释报告可减少输入；本项目尚未独立复现实验 |
+| **Reasonix** | **条件 strip** reasoning_content in `buildRequest()`：非 tool-call 轮次剥离；tool-call 轮次保留（API 协议要求） | 源码确认：非 tool-call 轮次减少输入；tool-call 轮次因 API 要求保留 |
 
 行业默认是全量回传。大多数 Agent 框架把消息历史当作完整日志——模型说了什么，你全发回去。这是最简单的实现：`messages.append(response)`，完事。没有过滤逻辑。没有特殊情况。
 
@@ -76,18 +76,21 @@
 
 ## 实现案例: 少发送字段可能节省输入 Token
 
-Reasonix 的做法极其简单。在 `openai.go` 的 `buildRequest()` 里：
+Reasonix 的做法极其简单——但有重要例外。在 `openai.go` 的 `buildRequest()` 里：
 
 ```go
-// reasoning_content is deliberately NOT sent back: it's a response-only
-// field. DeepSeek accepts it but counts it as ordinary prompt input
-// (measured ~500 extra tokens per turn on a reasoner chain)
+// reasoning_content is deliberately NOT sent back for non-tool-call turns:
+// it's a response-only field. DeepSeek accepts it but counts it as ordinary
+// prompt input (measured ~500 extra tokens per turn on a reasoner chain).
+//
+// ⚠️ 重要例外：当 assistant turn 包含 tool_calls 时，reasoning_content 必须保留
+// （DeepSeek API 协议要求——tool_calls 轮次丢失 reasoning_content 会导致 400 错误）
 cm := chatMessage{
     Role:       string(m.Role),
     Content:    m.Content,       // ← 主内容
     ToolCallID: m.ToolCallID,
     Name:       m.Name,
-    // ReasoningContent 明确不包含在这里
+    // ReasoningContent 在非 tool-call 轮次不传；tool-call 轮次必须保留
 }
 ```
 
