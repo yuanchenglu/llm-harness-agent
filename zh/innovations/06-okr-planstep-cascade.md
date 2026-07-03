@@ -272,9 +272,9 @@ Hermes task_links 的 parent_id/child_id 是最接近本方案的设计——事
 ### 5.1 已验证
 
 - **问题存在性**：交互性验证了三个框架的 Plan 数据结构——
-  - OMO：`PlanProgress` 只有 `total/completed/isComplete`，无任何步骤级语义
+  - OMO：`PlanProgress` 只有 `total/completed/isComplete`，无任何步骤级语义（据 v0.3 版本，文件路径待补充）
   - ACP 协议：`PlanEntry` 只有 `content/priority/status`
-  - CodeWhale：`PlanStep` 最完善但仍然是扁平结构——`text/status/started_at/completed_at`，存储在 `Vec<PlanStep>` 中，步骤间无关联
+  - CodeWhale：`PlanStep` 在 `crates/tui/src/tools/plan.rs` 中——`text/status/started_at/completed_at`，存储在 `Vec<PlanStep>` 中。**源码验证确认**：步骤间零关联，没有 `parent_id`/`dependency_ids` 等任何依赖追踪字段
   - Hermes Kanban：`task_links` 表有 parent_id/child_id，但仅用于任务分发场景的父子聚合，不服务于 Plan 的级联修正
 - **级联修正需求**：在实际 Agent 使用中，「改一步导致后几步失效」是高频场景——尤其在「用户中途修改需求」时。8 款 Agent 产品的深度对比确认了这是 Plan 模块最需要解决但全部未解决的问题
 
