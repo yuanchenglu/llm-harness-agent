@@ -66,6 +66,10 @@
 | [12](en/innovations/12-memory-granularity.md) | **Memory Granularity Control** | Stronger memory isn't always better — convergent tasks need it, divergent tasks don't |
 | [13](en/innovations/13-byte-stable-prefix-architecture.md) | **Byte-Stable Prefix Architecture** | Don't just cache the system prompt — make the whole agent cache-first |
 | [14](en/innovations/14-reasoning-content-stripping.md) | **Reasoning Content Stripping** | Agent should know what NOT to send — every token must justify its existence |
+| [15](en/innovations/15-dsml-tool-call-optimization.md) | **DSML Tool-Call Format Optimization** | DeepSeek V4's unique XML-style markup with string="true/false" typed parameters |
+| [16](en/innovations/16-quick-instruction-routing.md) | **Quick Instruction Routing** | V4 built-in action/query/authority/domain/title/read_url 6 special-token routing |
+| [17](en/innovations/17-reasoning-effort-control.md) | **Reasoning Effort Control** | reasoning_effort max/high/None three-tier, Max mode injects forced deep-reasoning instruction |
+| [18](en/innovations/18-latest-reminder-injection.md) | **Latest Reminder Injection** | latest_reminder independent role, injecting time-sensitive info at highest-attention position |
 
 ### Product Analysis
 

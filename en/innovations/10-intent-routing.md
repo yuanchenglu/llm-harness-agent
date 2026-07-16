@@ -2,7 +2,7 @@
 
 > **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> **Innovation Index**：I-08
+> **Innovation Index**：I-10
 > **LLM + Harness = Agent** · Part 10
 > **Series**：[LLM + Harness = Agent](../../README.md)
 > **Previous**：[09 Skills Self-Evolution Loop](09-skills-self-evolution.md)

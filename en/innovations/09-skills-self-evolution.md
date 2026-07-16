@@ -2,7 +2,7 @@
 
 > **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> Innovation Index: I-07
+> Innovation Index: I-09
 > **LLM + Harness = Agent** · Part 9
 > **Series**: [LLM + Harness = Agent](../../README.md)
 > **Previous**: [08 A Divide-and-Conquer Strategy for Two-Level Scope Creep](08-scope-creep.md)
@@ -167,7 +167,7 @@ Together → a complete self-evolution system:
   - What was done wrong, remember how to check (I-13)
 ```
 
-This is why the WRITING-PLAN says I-07 and I-13 are "complementary." A gap in either direction is a systemic blind spot — positive learning alone means repeating the same mistakes after failures; negative correction alone means wasting the experience accumulated from every successful task.
+This is why the WRITING-PLAN says I-09 and I-13 are "complementary." A gap in either direction is a systemic blind spot — positive learning alone means repeating the same mistakes after failures; negative correction alone means wasting the experience accumulated from every successful task.
 
 ---
 
@@ -184,7 +184,7 @@ Layer 3: KV Cache Prefix Injection (I-06)
 Layer 2: Document KV Cache Optimized Structure (I-05)
   │  Stable content first, variable content last; KV Cache hit rate > 95%
   │
-Layer 1: Skills Self-Evolution Crystallization (I-07) ★ This Article
+Layer 1: Skills Self-Evolution Crystallization (I-09) ★ This Article
   │  Successful experience auto-crystallizes into Skills; direct reuse next time
   │
 Foundation: Attention Budget Management (I-10)

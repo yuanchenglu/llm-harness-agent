@@ -2,7 +2,7 @@
 
 > **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> Innovation Index: I-04
+> Innovation Index: I-08
 > **LLM + Harness = Agent** · Part 8
 > Series: [LLM + Harness = Agent](../../README.md)
 > Previous: [07 Review Switching Engine](07-review-switching.md)

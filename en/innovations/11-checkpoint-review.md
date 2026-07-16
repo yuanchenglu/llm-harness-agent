@@ -2,7 +2,7 @@
 
 > **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> **Innovation Point**: I-12
+> **Innovation Point**: I-11
 > **LLM + Harness = Agent** · Part 11
 > **Series**: [LLM + Harness = Agent](../../README.md)
 > **Previous**: [10 Intent Routing: 7+1 Intent → Strategy Auto-Switching](10-intent-routing.md)
