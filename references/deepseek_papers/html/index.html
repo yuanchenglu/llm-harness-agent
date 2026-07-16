@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepSeek 全部14篇论文深度分析 · 大白话思考 · PDF下载</title>
+<meta name="description" content="DeepSeek 团队 2024-2026 年全部 14 篇核心论文的深度分析：概述、大白话思考、中文译文、英文原文。含 DSpark、R1、V3、V2、MoE 等论文及 PDF 下载。">
+<meta name="keywords" content="DeepSeek,论文,深度分析,大白话,DSpark,R1,DeepSeek-V3,MoE,MLA,NSA,AI,LLM">
+<!-- Open Graph / 社交分享 -->
+<meta property="og:title" content="DeepSeek 全部14篇论文深度分析 · 大白话思考 · PDF下载">
+<meta property="og:description" content="14 篇 DeepSeek 核心论文的深度分析：用大白话讲清楚每篇论文在做什么。适合所有用过 AI 的人。含中文译文、英文原文、PDF 下载。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://study.starseas.org/deepseek/">
+<meta property="og:image" content="https://study.starseas.org/deepseek/og-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="DeepSeek 全部14篇论文深度分析 · 大白话思考 · PDF下载">
+<meta name="twitter:description" content="14 篇 DeepSeek 核心论文的深度分析：用大白话讲清楚每篇论文在做什么。含中文译文、英文原文、PDF 下载。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME VARIABLES ===== */
+:root {
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #e2e6ed;
+  --text: #1a1d24;
+  --text-secondary: #6b7385;
+  --accent: #2563eb;
+  --accent-dim: #1d4ed8;
+  --accent-glow: rgba(37,99,235,0.06);
+  --green: #059669;
+  --orange: #d97706;
+  --red: #dc2626;
+  --purple: #7c3aed;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --sidebar-w: 280px;
+  --header-h: 56px;
+  --tab-h: 48px;
+  --font-scale: 1;
+  --code-bg: #f0f2f5;
+}
+[data-theme="dark"] {
+  --bg: #0b0e17;
+  --surface: #111621;
+  --surface-2: #181f2f;
+  --border: #1e2840;
+  --text: #e2e6f0;
+  --text-secondary: #8892a8;
+  --accent: #4a9eff;
+  --accent-dim: #2a5faa;
+  --accent-glow: rgba(74,158,255,0.08);
+  --green: #34d399;
+  --orange: #fbbf24;
+  --red: #f87171;
+  --purple: #7c3aed;
+  --code-bg: #181f2f;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+.sidebar.collapsed {
+  transform: translateX(calc(var(--sidebar-w) * -1 + 36px));
+}
+.sidebar.collapsed .sidebar-inner { opacity: 0; pointer-events: none; }
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  min-height: var(--header-h);
+}
+.sidebar-header h1 {
+  font-family: 'DM Sans', 'Noto Sans SC', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.2;
+}
+.sidebar-header .sub {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.sidebar-toggle {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.sidebar-toggle:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sidebar-inner { flex: 1; overflow-y: auto; padding: 8px 0; transition: opacity 0.2s; }
+.paper-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+.paper-item:hover { background: var(--accent-glow); }
+.paper-item.active {
+  background: var(--accent-glow);
+  border-left-color: var(--accent);
+}
+.paper-item .num {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.paper-item.active .num { background: var(--accent); color: #fff; }
+.paper-item .title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+.paper-item .en-sub {
+  font-size: 10px;
+  color: var(--text-secondary);
+  display: block;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.theme-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+.theme-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sidebar-footer .info {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Collapse float button (visible when sidebar collapsed) */
+.sidebar-expand-btn {
+  position: fixed;
+  top: 12px;
+  left: 8px;
+  z-index: 999;
+  width: 32px; height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.sidebar.collapsed ~ .sidebar-expand-btn { display: flex; }
+.sidebar-expand-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ===== MAIN CONTENT ===== */
+.main {
+  margin-left: var(--sidebar-w);
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+}
+.sidebar.collapsed ~ .main { margin-left: 36px; }
+
+/* ===== PAPER HEADER ===== */
+.paper-header {
+  padding: 24px 32px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.paper-header .meta-line {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.paper-header h2 {
+  font-family: 'DM Sans', 'Noto Sans SC', sans-serif;
+  font-size: clamp(18px, 2.2vw, 28px);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.paper-header .en-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.paper-header .meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+/* ===== TABS ===== */
+.tabs-container {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.tabs {
+  display: flex;
+  padding: 0 24px;
+  max-width: 100%;
+}
+.tab-btn {
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn .tab-icon { margin-right: 4px; font-style: normal; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== OVERVIEW TAB ===== */
+.overview { max-width: 960px; margin: 0 auto; padding: 28px 24px 60px; }
+.overview .metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 28px;
+}
+.overview .metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px; text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.overview .metric-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.overview .metric-card .value {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 24px; font-weight: 700;
+  color: var(--accent);
+}
+.overview .metric-card .label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+.overview .section-block { margin-bottom: 28px; }
+.overview .section-title {
+  font-family: 'DM Sans', 'Noto Sans SC', sans-serif;
+  font-size: 16px; font-weight: 600;
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.overview .section-title .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 600;
+}
+.overview .problem-solution { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .overview .problem-solution { grid-template-columns: 1fr; } }
+.overview .ps-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.overview .ps-card.problem { border-left: 3px solid var(--red); }
+.overview .ps-card.solution { border-left: 3px solid var(--green); }
+.overview .ps-card .ps-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.overview .ps-card.problem .ps-label { color: var(--red); }
+.overview .ps-card.solution .ps-label { color: var(--green); }
+.overview .ps-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.overview .ps-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.overview .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) { .overview .insight-grid { grid-template-columns: 1fr; } }
+.overview .insight-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.overview .insight-card .emoji-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+.overview .insight-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.overview .insight-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.overview .highlight-box {
+  background: var(--accent-glow);
+  border: 1px solid rgba(37,99,235,0.15);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 16px;
+}
+[data-theme="dark"] .overview .highlight-box { border-color: rgba(74,158,255,0.15); }
+.overview .highlight-box h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--accent); }
+.overview .highlight-box p, .overview .highlight-box ul { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+.overview .highlight-box ul { padding-left: 18px; }
+.overview .highlight-box ul li { margin-bottom: 3px; }
+.overview .results-table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; margin-bottom: 16px;
+}
+.overview .results-table-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.overview .results-table-wrap th {
+  background: var(--surface-2); padding: 8px 12px; text-align: left;
+  font-weight: 600; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.4px; color: var(--text-secondary); border-bottom: 1px solid var(--border);
+}
+.overview .results-table-wrap td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.overview .results-table-wrap .highlight { color: var(--accent); font-weight: 600; }
+
+/* ===== MARKDOWN TABS (shared) ===== */
+.md-tab { max-width: 860px; margin: 0 auto; padding: 28px 24px 60px; }
+.md-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--text);
+}
+.md-content h1 { font-size: 22px; font-weight: 700; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.md-content h2 { font-size: 18px; font-weight: 600; margin: 28px 0 14px; color: var(--accent); }
+.md-content h3 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
+.md-content h4 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
+.md-content p { margin-bottom: 12px; color: var(--text-secondary); }
+.md-content strong { color: var(--text); }
+.md-content em { color: var(--accent); }
+.md-content ul, .md-content ol { margin: 10px 0 14px 20px; color: var(--text-secondary); }
+.md-content li { margin-bottom: 6px; }
+.md-content hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.md-content blockquote {
+  border-left: 3px solid var(--accent); padding: 10px 16px;
+  margin: 14px 0; background: var(--accent-glow);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-secondary); font-style: normal;
+}
+.md-content code {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  padding: 1px 6px; background: var(--code-bg);
+  border-radius: 4px; color: var(--accent);
+}
+.md-content pre {
+  background: var(--code-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px;
+  overflow-x: auto; margin: 14px 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  line-height: 1.6;
+}
+.md-content a { color: var(--accent); text-decoration: none; }
+.md-content a:hover { text-decoration: underline; }
+.md-content table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+.md-content td, .md-content th { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+.md-content th { background: var(--surface-2); font-weight: 600; }
+
+/* Loading / Error */
+.md-loading { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+.md-loading .spinner {
+  display: inline-block; width: 28px; height: 28px;
+  border: 2px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.md-error { text-align: center; padding: 40px 20px; color: var(--red); font-size: 14px; }
+
+/* ===== FOOTER ===== */
+.footer { text-align: center; padding: 20px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 12px; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 280px; }
+
+  /* Hide desktop toggle on mobile */
+  .sidebar.collapsed { transform: translateX(-100%); }
+  .sidebar { transform: translateX(-100%); box-shadow: 4px 0 24px rgba(0,0,0,0.12); z-index: 2000; }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sidebar.collapsed.mobile-open { transform: translateX(0); }
+  .sidebar.collapsed .sidebar-inner { opacity: 1; pointer-events: auto; }
+  .sidebar-toggle { display: flex !important; }
+  .sidebar-expand-btn { display: none !important; }
+
+  /* Backdrop */
+  .sidebar-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 1999; backdrop-filter: blur(2px);
+  }
+  .sidebar-backdrop.visible { display: block; animation: fadeIn 0.2s ease; }
+
+  /* Hamburger — always visible on mobile */
+  .mobile-hamburger {
+    display: flex !important;
+    position: fixed; top: 10px; left: 10px;
+    z-index: 1500;
+    width: 38px; height: 38px;
+    border: none; border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-hamburger:active { transform: scale(0.92); }
+  /* When sidebar is open, show close icon */
+  .sidebar.mobile-open ~ .mobile-hamburger { color: var(--accent); }
+
+  /* Main full width */
+  .main { margin-left: 0 !important; }
+
+  /* Paper header */
+  .paper-header { padding: 14px 12px 10px; }
+  /* PDF + WeChat + Theme buttons — inline row on mobile */
+  .paper-header .paper-header-inner { flex-direction: column; gap: 6px; }
+  .paper-header .paper-header-inner > div:first-child { flex: 1; min-width: 0; }
+  .paper-header .paper-header-inner > .btn-row {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  }
+  #downloadBtn, #wechatContact, .header-theme-btn {
+    font-size: 12px !important; padding: 6px 10px !important; margin-top: 0 !important;
+  }
+  .paper-header h2 { font-size: 17px; line-height: 1.3; }
+  .paper-header .en-title { font-size: 11px; }
+  .paper-header .meta { font-size: 11px; }
+
+  /* Download + WeChat buttons */
+  #downloadBtn, #wechatContact {
+    align-self: flex-start; margin-top: 0 !important;
+    font-size: 12px !important; padding: 6px 10px !important;
+  }
+
+  /* Tabs: horizontally scrollable */
+  .tabs-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tabs-container::-webkit-scrollbar { display: none; }
+  .tabs { padding: 0 6px; gap: 0; width: max-content; }
+  .tab-btn {
+    padding: 10px 10px; font-size: 12px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .tab-btn .tab-icon { margin-right: 3px; }
+
+  /* Overview */
+  .overview { padding: 14px 10px 36px; }
+  .overview .metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .overview .metric-card { padding: 12px; }
+  .overview .metric-card .value { font-size: 20px; }
+  .overview .metric-card .label { font-size: 10px; }
+  .overview .problem-solution { grid-template-columns: 1fr; }
+  .overview .section-block { margin-bottom: 18px; }
+  .overview .section-title { font-size: 14px; margin-bottom: 8px; }
+  .overview .section-title .num { width: 20px; height: 20px; font-size: 10px; }
+  .overview .insight-grid { grid-template-columns: 1fr; }
+  .overview .ps-card { padding: 12px; }
+  .overview .ps-card h4 { font-size: 13px; }
+  .overview .ps-card p { font-size: 12px; }
+  .overview .highlight-box { padding: 12px; margin-bottom: 12px; }
+  .overview .highlight-box h4 { font-size: 12px; }
+  .overview .highlight-box p { font-size: 12px; }
+  .overview .results-table-wrap th,
+  .overview .results-table-wrap td { padding: 6px 8px; font-size: 11px; }
+
+  /* Markdown tabs */
+  .md-tab { padding: 14px 10px 36px; }
+  .md-content { padding: 16px; font-size: 14px; }
+  .md-content h1 { font-size: 18px; }
+  .md-content h2 { font-size: 16px; }
+  .md-content h3 { font-size: 14px; margin: 16px 0 8px; }
+  .md-content p { margin-bottom: 10px; font-size: 14px; }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .paper-header { padding: 10px 10px 8px; }
+  .paper-header h2 { font-size: 15px; }
+  .paper-header .en-title { font-size: 10px; }
+  .overview .metrics-grid { gap: 6px; }
+  .overview .metric-card { padding: 8px; }
+  .overview .metric-card .value { font-size: 17px; }
+  .overview .metric-card .label { font-size: 9px; }
+  .tab-btn { padding: 8px 8px; font-size: 11px; }
+  .md-content { padding: 12px; font-size: 13px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div>
+      <h1>DeepSeek<br>论文深度分析</h1>
+      <div class="sub">14 篇核心论文 · Model+Harness+Scene=Agent</div>
+    </div>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="收起侧栏">◀</button>
+  </div>
+  <div class="sidebar-inner" id="paperList"></div>
+  <div class="sidebar-footer">
+    <span class="info">study.starseas.org</span>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="切换主题">☀️</button>
+  </div>
+</nav>
+<button class="sidebar-expand-btn" onclick="toggleSidebar()" title="展开侧栏">▶</button>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+<button class="mobile-hamburger" id="mobileHamburger" onclick="toggleSidebar()" style="display:none;">☰</button>
+
+<!-- ===== MAIN ===== -->
+<div class="main" id="main">
+
+  <!-- Paper Header -->
+  <div class="paper-header" id="paperHeader" style="display:none;">
+  <div class="paper-header-inner" style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+    <div style="flex:1;min-width:0;">
+      <div class="meta-line" id="paperMetaLine"></div>
+      <h2 id="paperZhTitle"></h2>
+      <div class="en-title" id="paperEnTitle"></div>
+      <div class="meta" id="paperMeta"></div>
+    </div>
+    <div class="btn-row" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex-shrink:0;">
+    <a id="downloadBtn" href="#" download style="display:none;padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);text-decoration:none;font-size:13px;font-weight:500;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-glow)';" onmouseout="this.style.borderColor='';this.style.background='';">📄 下载</a>
+    <span id="wechatContact" style="display:none;padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text-secondary);font-size:13px;font-weight:400;white-space:nowrap;cursor:pointer;transition:all 0.2s;" onclick="copyWechat()" onmouseover="this.style.borderColor='var(--green)';this.style.background='rgba(5,150,105,0.06)';" onmouseout="this.style.borderColor='';this.style.background='';" title="点击复制微信号">💬 加微信 15527321668</span>
+    <button class="header-theme-btn" onclick="toggleTheme()" id="headerThemeBtn" style="display:none;padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text-secondary);font-size:13px;font-weight:400;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-glow)';" onmouseout="this.style.borderColor='';this.style.background='';">☀️</button>
+    </div>
+  </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container" id="tabsContainer" style="display:none;">
+    <div class="tabs" id="tabBtns">
+      <button class="tab-btn active" onclick="switchTab('overview')"><i class="tab-icon">📋</i> 概述</button>
+      <button class="tab-btn" onclick="switchTab('thinking')"><i class="tab-icon">💭</i> 思考(大白话)</button>
+      <button class="tab-btn" onclick="switchTab('translation')"><i class="tab-icon">📖</i> 译文-ZH</button>
+      <button class="tab-btn" onclick="switchTab('original')"><i class="tab-icon">📄</i> 英文原文</button>
+    </div>
+  </div>
+
+  <!-- Tab: Overview -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="overview" id="overviewContent">
+      <div style="text-align:center;padding:80px 20px;color:var(--text-secondary);">
+        <p style="font-size:16px;margin-bottom:6px;">👈 请从左侧栏选择一篇论文</p>
+        <p style="font-size:13px;">我们将为您展示该论文的深度分析、思考启发与中英文全文</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Thinking -->
+  <div class="tab-content" id="tab-thinking">
+    <div class="md-tab" id="thinkingContent">
+      <div style="text-align:center;padding:80px 20px;color:var(--text-secondary);font-size:14px;">👈 请先选择一篇论文</div>
+    </div>
+  </div>
+
+  <!-- Tab: Translation ZH -->
+  <div class="tab-content" id="tab-translation">
+    <div class="md-tab" id="translationContent">
+      <div style="text-align:center;padding:80px 20px;color:var(--text-secondary);font-size:14px;">👈 请先选择一篇论文</div>
+    </div>
+  </div>
+
+  <!-- Tab: English Original -->
+  <div class="tab-content" id="tab-original">
+    <div class="md-tab" id="originalContent">
+      <div style="text-align:center;padding:80px 20px;color:var(--text-secondary);font-size:14px;">👈 请先选择一篇论文</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>DeepSeek 论文深度分析 · 2024–2026</span>
+    <span style="margin:0 8px;opacity:0.3;">·</span>
+    <span>LLM + Harness = Agent 研究配套</span>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// PAPER DATA
+// ============================================================
+const PAPERS = [
+  {
+    id:1, harScore:5,
+    zhTitle:'DSpark: 基于置信度调度的半自回归推测解码',
+    enTitle:'DSpark: Confidence-Scheduled Speculative Decoding with Semi-Autoregressive Generation',
+    date:'2026年6月27日', authors:'程鑫, 余兴凯, 邵晨泽, 李家石, 熊云帆 等',
+    venue:'DeepSeek + 北京大学',
+    zhFile:'zh-md/14-DSpark.md', enFile:'en-md/14-DSpark.md', thinkFile:'thinking-md/01-DSpark.md', pdfFile:'pdf/dspark_paper.pdf',
+    metrics:[
+      {value:'60–85%',label:'生成速度提升 (V4-Flash)'},
+      {value:'30%',label:'接受长度超越 Eagle3'},
+      {value:'18%',label:'接受长度超越 DFlash'},
+      {value:'开源',label:'检查点 + DeepSpec'}
+    ],
+    problems:[
+      {title:'并行草稿质量衰减',desc:'并行草稿器独立预测每个 token，缺乏块内依赖建模，接受率沿块快速衰减。'},
+      {title:'验证计算浪费',desc:'不加区分验证所有草稿 token 将批次容量浪费在高拒绝风险 token 上。'}
+    ],
+    solutions:[
+      {title:'半自回归架构',desc:'并行主干 + 轻量级顺序头（马尔可夫/RNN），以极小延迟代价大幅提升接受率。'},
+      {title:'置信度调度验证',desc:'置信度头预测接受概率 + 硬件感知调度器动态裁剪低置信度后缀。'}
+    ],
+    insights:[
+      {emoji:'⚡',title:'半自回归生成',desc:'并行主干一次前向生成 → 顺序头注入 token 间依赖。草稿延迟几乎不变，接受率大幅提升。'},
+      {emoji:'🎯',title:'置信度头',desc:'线性投影 + sigmoid 预测条件接受概率，经 STS 校准后提供精确的存活概率估计。'},
+      {emoji:'🧠',title:'硬件感知前缀调度',desc:'将验证长度选择形式化为全局吞吐量最大化问题，为每个请求动态定制验证长度。'},
+      {emoji:'📊',title:'生产级验证',desc:'在 DeepSeek-V4 真实流量下，将帕累托前沿推向新的交互层级。开源检查点+DeepSpec。'}
+    ],
+    resultsTables:[{title:'离线基准（Qwen3 目标模型）',
+      headers:['对比基线','Qwen3-4B','Qwen3-8B','Qwen3-14B'],
+      rows:[['vs Eagle3（自回归）','+30.9%','+26.7%','+30.0%'],['vs DFlash（并行）','+16.3%','+18.4%','+18.3%']]
+    }],
+    highlights:[{title:'在线部署（DeepSeek-V4 真实流量）',
+      text:'相较于 MTP-1 生产基线，在匹配总吞吐容量下：V4-Flash 单用户生成速度提升 <strong>60%–85%</strong>；V4-Pro 提升 <strong>57%–78%</strong>。在严格 SLA 约束下，防止了严重吞吐退化。'}]
+  },
+  {
+    id:2, harScore:4,
+    zhTitle:'DeepSeek-R1: 通过强化学习激励 LLM 的推理能力',
+    enTitle:'DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning',
+    date:'2026年1月4日', authors:'DeepSeek-AI',
+    venue:'arXiv:2501.12948',
+    zhFile:'zh-md/08-DeepSeek-R1.md', enFile:'en-md/08-DeepSeek-R1.md', thinkFile:'thinking-md/02-DeepSeek-R1.md', pdfFile:'pdf/2501.12948v2.pdf',
+    metrics:[
+      {value:'77.9%',label:'R1-Zero AIME'},
+      {value:'79.2%',label:'R1 AIME 基准'},
+      {value:'2029',label:'Codeforces Rating'},
+      {value:'涌现',label:'自我反思/验证行为'}
+    ],
+    problems:[
+      {title:'推理依赖人工标注',desc:'传统方法依赖大量人工标注的思维链轨迹，限制了可扩展性并引入了人类认知偏差。'},
+      {title:'非最优推理路径',desc:'监督学习约束模型复制人类思维过程，阻碍了探索更优的非类人推理路径。'}
+    ],
+    solutions:[
+      {title:'纯 RL 训练 (R1-Zero)',desc:'跳过 SFT 阶段，直接用 GRPO 从 V3-Base 出发，让模型通过 RL 自我进化推理能力。'},
+      {title:'多阶段流水线 (R1)',desc:'冷启动 SFT → RL → 拒绝采样 → 二次 RL，融合 R1 蒸馏策略，兼顾性能与可读性。'}
+    ],
+    insights:[
+      {emoji:'🤯',title:'"啊哈时刻"',desc:'模型在 RL 训练中自发说出"Wait"后重新审视推理——自我反思行为从 RL 中涌现，无需人类设计。'},
+      {emoji:'🔄',title:'纯 RL 自我进化',desc:'AIME 从 15.6% 提升至 77.9%，验证了推理能力可通过 RL 在模型内部自发形成。'},
+      {emoji:'🧪',title:'GRPO 算法',desc:'组相对策略优化——无需价值模型，组内奖励标准化计算优势，大幅降低 RL 训练成本。'},
+      {emoji:'📏',title:'蒸馏的力量',desc:'R1 蒸馏的推理模式可系统地增强小模型，1.5B 蒸馏模型在数学推理上超越 GPT-4。'}
+    ],
+    resultsTables:[{title:'核心基准',
+      headers:['基准','R1-Zero','R1'],
+      rows:[['AIME 2024','71.0%→77.9%','79.2%'],['MATH-500','90.8%→92.0%','97.3%'],['Codeforces','—','2029 Rating']]
+    }],
+    highlights:[{title:'关键启示',
+      text:'RL 使模型自发产生了反思、验证、策略调整等高级 Agent 行为——本质上是 Harness"执行循环（E）"和"生命周期钩子（L）"在模型内部的涌现。'}]
+  },
+  {
+    id:3, harScore:4,
+    zhTitle:'条件记忆：LLM 稀疏性的新维度',
+    enTitle:'Conditional Memory via Scalable Lookup: A New Axis of Sparsity for LLMs',
+    date:'2026年1月', authors:'程鑫, 汪定增 等',
+    venue:'arXiv:2601.07372',
+    zhFile:'zh-md/13-Conditional-Memory.md', enFile:'en-md/13-Conditional-Memory.md', thinkFile:'thinking-md/03-Conditional-Memory.md', pdfFile:'pdf/2601.07372v1.pdf',
+    metrics:[{value:'O(1)',label:'知识查找复杂度'},{value:'Engram',label:'新型记忆模块'},{value:'N-gram',label:'经典方法现代化'},{value:'S',label:'映射 Harness 状态存储'}],
+    problems:[
+      {title:'Transformer 缺乏原生知识查找',desc:'模型被迫通过计算来模拟检索——即通过 FFN 和注意力从参数中"记住"事实，效率低下。'},
+      {title:'知识容量受限',desc:'增加知识表示必须增加参数量，导致计算成本的线性增长。'}
+    ],
+    solutions:[
+      {title:'条件记忆模块 (Engram)',desc:'将经典 N-gram 嵌入现代化，实现 O(1) 的知识查找——从"通过计算模拟"变为"直接硬件查找"。'},
+      {title:'新的稀疏性维度',desc:'作为 MoE 之外互补的稀疏性维度——MoE 选专家，Engram 选记忆。两者正交叠加。'}
+    ],
+    insights:[
+      {emoji:'🔑',title:'O(1) 知识查找',desc:'Engram 模块将事实知识从"计算"中分离，变为原生的"存储"操作——Harness 层 S 组件的神经网络实现。'},
+      {emoji:'🧩',title:'MoE × Engram 正交',desc:'MoE 处理计算稀疏性，Engram 处理记忆稀疏性。两者可以同时存在，互不冲突。'},
+      {emoji:'⚡',title:'可扩展的键值存储',desc:'可扩展的 KV 存储直接映射到 Hermes 的 MemOS 持久化记忆——知识查找和存储可以像数据库一样工程化。'},
+      {emoji:'🔄',title:'条件而非固定',desc:'记忆是条件性的——模型根据输入状态决定查哪块记忆，与 Attention 不同，Engram 是写入时确定性的。'}
+    ],
+    highlights:[
+      {title:'与 Harness 理论的直接关联',text:'条件记忆模块本质上是 Harness 层"状态存储（S）"的原生神经网络实现。将知识查找从"通过计算模拟"变为"直接硬件查找"。'},
+      {title:'核心启示',text:'Harness 层的记忆管理功能可以被 <strong>嵌入模型架构</strong> 而非仅作为外部系统。Engram 表明模型内部可以有原生的"数据库"操作。'}
+    ]
+  },
+  {
+    id:4, harScore:5,
+    zhTitle:'DeepSeek-V3.2: 推动开源大语言模型的前沿',
+    enTitle:'DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models',
+    date:'2025年12月', authors:'DeepSeek-AI',
+    venue:'arXiv:2512.02556',
+    zhFile:'zh-md/11-DeepSeek-V3.2.md', enFile:'en-md/11-DeepSeek-V3.2.md', thinkFile:'thinking-md/04-DeepSeek-V3.2.md', pdfFile:'pdf/2512.02556v1.pdf',
+    metrics:[{value:'DSA',label:'稀疏注意力'},{value:'FP8',label:'低精度训练'},{value:'RL',label:'强化学习扩展'},{value:'Agent',label:'工具使用增强'}],
+    problems:[
+      {title:'注意力计算瓶颈',desc:'标准注意力 O(n²)，长上下文成为瓶颈。'},
+      {title:'Agent 能力不足',desc:'模型在工具使用、函数调用等 Agent 关键能力上仍有提升空间。'}
+    ],
+    solutions:[
+      {title:'DSA 稀疏注意力',desc:'高效稀疏注意力机制，大幅降低计算复杂度同时保持长上下文性能。'},
+      {title:'Agent 能力增强',desc:'改进工具使用和函数调用能力，使模型更好地与外部系统交互。'}
+    ],
+    insights:[
+      {emoji:'🔍',title:'DSA 稀疏注意力',desc:'延续 NSA 思路，进一步优化注意力效率。'},
+      {emoji:'🏋️',title:'FP8 训练优化',desc:'进一步推进低精度训练技术，降低训练成本。'},
+      {emoji:'🎮',title:'Agent 能力增强',desc:'工具使用、函数调用直接对应 Harness 层的 T 和 E 组件。'},
+      {emoji:'📈',title:'RL 扩展',desc:'通过大规模 RL 进一步提升推理能力，延续 R1 的 RL 训练策略。'}
+    ],
+    highlights:[{title:'与 Harness 理论的关键关联',text:'DeepSeek 系列中直接提及"Agent 能力增强"的论文。DSA 延续 NSA 思路，Agent 能力增强直接对应 Harness 层的"工具注册表（T）"和"执行循环（E）"。这标志着 DeepSeek 从纯语言模型向 <strong>Agent 模型</strong> 的转型。'}]
+  },
+  {
+    id:5, harScore:1,
+    zhTitle:'mHC: 流形约束的超连接',
+    enTitle:'mHC: Manifold-Constrained Hyper-Connections',
+    date:'2025年12月', authors:'谢振达, 魏宜轩, 曹焕琦 等',
+    venue:'arXiv:2512.24880',
+    zhFile:'zh-md/12-mHC-Hyper-Connections.md', enFile:'en-md/12-mHC-Hyper-Connections.md', thinkFile:'thinking-md/05-mHC.md', pdfFile:'pdf/2512.24880v2.pdf',
+    metrics:[{value:'mHC',label:'流形约束超连接'},{value:'恒等',label:'恢复残差恒等映射'},{value:'稳定',label:'训练更稳定'},{value:'L',label:'映射生命周期钩子'}],
+    problems:[
+      {title:'HC 破坏恒等映射',desc:'超连接（HC）扩大残差流宽度但破坏了恒等映射，导致训练不稳定。'},
+      {title:'多样化与稳定的矛盾',desc:'多样化连接模式带来强表达，但也损害了信息传递稳定性。'}
+    ],
+    solutions:[
+      {title:'流形约束 (mHC)',desc:'将连接模式约束在低维流形，保持多样化表达的同时恢复恒等映射能力。'},
+      {title:'更稳定的训练动态',desc:'mHC 在训练效率和模型性能上均优于标准 HC，大规模扩展时更稳定。'}
+    ],
+    insights:[
+      {emoji:'🔄',title:'残差 vs 超连接',desc:'HC 首次突破残差连接 10 年范式；mHC 在突破与稳定之间找到平衡。'},
+      {emoji:'📐',title:'流形约束',desc:'将连接空间限制在低维流形——保持多样性同时确保梯度/信息稳定流动。'},
+      {emoji:'🏗️',title:'训练稳定性',desc:'大规模训练中 mHC 比标准 HC 更稳定的 loss 曲线。'}
+    ],
+    highlights:[{title:'与 Harness 理论的间接关联',text:'底层架构创新。可理解为 Harness"生命周期钩子（L）"的神经网络层面模拟：通过约束连接模式保证梯度/信息稳定流动，类似 Harness 通过检查点/回滚保证系统稳定。'}]
+  },
+  {
+    id:6, harScore:4,
+    zhTitle:'DeepSeek-V3 Insights: 扩展挑战及硬件架构反思',
+    enTitle:'Insights into DeepSeek-V3: Scaling Challenges and Reflections on Hardware for AI Architectures',
+    date:'2025年5月 (ISCA 2025)', authors:'赵成刚, 邓承启, 阮冲 等',
+    venue:'arXiv:2505.09343',
+    zhFile:'zh-md/10-DeepSeek-V3-Insights.md', enFile:'en-md/10-DeepSeek-V3-Insights.md', thinkFile:'thinking-md/06-DeepSeek-V3-Insights.md', pdfFile:'pdf/2505.09343v2.pdf',
+    metrics:[{value:'4',label:'核心"墙"'},{value:'MLA',label:'内存墙解法'},{value:'DualPipe',label:'通信墙解法'},{value:'FP8',label:'精度墙解法'}],
+    problems:[
+      {title:'内存/通信/精度/稳定四道墙',desc:'模型快速扩展暴露了硬件架构的关键局限：内存容量、计算效率、互连带宽和训练稳定性的约束。'}
+    ],
+    solutions:[
+      {title:'四"墙"系统分析',desc:'系统分析 V3/R1 面临的四道墙及 DeepSeek 的解法，对下一代 AI 硬件提出设计建议。'}
+    ],
+    insights:[
+      {emoji:'🧱',title:'内存墙—MLA',desc:'低秩 KV 压缩减少 93.3% KV 缓存，对应 Harness"C（上下文管理器）"。'},
+      {emoji:'📡',title:'通信墙—DualPipe',desc:'双向流水线仅 1.2% 气泡，对应 Harness"E（执行循环）"。'},
+      {emoji:'🎯',title:'精度墙—FP8',desc:'首次在极大规模验证 FP8 训练可行性，对应 Harness"S（状态存储）"。'},
+      {emoji:'🛡️',title:'稳定墙—无辅助损失',desc:'全程无不可恢复 loss 尖峰，对应 Harness"L（生命周期钩子）"。'}
+    ],
+    highlights:[{title:'核心价值',text:'这篇论文直接论述了 Harness 层与硬件的关系。四个"墙"分别对应 Harness 的不同组件。对硬件设计的建议指向了"<strong>Harness 层需要硬件原生支持</strong>"的方向。'}]
+  },
+  {
+    id:7, harScore:3,
+    zhTitle:'NSA: 硬件对齐的稀疏注意力',
+    enTitle:'Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention',
+    date:'2025年2月27日', authors:'袁景阳*, 高华佐, 戴大迈 等',
+    venue:'arXiv:2502.11089',
+    zhFile:'zh-md/09-Native-Sparse-Attention.md', enFile:'en-md/09-Native-Sparse-Attention.md', thinkFile:'thinking-md/07-Native-Sparse-Attention.md', pdfFile:'pdf/2502.11089v2.pdf',
+    metrics:[{value:'11.6×',label:'解码加速 (64K)'},{value:'9.0×',label:'前向加速'},{value:'6.0×',label:'反向加速'},{value:'分层',label:'压缩+选择+窗口'}],
+    problems:[
+      {title:'标准注意力 O(n²)',desc:'计算复杂度随序列二次增长，64K 序列成为严重瓶颈。'},
+      {title:'稀疏方案不实用',desc:'要么不可训练（需 Full Attention 蒸馏），要么硬件效率低下。'}
+    ],
+    solutions:[
+      {title:'动态分层稀疏策略',desc:'压缩粗粒度 + 选择细粒度 + 滑动窗口局部，三层加权融合。'},
+      {title:'硬件对齐优化',desc:'算术强度均衡 + 块稀疏矩阵乘法，纯 CUDA 实现端到端训练。'}
+    ],
+    insights:[
+      {emoji:'🔬',title:'分层注意力架构',desc:'三层融合兼顾效率与精度。'},
+      {emoji:'⚡',title:'硬件对齐设计',desc:'算术强度均衡 + 块稀疏矩阵乘法，适配 H800 GPU。'},
+      {emoji:'🔄',title:'端到端可训练',desc:'不需要预训练 Full Attention 再蒸馏，可从此零预训练。'},
+      {emoji:'📏',title:'64K 加速',desc:'解码 11.6×、前向 9.0×、反向 6.0×，加速比随序列增长增大。'}
+    ],
+    highlights:[{title:'与 Harness 理论的关联',text:'NSA 是 Harness 层"上下文管理器（C）"的稀疏化实现。分层设计（全局压缩+局部选择+窗口保持）直接映射 Harness 层的"记忆层次"设计模式。'}]
+  },
+  {
+    id:8, harScore:5,
+    zhTitle:'DeepSeek-V3 技术报告',
+    enTitle:'DeepSeek-V3 Technical Report',
+    date:'2025年2月18日', authors:'DeepSeek-AI',
+    venue:'arXiv:2412.19437',
+    zhFile:'zh-md/07-DeepSeek-V3.md', enFile:'en-md/07-DeepSeek-V3.md', thinkFile:'thinking-md/08-DeepSeek-V3.md', pdfFile:'pdf/2412.19437v2.pdf',
+    metrics:[{value:'671B',label:'总参数'},{value:'37B',label:'激活参数'},{value:'2.78M',label:'H800 GPU 时'},{value:'$5.576M',label:'训练成本'}],
+    problems:[
+      {title:'极大规模训练效率',desc:'671B MoE 在 2048 块 H800 上高效训练，面临负载均衡、通信效率和稳定性三重挑战。'},
+      {title:'推理效率瓶颈',desc:'大规模 MoE 推理时面临巨大 KV 缓存和路由开销。'}
+    ],
+    solutions:[
+      {title:'无辅助损失负载均衡',desc:'通过 bias 项动态调整，避免辅助 loss 对主任务干扰。'},
+      {title:'多 token 预测 (MTP)',desc:'同时预测多个未来 token，提升训练信号密度，推理时可用于推测解码。'}
+    ],
+    insights:[
+      {emoji:'⚖️',title:'无辅助损失负载均衡',desc:'bias 项动态调整——对应 Harness"生命周期钩子（L）"。'},
+      {emoji:'🔮',title:'多 token 预测 (MTP)',desc:'一次预测 N 个未来 token——体现 Harness"预测×执行"分离设计。'},
+      {emoji:'🔄',title:'DualPipe 双向流水线',desc:'前向/反向精细调度——对应 Harness"执行循环（E）"。'},
+      {emoji:'💾',title:'MLA + YaRN 128K',desc:'低秩 KV 压缩 + 位置编码扩展——对应 Harness"上下文管理器（C）"。'}
+    ],
+    resultsTables:[{title:'训练效率',headers:['指标','DeepSeek-V3'],rows:[['总参数','671B (MoE)'],['激活参数','37B'],['训练数据','14.8T tokens'],['GPU 小时','278.8万 H800 小时'],['训练成本','$5.576M'],['稳定性','全程无不可恢复 loss 尖峰']]}],
+    highlights:[{title:'与 Harness 理论的完整映射',text:'DeepSeek-V3 是 Harness 理论的最佳工程实践案例：<br><strong>E</strong>=DualPipe, <strong>T</strong>=256 专家 Top-K, <strong>C</strong>=MLA+YaRN, <strong>S</strong>=FP8, <strong>L</strong>=无辅助损失均衡, <strong>V</strong>=SFT+RL 流水线。'}]
+  },
+  {
+    id:9, harScore:3,
+    zhTitle:'Fire-Flyer AI-HPC: 软硬件协同设计',
+    enTitle:'Fire-Flyer AI-HPC: A Cost-Effective Software-Hardware Co-Design for Deep Learning',
+    date:'2024年8月 (SC24)', authors:'安玮, 毕晓, 陈观庭 等',
+    venue:'arXiv:2408.14158',
+    zhFile:'zh-md/06-Fire-Flyer-AI-HPC.md', enFile:'en-md/06-Fire-Flyer-AI-HPC.md', thinkFile:'thinking-md/09-Fire-Flyer-AI-HPC.md', pdfFile:'pdf/2408.14158v2.pdf',
+    metrics:[{value:'10,000',label:'PCIe A100 GPU'},{value:'50%',label:'成本降低'},{value:'40%',label:'能耗降低'},{value:'3FS',label:'分布式文件系统'}],
+    problems:[
+      {title:'AI 集群成本高昂',desc:'NVLink DGX 方案昂贵。'},
+      {title:'PCIe 性能瓶颈',desc:'PCIe 带宽远低于 NVLink。'}
+    ],
+    solutions:[
+      {title:'PCIe A100 方案',desc:'10,000 块 PCIe A100 替换 DGX-A100，成本降 50%。'},
+      {title:'HFReduce + 软件栈',desc:'CPU 异步 allreduce + HaiScale + 3FS + HAI-Platform。'}
+    ],
+    insights:[
+      {emoji:'💰',title:'成本革命',desc:'PCIe vs NVLink：2 倍成本差异，40% 能效差异。'},
+      {emoji:'⚡',title:'HFReduce',desc:'CPU 异步 allreduce，从 GPU 卸载通信。'},
+      {emoji:'📂',title:'3FS 文件系统',desc:'分离式计算-存储一体化网络。'},
+      {emoji:'🛠️',title:'HaiScale',desc:'Overlap 通信和计算，性能接近 DGX-A100。'}
+    ],
+    highlights:[{title:'与 Harness 理论的关联',text:'Harness 理论的硬件基础设施层面。展示了"软件弥补硬件差距"的核心哲学——Harness 层不只软件，还包括集群调度、通信优化、故障恢复等基础设施组件。'}]
+  },
+  {
+    id:10, harScore:2,
+    zhTitle:'DeepSeek-Coder-V2: 打破闭源代码模型壁垒',
+    enTitle:'DeepSeek-Coder-V2: Breaking the Barrier of Closed-Source Models in Code Intelligence',
+    date:'2024年6月17日', authors:'朱其昊*, 郭达雅*, 邵志宏*, 杨德建* 等',
+    venue:'arXiv:2406.11931',
+    zhFile:'zh-md/05-DeepSeek-Coder-V2.md', enFile:'en-md/05-DeepSeek-Coder-V2.md', thinkFile:'thinking-md/10-DeepSeek-Coder-V2.md', pdfFile:'pdf/2406.11931v1.pdf',
+    metrics:[{value:'90.2%',label:'HumanEval'},{value:'338',label:'编程语言'},{value:'128K',label:'上下文'},{value:'开源',label:'超越 GPT-4 Turbo'}],
+    problems:[
+      {title:'闭源模型主导代码领域',desc:'GPT-4 Turbo、Claude 3 等闭源模型在代码基准上持续领先，开源社区缺少可竞争的代码模型。'},
+      {title:'代码与通用能力的平衡',desc:'增强代码推理的同时需维持通用语言能力不退化。'}
+    ],
+    solutions:[
+      {title:'持续预训练策略',desc:'从 DeepSeek-V2 中间检查点出发，额外注入 6T token 代码数据进行继续预训练。'},
+      {title:'338 语言 + 128K 上下文',desc:'编程语言支持从 86 种扩展到 338 种，上下文从 16K 扩展到 128K。'}
+    ],
+    insights:[
+      {emoji:'🏆',title:'开源 SOTA',desc:'HumanEval 90.2%，SWE-bench 首个超 10% 的开源模型。'},
+      {emoji:'🔄',title:'持续预训练',desc:'从 V2 中间检查点+6T token，增强代码能力的同时保持通用能力。'},
+      {emoji:'🌐',title:'338 编程语言',desc:'覆盖几乎所有主流和专用编程语言。'}
+    ],
+    highlights:[{title:'与 Harness 理论的关联',text:'代码作为 Agent 的核心动作空间。对 Harness 的启示：代码生成能力是 Agent 执行层的关键组件，代码评测基准本身就是 Harness 评估接口（V 组件）的实现。'}]
+  },
+  {
+    id:11, harScore:4,
+    zhTitle:'DeepSeek-V2: 强大、经济、高效的 MoE 语言模型',
+    enTitle:'DeepSeek-V2: A Strong, Economical, and Efficient MoE Language Model',
+    date:'2024年6月19日', authors:'DeepSeek-AI',
+    venue:'arXiv:2405.04434',
+    zhFile:'zh-md/04-DeepSeek-V2.md', enFile:'en-md/04-DeepSeek-V2.md', thinkFile:'thinking-md/11-DeepSeek-V2.md', pdfFile:'pdf/2405.04434v5.pdf',
+    metrics:[{value:'236B',label:'总参数'},{value:'93.3%',label:'KV 缓存减少'},{value:'5.76×',label:'生成吞吐'},{value:'128K',label:'上下文'}],
+    problems:[
+      {title:'KV 缓存成为推理瓶颈',desc:'长序列推理中 KV 缓存占用大量 HBM，限制批大小和上下文长度。'},
+      {title:'训练成本过高',desc:'MoE 模型参数量巨大，训练成本随规模线性增长。'}
+    ],
+    solutions:[
+      {title:'多头潜在注意力 (MLA)',desc:'通过低秩压缩将 KV 缓存减少 93.3%，使 128K 上下文成为可能。'},
+      {title:'DeepSeekMoE 架构',desc:'236B 总参数/21B 激活，训练成本降 42.5%，生成吞吐提升 5.76×。'}
+    ],
+    insights:[
+      {emoji:'💡',title:'MLA — 注意力革命',desc:'低秩 KV 压缩从瓶颈变为可管理——直接解决了"注意力稀释"问题。'},
+      {emoji:'💰',title:'经济的 MoE',desc:'236B/21B，成本降 42.5%，吞吐提升 5.76×。'},
+      {emoji:'🔗',title:'128K 上下文',desc:'MLA + YaRN，使 128K 上下文成为实用化能力。'},
+      {emoji:'🏛️',title:'体系确立',desc:'MLA + MoE 组合确立"模型架构×Harness 设计"协同范式。'}
+    ],
+    resultsTables:[{title:'DeepSeek-V2 vs DeepSeek 67B',headers:['指标','DeepSeek 67B','DeepSeek-V2'],rows:[['总/激活参数','67B/67B','236B/21B'],['训练成本','基线','-42.5%'],['KV 缓存','基线','-93.3%'],['生成吞吐','1×','5.76×']]}],
+    highlights:[{title:'与 Harness 理论的关键关联',text:'MLA 是 Harness"上下文管理器（C）"的核心技术实现。通过低秩压缩将 KV 缓存从瓶颈变为可管理，直接解决了 Harness 理论中的"注意力稀释"问题。'}]
+  },
+  {
+    id:12, harScore:2,
+    zhTitle:'DeepSeek-Coder: 代码智能的崛起',
+    enTitle:'DeepSeek-Coder: When the LLM Meets Programming - The Rise of Code Intelligence',
+    date:'2024年1月26日', authors:'郭达雅*, 朱其昊*, 杨德建, 谢振达 等',
+    venue:'arXiv:2401.14196',
+    zhFile:'zh-md/03-DeepSeek-Coder.md', enFile:'en-md/03-DeepSeek-Coder.md', thinkFile:'thinking-md/12-DeepSeek-Coder.md', pdfFile:'pdf/2401.14196v2.pdf',
+    metrics:[{value:'1.3B–33B',label:'模型系列'},{value:'2T',label:'训练 token'},{value:'87种',label:'编程语言'},{value:'FIM',label:'填空式训练'}],
+    problems:[
+      {title:'闭源模型主导代码领域',desc:'开源社区缺少有竞争力的代码模型。'},
+      {title:'仓库级代码理解',desc:'真正的代码理解需要跨文件的仓库级上下文。'}
+    ],
+    solutions:[
+      {title:'从头训练代码系列',desc:'1.3B–33B 系列，2T token，87 种语言，仓库级数据。'},
+      {title:'FIM 训练策略',desc:'Fill-in-the-Middle——50% PSM 率，让模型学会在上下文中"填空"。'}
+    ],
+    insights:[
+      {emoji:'🏗️',title:'仓库级数据',desc:'依赖解析→拓扑排序——体现了 Harness 层"状态管理"思想。'},
+      {emoji:'🧩',title:'FIM 训练',desc:'本身就是 Harness 层"上下文管理"设计模式。'},
+      {emoji:'📏',title:'性能超越',desc:'33B 超越 CodeLlama 34B，Instruct 超越 GPT-3.5 Turbo。'}
+    ],
+    highlights:[{title:'与 Harness 理论的关联',text:'FIM 训练策略本身就是 Harness 层"上下文管理"设计模式。仓库级数据构建体现 Harness 层的状态管理思想。代码领域是 Harness 理论的最佳试验场。'}]
+  },
+  {
+    id:13, harScore:3,
+    zhTitle:'DeepSeekMoE: 终极的专家专业化',
+    enTitle:'DeepSeekMoE: Towards Ultimate Expert Specialization in MoE Language Models',
+    date:'2024年1月11日', authors:'戴大迈*, 邓承启, 赵成刚* 等',
+    venue:'arXiv:2401.06066',
+    zhFile:'zh-md/02-DeepSeekMoE.md', enFile:'en-md/02-DeepSeekMoE.md', thinkFile:'thinking-md/13-DeepSeekMoE.md', pdfFile:'pdf/2401.06066v1.pdf',
+    metrics:[{value:'细粒度',label:'专家分割'},{value:'共享',label:'共享专家隔离'},{value:'44亿',label:'组合数'},{value:'40%',label:'LLaMA2 计算量'}],
+    problems:[
+      {title:'MoE 专家专业化不足',desc:'传统 Top-K MoE 路由专家之间知识重叠，没有形成真正专业化。'},
+      {title:'公共知识冗余',desc:'所有专家都在学习相似基础知识，造成参数浪费。'}
+    ],
+    solutions:[
+      {title:'细粒度专家分割',desc:'m 个专家细分为 mN 个，激活 mK 个——组合数从 120 增至 44 亿。'},
+      {title:'共享专家隔离',desc:'隔离共享专家专门捕获公共知识，避免路由专家知识冗余。'}
+    ],
+    insights:[
+      {emoji:'🔬',title:'专家专业化',desc:'细粒度分割增加组合灵活性——从 120 到 44 亿种组合。'},
+      {emoji:'🤝',title:'共享专家',desc:'公共知识统一处理，路由专家专注差异化——对应 Harness"工具注册表"。'},
+      {emoji:'📊',title:'计算效率',desc:'16B 以 LLaMA2 7B 的 40% 计算量达相当性能。'},
+      {emoji:'📈',title:'扩展验证',desc:'从 2B 验证到 145B 扩展，证明架构可扩展性。'}
+    ],
+    highlights:[{title:'与 Harness 理论的关联',text:'MoE 架构本身就是 Harness 层的体现——路由机制、专家并行、负载均衡都是 Harness 组件。细粒度分割和共享专家隔离直接映射到 Harness 的"工具注册表"和"状态存储"设计模式。'}]
+  },
+  {
+    id:14, harScore:2,
+    zhTitle:'DeepSeek LLM: 长期主义扩展开源语言模型',
+    enTitle:'DeepSeek LLM: Scaling Open-Source Language Models with Longtermism',
+    date:'2024年1月5日', authors:'毕晓, 陈德立, 陈观庭, 黄闪闪 等',
+    venue:'arXiv:2401.02954',
+    zhFile:'zh-md/01-DeepSeek-LLM.md', enFile:'en-md/01-DeepSeek-LLM.md', thinkFile:'thinking-md/14-DeepSeek-LLM.md', pdfFile:'pdf/2401.02954v1.pdf',
+    metrics:[{value:'7B/67B',label:'模型规模'},{value:'2T',label:'训练 token'},{value:'DPO',label:'偏好对齐'},{value:'GPT-3.5',label:'67B Chat 超越'}],
+    problems:[
+      {title:'缩放定律存在分歧',desc:'不同文献对模型和数据扩展的最优分配比例结论完全不同。'},
+      {title:'超参数选择缺乏指导',desc:'批量大小、学习率等关键超参数的缩放行为未被充分研究。'}
+    ],
+    solutions:[
+      {title:'缩放定律研究',desc:'深入研究了批量大小/学习率的缩放定律，发现数据质量影响缩放行为。'},
+      {title:'长期主义视角',desc:'以长期视角构建开源 LLM，发布预训练、SFT、DPO 全流程经验。'}
+    ],
+    insights:[
+      {emoji:'📐',title:'缩放定律奠基',desc:'用 FLOPs/token M 替代参数量 N 预测性能——为后续模型奠定理论基础。'},
+      {emoji:'📊',title:'数据质量效应',desc:'不同数据集得出的缩放定律差异显著——数据质量直接影响 scaling 行为。'},
+      {emoji:'🔄',title:'DPO 对齐',desc:'用 DPO 替代 RLHF——简化流程，67B Chat 超越 GPT-3.5。'}
+    ],
+    highlights:[{title:'与 Harness 理论的关联',text:'DeepSeek 系列的开端。建立的缩放定律框架是后续所有模型的基础。Harness 层面的启示：预训练数据质量直接影响模型 scaling 行为——<strong>Harness 层面的数据管理能力与模型性能直接相关</strong>。'}]
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentPaperId = null;
+let isCollapsed = false;
+let isDark = false;
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function buildSidebar() {
+  const list = document.getElementById('paperList');
+  PAPERS.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'paper-item';
+    div.dataset.id = p.id;
+    div.innerHTML = `<span class="num">${String(p.id).padStart(2,'0')}</span>
+      <div class="title">${p.zhTitle}<span class="en-sub">${p.enTitle}</span></div>`;
+    div.addEventListener('click', () => selectPaper(p.id));
+    list.appendChild(div);
+  });
+}
+
+function toggleSidebar() {
+  isCollapsed = !isCollapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed', isCollapsed);
+  localStorage.setItem('sidebarCollapsed', isCollapsed);
+  // On mobile, toggle overlay open/close
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    document.getElementById('sidebar').classList.toggle('mobile-open', !isCollapsed);
+    document.getElementById('sidebarBackdrop').classList.toggle('visible', !isCollapsed);
+  }
+}
+
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  const icon = isDark ? '🌙' : '☀️';
+  document.getElementById('themeBtn').textContent = icon;
+  const hdr = document.getElementById('headerThemeBtn');
+  if (hdr) hdr.textContent = icon;
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+function copyWechat() {
+  const num = '15527321668';
+  navigator.clipboard.writeText(num).then(() => {
+    const el = document.getElementById('wechatContact');
+    const orig = el.textContent;
+    el.textContent = '✅ 已复制 ' + num;
+    el.style.borderColor = 'var(--green)';
+    setTimeout(() => {
+      el.textContent = orig;
+      el.style.borderColor = '';
+    }, 2000);
+  }).catch(() => {
+    alert('微信号: ' + num);
+  });
+}
+
+// ============================================================
+// PAPER SELECTION
+// ============================================================
+function selectPaper(id) {
+  currentPaperId = id;
+  const paper = PAPERS.find(p => p.id === id);
+  if (!paper) return;
+
+  // Auto-close sidebar on mobile
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebarBackdrop').classList.remove('visible');
+  }
+
+  // Update sidebar active state
+  document.querySelectorAll('.paper-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.id) === id);
+  });
+
+  // Update paper header
+  const stars = '⭐'.repeat(paper.harScore) + '☆'.repeat(5 - paper.harScore);
+  document.getElementById('paperMetaLine').innerHTML = `#${String(paper.id).padStart(2,'0')} · ${paper.date} · Harness ${stars}`;
+  document.getElementById('paperZhTitle').textContent = paper.zhTitle;
+  document.getElementById('paperEnTitle').textContent = paper.enTitle;
+  document.getElementById('paperMeta').textContent = `${paper.authors} · ${paper.venue}`;
+  document.getElementById('paperHeader').style.display = 'block';
+
+  // Show PDF download button
+  const dlBtn = document.getElementById('downloadBtn');
+  if (paper.pdfFile) {
+    dlBtn.href = '/deepseek/' + paper.pdfFile;
+    dlBtn.style.display = 'inline-flex';
+  } else {
+    dlBtn.style.display = 'none';
+  }
+  // Show WeChat contact
+  document.getElementById('wechatContact').style.display = 'inline-flex';
+  // Show header theme button
+  document.getElementById('headerThemeBtn').style.display = 'inline-flex';
+  document.getElementById('tabsContainer').style.display = 'block';
+
+  // Build overview content
+  buildOverview(paper);
+
+  // Load markdown tabs
+  loadMDTab('thinkingContent', paper.thinkFile);
+  loadMDTab('translationContent', paper.zhFile);
+  loadMDTab('originalContent', paper.enFile);
+
+  switchTab('overview');
+}
+
+function buildOverview(p) {
+  const stars = '⭐'.repeat(p.harScore) + '☆'.repeat(5 - p.harScore);
+  const html = `
+    <div class="metrics-grid fade-in">${p.metrics.map(m =>
+      `<div class="metric-card"><div class="value">${m.value}</div><div class="label">${m.label}</div></div>`
+    ).join('')}</div>
+
+    ${p.problems && p.problems.length ? `
+    <div class="section-block fade-in fade-in-d1">
+      <div class="section-title"><span class="num">1</span> 核心挑战与方案</div>
+      <div class="problem-solution">
+        ${p.problems.map((pr,i) => `
+          <div class="ps-card problem"><div class="ps-label">挑战 ${i+1}</div><h4>${pr.title}</h4><p>${pr.desc}</p></div>
+          ${p.solutions && p.solutions[i] ? `
+          <div class="ps-card solution"><div class="ps-label">方案 ${i+1}</div><h4>${p.solutions[i].title}</h4><p>${p.solutions[i].desc}</p></div>
+          ` : ''}
+        `).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="section-block fade-in fade-in-d2">
+      <div class="section-title"><span class="num">2</span> 关键技术洞察</div>
+      <div class="insight-grid">${p.insights.map(i =>
+        `<div class="insight-card"><span class="emoji-icon">${i.emoji}</span><h4>${i.title}</h4><p>${i.desc}</p></div>`
+      ).join('')}</div>
+    </div>
+
+    <div class="section-block fade-in fade-in-d3">
+      <div class="section-title"><span class="num">3</span> 核心结果</div>
+      ${p.highlights ? p.highlights.map(h => `
+        <div class="highlight-box"><h4>${h.title}</h4><p>${h.text}</p></div>
+      `).join('') : ''}
+      ${p.resultsTables ? p.resultsTables.map(t => `
+        ${t.title ? `<div class="highlight-box" style="margin-top:12px;"><h4>${t.title}</h4></div>` : ''}
+        <div class="results-table-wrap"><table>
+          <tr>${t.headers.map(h => `<th>${h}</th>`).join('')}</tr>
+          ${t.rows.map(r => `<tr>${r.map(c => `<td${/^[+\d$]/.test(c) ? ' class="highlight"' : ''}>${c}</td>`).join('')}</tr>`).join('')}
+        </table></div>
+      `).join('') : ''}
+    </div>
+
+    <div class="section-block fade-in fade-in-d4">
+      <div class="section-title"><span class="num">4</span> Harness 关联度 ${stars}</div>
+      <div class="highlight-box" style="border-left:3px solid var(--orange);">
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.7;">
+          该论文与 <strong>LLM + Harness = Agent</strong> 理论框架的关联程度为 <strong>${stars}</strong>（共 5 星）。
+          ${p.harScore >= 5 ? '直接对应多个 Harness 组件，是研究核心参考。' :
+            p.harScore >= 4 ? '与 Harness 理论有强关联，对应至少 2 个核心组件。' :
+            p.harScore >= 3 ? '部分设计思想与 Harness 组件相通。' :
+            '底层技术关联，间接启发 Harness 层设计。'}
+        </p>
+      </div>
+    </div>
+  `;
+  document.getElementById('overviewContent').innerHTML = html;
+}
+
+async function loadMDTab(containerId, filePath) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<div class="md-loading"><div class="spinner"></div><p>加载中...</p></div>`;
+  try {
+    // Always use absolute path with /deepseek/ prefix so it works from any page URL
+    const fullPath = '/deepseek/' + filePath;
+    const resp = await fetch(fullPath);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const md = await resp.text();
+    container.innerHTML = `<div class="md-content">${mdToHtml(md)}</div>`;
+  } catch(e) {
+    container.innerHTML = `<div class="md-error"><p style="font-size:16px;margin-bottom:6px;">⚠️ 加载失败</p><p>请直接查看 <a href="/deepseek/${filePath}" style="color:var(--accent);text-decoration:underline;">源文件</a></p><p style="font-size:12px;margin-top:6px;opacity:0.5;">${e.message}</p></div>`;
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick').includes(name));
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ============================================================
+// MARKDOWN RENDERER (Simple, safe)
+// ============================================================
+function mdToHtml(text) {
+  let html = text;
+  // Headers
+  html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/m, '<h1>$1</h1>');
+  // Bold/italic
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Blockquote
+  html = html.replace(/^> (.*)$/gm, '<blockquote>$1</blockquote>');
+  // HR
+  html = html.replace(/^---$/gm, '<hr>');
+  // List items
+  html = html.replace(/^- (.*)$/gm, '<li>$1</li>');
+  html = html.replace(/^\d+\. (.*)$/gm, '<li>$1</li>');
+  // Paragraphs
+  html = html.replace(/\n\n/g, '</p><p>');
+  html = '<p>' + html + '</p>';
+  // Fix nesting
+  html = html.replace(/<p><h([1-4])>/g, '<h$1>');
+  html = html.replace(/<\/h([1-4])><\/p>/g, '</h$1>');
+  html = html.replace(/<p><(li|blockquote|hr)>/g, '<$1>');
+  html = html.replace(/<(li|blockquote|hr)><\/p>/g, '<$1>');
+  // Wrap consecutive <li> in <ul>
+  html = html.replace(/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/gs, '<ul>$1</ul>');
+  return html;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Restore state
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark') { isDark = true; document.documentElement.setAttribute('data-theme','dark'); document.getElementById('themeBtn').textContent='🌙'; const h = document.getElementById('headerThemeBtn'); if(h) h.textContent='🌙'; }
+const savedCollapse = localStorage.getItem('sidebarCollapsed');
+if (savedCollapse === 'true') { isCollapsed = true; document.getElementById('sidebar').classList.add('collapsed'); }
+
+buildSidebar();
+</script>
+</body>
+</html>

@@ -17,3 +17,7 @@ Icon
 # OS generated files
 ehthumbs.db
 Thumbs.db
+
+# Local working directories
+.omo/
+.omc/

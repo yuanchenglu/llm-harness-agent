@@ -2,7 +2,7 @@
 
 > **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
-> **创新点索引**：I-02
+> **创新点索引**：I-07
 > **LLM + Harness = Agent** · 第 7 篇
 > **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[06 OKR 增强型 PlanStep + 级联修正引擎](06-okr-planstep-cascade.md)

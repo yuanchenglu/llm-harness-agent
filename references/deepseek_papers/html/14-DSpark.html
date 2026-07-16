@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSpark — 基于置信度调度的半自回归推测解码</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0e17;
+  --surface: #111621;
+  --surface-2: #181f2f;
+  --border: #1e2840;
+  --text: #e2e6f0;
+  --text-secondary: #8892a8;
+  --accent: #4a9eff;
+  --accent-dim: #2a5faa;
+  --accent-glow: rgba(74, 158, 255, 0.08);
+  --green: #34d399;
+  --orange: #fbbf24;
+  --red: #f87171;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans SC', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Header */
+.header {
+  position: relative;
+  padding: 64px 32px 48px;
+  text-align: center;
+  background: linear-gradient(180deg, #0f1a2e 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  width: 800px;
+  height: 800px;
+  transform: translate(-50%, -30%);
+  background: radial-gradient(circle, rgba(74,158,255,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.header-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  border-radius: 100px;
+  background: rgba(74,158,255,0.12);
+  border: 1px solid rgba(74,158,255,0.2);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  margin-bottom: 20px;
+}
+.header h1 {
+  font-family: 'DM Sans', 'Noto Sans SC', sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+.header .subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto;
+  font-weight: 300;
+}
+.header .meta {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.header .meta span {
+  display: inline-block;
+  margin: 0 12px;
+  opacity: 0.6;
+}
+
+/* Tabs */
+.tabs-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(11,14,23,0.92);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+}
+.tabs {
+  display: flex;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-btn .tab-icon { margin-right: 8px; font-style: normal; }
+.tab-btn .tab-count {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 8px;
+  background: rgba(74,158,255,0.12);
+  border-radius: 99px;
+  font-size: 11px;
+  color: var(--accent);
+}
+
+/* Tab Content */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== OVERVIEW TAB ===== */
+.overview {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* Hero Metrics */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.metric-card .value {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), #6ab0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.metric-card .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+/* Section Block */
+.section-block {
+  margin-bottom: 48px;
+}
+.section-block:last-child { margin-bottom: 0; }
+.section-title {
+  font-family: 'DM Sans', 'Noto Sans SC', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Problem / Solution Cards */
+.problem-solution {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 700px) {
+  .problem-solution { grid-template-columns: 1fr; }
+}
+.ps-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.ps-card.problem { border-left: 3px solid var(--red); }
+.ps-card.solution { border-left: 3px solid var(--green); }
+.ps-card .ps-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.ps-card.problem .ps-label { color: var(--red); }
+.ps-card.solution .ps-label { color: var(--green); }
+.ps-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.ps-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Architecture Flow */
+.arch-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+.arch-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  position: relative;
+  padding-bottom: 32px;
+}
+.arch-step:last-child { padding-bottom: 0; }
+.arch-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 18px;
+  top: 40px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--border) 0%, transparent 100%);
+}
+.arch-dot {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.arch-dot.s1 { background: var(--accent-dim); }
+.arch-dot.s2 { background: #7c3aed; }
+.arch-dot.s3 { background: var(--green); }
+.arch-dot.s4 { background: var(--orange); }
+.arch-body h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.arch-body p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Architecture Diagram (visual) */
+.arch-diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+.arch-diagram svg {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Results Table */
+.results-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.results-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.results-table-wrap th {
+  background: var(--surface-2);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.results-table-wrap td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.results-table-wrap tr:last-child td { border-bottom: none; }
+.results-table-wrap .highlight { color: var(--accent); font-weight: 600; }
+
+/* Highlight Box */
+.highlight-box {
+  background: linear-gradient(135deg, rgba(74,158,255,0.06), rgba(74,158,255,0.02));
+  border: 1px solid rgba(74,158,255,0.15);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.highlight-box h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+.highlight-box p, .highlight-box ul {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.highlight-box ul { padding-left: 20px; }
+.highlight-box ul li { margin-bottom: 4px; }
+
+/* Key Insight Cards */
+.insight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 700px) {
+  .insight-grid { grid-template-columns: 1fr; }
+}
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.insight-card .emoji-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 12px;
+}
+.insight-card h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.insight-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ===== QA TAB ===== */
+.qa {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+.qa-intro {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.qa-intro h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.qa-intro p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.qa-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.qa-item:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.2); }
+.qa-question {
+  padding: 18px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  user-select: none;
+}
+.qa-question .q-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.qa-question .q-text {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.qa-question .q-arrow {
+  transition: transform 0.3s ease;
+  color: var(--text-secondary);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.qa-item.open .qa-question .q-arrow { transform: rotate(180deg); }
+.qa-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding: 0 24px;
+}
+.qa-item.open .qa-answer {
+  max-height: 800px;
+  padding: 0 24px 20px;
+}
+.qa-answer-inner {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.qa-answer-inner strong { color: var(--text); }
+.qa-answer-inner code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 1px 6px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  color: var(--accent);
+}
+.qa-answer-inner .tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 6px;
+}
+.qa-answer-inner .tag.arch { background: rgba(124,58,237,0.15); color: #a78bfa; }
+.qa-answer-inner .tag.sys { background: rgba(74,158,255,0.15); color: var(--accent); }
+.qa-answer-inner .tag.result { background: rgba(52,211,153,0.15); color: var(--green); }
+
+/* ===== ORIGINAL TEXT TAB ===== */
+.original {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+.original-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--text);
+}
+.original-content h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.original-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 32px 0 16px;
+  color: var(--accent);
+}
+.original-content h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 24px 0 12px;
+}
+.original-content h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 20px 0 10px;
+}
+.original-content p {
+  margin-bottom: 14px;
+  color: var(--text-secondary);
+}
+.original-content strong { color: var(--text); }
+.original-content em { color: var(--accent); }
+.original-content ul, .original-content ol {
+  margin: 12px 0 16px 20px;
+  color: var(--text-secondary);
+}
+.original-content li { margin-bottom: 6px; }
+.original-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+.original-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 12px 20px;
+  margin: 16px 0;
+  background: rgba(74,158,255,0.04);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text-secondary);
+  font-style: normal;
+}
+.original-content code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 1px 6px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  color: var(--accent);
+}
+.original-content pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.original-content a { color: var(--accent); text-decoration: none; }
+.original-content a:hover { text-decoration: underline; }
+.original-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.original-content td, .original-content th {
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  text-align: left;
+}
+.original-content th {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 32px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+.fade-in-d1 { animation-delay: 0.1s; }
+.fade-in-d2 { animation-delay: 0.2s; }
+.fade-in-d3 { animation-delay: 0.3s; }
+.fade-in-d4 { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-badge">DeepSeek 技术论文 · 2026</div>
+  <h1>DSpark: 基于置信度调度的<br>半自回归推测解码</h1>
+  <p class="subtitle">通过半自回归草稿生成 + 硬件感知置信度调度，在匹配吞吐下将单用户生成速度提升 60%–85%</p>
+  <div class="meta">
+    程鑫, 余兴凯, 邵晨泽, 李家石, 熊云帆 等
+    <span>·</span>
+    DeepSeek-AI · 北京大学
+    <span>·</span>
+    2026年6月27日
+  </div>
+</header>
+
+<!-- Tabs -->
+<div class="tabs-container">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">
+      <i class="tab-icon">&#9632;</i> 概述
+    </button>
+    <button class="tab-btn" data-tab="qa">
+      <i class="tab-icon">&#63;</i> 苏格拉底问答
+    </button>
+    <button class="tab-btn" data-tab="original">
+      <i class="tab-icon">&#9998;</i> 原文
+    </button>
+  </div>
+</div>
+
+<!-- ===== TAB 1: Overview ===== -->
+<div class="tab-content active" id="tab-overview">
+<div class="overview">
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid fade-in">
+    <div class="metric-card">
+      <div class="value">60–85%</div>
+      <div class="label">单用户生成速度提升 (V4-Flash)</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">30%</div>
+      <div class="label">接受长度超越 Eagle3 (自回归基线)</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">18%</div>
+      <div class="label">接受长度超越 DFlash (并行基线)</div>
+    </div>
+    <div class="metric-card">
+      <div class="value">开源</div>
+      <div class="label">检查点 + DeepSpec 训练仓库</div>
+    </div>
+  </div>
+
+  <!-- Problem & Solution -->
+  <div class="section-block fade-in fade-in-d1">
+    <div class="section-title"><span class="num">1</span> 核心挑战</div>
+    <div class="problem-solution">
+      <div class="ps-card problem">
+        <div class="ps-label">挑战 1</div>
+        <h4>并行草稿质量衰减</h4>
+        <p>并行草稿器独立预测每个 token，缺乏块内依赖建模。当上下文有多种合理延续时（如"of course" / "no problem"），可能产生不连贯组合（如"of problem"），接受率沿块快速衰减。</p>
+      </div>
+      <div class="ps-card solution">
+        <div class="ps-label">DSpark 方案</div>
+        <h4>半自回归架构</h4>
+        <p>保持并行主干（DFlash）的高吞吐，附加轻量级顺序头（马尔可夫头 / RNN 头）注入局部转移信息，以极小延迟代价大幅提升接受率。</p>
+      </div>
+      <div class="ps-card problem">
+        <div class="ps-label">挑战 2</div>
+        <h4>验证计算浪费</h4>
+        <p>不加区分地验证所有草稿 token 会将批次容量浪费在高拒绝风险的 token 上。高并发场景下，不必要的验证严重降低系统吞吐量。</p>
+      </div>
+      <div class="ps-card solution">
+        <div class="ps-label">DSpark 方案</div>
+        <h4>置信度调度验证</h4>
+        <p>置信度头预测每位置接受概率 + 硬件感知前缀调度器动态裁剪低置信度后缀，将验证预算仅分配给预期回报最高的 token。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Architecture Flow -->
+  <div class="section-block fade-in fade-in-d2">
+    <div class="section-title"><span class="num">2</span> 一个完整的 DSpark 解码周期</div>
+    <div class="arch-flow">
+      <div class="arch-step">
+        <div class="arch-dot s1">P</div>
+        <div class="arch-body">
+          <h4>并行主干生成</h4>
+          <p>以锚点 token D 为输入，DFlash 并行主干一次前向传播产生所有位置的隐藏状态和基础 logits。草稿延迟与块大小 γ 几乎无关。</p>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-dot s2">S</div>
+        <div class="arch-body">
+          <h4>顺序头注入依赖</h4>
+          <p>轻量级顺序头（马尔可夫 / RNN）从左到右采样，以之前已采样的 token 为条件注入转移偏差。缓解跨模式冲突，生成连贯的草稿序列 EFGH。</p>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-dot s3">C</div>
+        <div class="arch-body">
+          <h4>置信度评估 + 调度</h4>
+          <p>置信度头输出每位置接受概率 c₁–c₄。硬件感知调度器结合实时引擎吞吐量特征，保留预期回报最高的前缀（EFG），丢弃高拒绝风险的 token（H）。</p>
+        </div>
+      </div>
+      <div class="arch-step">
+        <div class="arch-dot s4">V</div>
+        <div class="arch-body">
+          <h4>目标模型验证</h4>
+          <p>目标模型并行验证调度后的前缀。E、F 被接受，G 被拒绝并生成修正 token G*。周期结束，G* 成为下一轮锚点。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Architecture Diagram SVG -->
+  <div class="section-block fade-in fade-in-d2">
+    <div class="section-title"><span class="num">3</span> 架构示意</div>
+    <div class="arch-diagram">
+      <svg viewBox="0 0 780 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="box1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e2840"/><stop offset="100%" stop-color="#181f2f"/></linearGradient>
+          <linearGradient id="box2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7c3aed" stop-opacity="0.2"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0.05"/></linearGradient>
+          <linearGradient id="box3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4a9eff" stop-opacity="0.15"/><stop offset="100%" stop-color="#4a9eff" stop-opacity="0.05"/></linearGradient>
+          <linearGradient id="box4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34d399" stop-opacity="0.15"/><stop offset="100%" stop-color="#34d399" stop-opacity="0.05"/></linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+
+        <!-- Arrow head -->
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#4a9eff" opacity="0.4"/>
+        </marker>
+
+        <!-- Prompt input -->
+        <rect x="30" y="20" width="120" height="40" rx="6" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1"/>
+        <text x="90" y="46" text-anchor="middle" fill="#8892a8" font-size="14" font-family="'JetBrains Mono', monospace">A B C</text>
+
+        <!-- Target Model -->
+        <rect x="30" y="80" width="120" height="50" rx="8" fill="url(#box1)" stroke="var(--border)" stroke-width="1"/>
+        <text x="90" y="110" text-anchor="middle" fill="#e2e6f0" font-size="12" font-weight="600">目标模型</text>
+
+        <!-- Arrow: prompt -> target -->
+        <line x1="90" y1="60" x2="90" y2="78" stroke="#4a9eff" stroke-opacity="0.3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Anchor token D -->
+        <rect x="210" y="80" width="60" height="50" rx="8" fill="url(#box1)" stroke="var(--border)" stroke-width="1"/>
+        <text x="240" y="110" text-anchor="middle" fill="#4a9eff" font-size="16" font-weight="700" filter="url(#glow)">D</text>
+
+        <!-- Arrow: target -> anchor -->
+        <line x1="150" y1="105" x2="208" y2="105" stroke="#4a9eff" stroke-opacity="0.3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Parallel Backbone -->
+        <rect x="300" y="20" width="150" height="60" rx="8" fill="url(#box2)" stroke="#7c3aed" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="375" y="42" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">并行主干</text>
+        <text x="375" y="60" text-anchor="middle" fill="#8892a8" font-size="10">DFlash 一次前向</text>
+
+        <!-- Arrow: anchor -> parallel -->
+        <line x1="270" y1="105" x2="300" y2="60" stroke="#7c3aed" stroke-opacity="0.3" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+        <!-- Sequential Head -->
+        <rect x="300" y="100" width="150" height="50" rx="8" fill="url(#box2)" stroke="#7c3aed" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="375" y="122" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">● 顺序头</text>
+        <text x="375" y="138" text-anchor="middle" fill="#8892a8" font-size="10">马尔可夫 / RNN</text>
+
+        <!-- Arrow: parallel -> sequential -->
+        <line x1="375" y1="80" x2="375" y2="98" stroke="#7c3aed" stroke-opacity="0.3" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Draft tokens E F G H -->
+        <rect x="490" y="60" width="50" height="40" rx="6" fill="#2a5faa" stroke="#4a9eff" stroke-opacity="0.4" stroke-width="1"/>
+        <text x="515" y="86" text-anchor="middle" fill="#4a9eff" font-size="14" font-weight="600">E</text>
+        <rect x="546" y="60" width="46" height="40" rx="6" fill="#2a5faa" stroke="#4a9eff" stroke-opacity="0.4" stroke-width="1"/>
+        <text x="569" y="86" text-anchor="middle" fill="#4a9eff" font-size="14" font-weight="600">F</text>
+        <rect x="598" y="60" width="46" height="40" rx="6" fill="#2a5faa" stroke="#4a9eff" stroke-opacity="0.4" stroke-width="1"/>
+        <text x="621" y="86" text-anchor="middle" fill="#4a9eff" font-size="14" font-weight="600">G</text>
+        <rect x="650" y="60" width="50" height="40" rx="6" fill="#3b1a1a" stroke="#f87171" stroke-opacity="0.3" stroke-width="1"/>
+        <text x="675" y="86" text-anchor="middle" fill="#f87171" font-size="14" font-weight="600">H</text>
+
+        <!-- Arrow: sequential -> drafts -->
+        <line x1="450" y1="120" x2="515" y2="100" stroke="#7c3aed" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="3,3"/>
+
+        <!-- Confidence scores -->
+        <text x="515" y="50" text-anchor="middle" fill="#34d399" font-size="10">c₁=0.95</text>
+        <text x="569" y="50" text-anchor="middle" fill="#34d399" font-size="10">c₂=0.88</text>
+        <text x="621" y="50" text-anchor="middle" fill="#fbbf24" font-size="10">c₃=0.45</text>
+        <text x="675" y="50" text-anchor="middle" fill="#f87171" font-size="10">c₄=0.12</text>
+
+        <!-- Scheduler -->
+        <rect x="490" y="120" width="210" height="36" rx="8" fill="url(#box3)" stroke="#4a9eff" stroke-opacity="0.3" stroke-width="1"/>
+        <text x="595" y="143" text-anchor="middle" fill="#4a9eff" font-size="11" font-weight="600">硬件感知调度器 → 保留 E F G，丢弃 H</text>
+
+        <!-- Arrow: scores -> scheduler -->
+        <line x1="595" y1="100" x2="595" y2="118" stroke="#4a9eff" stroke-opacity="0.2" stroke-width="1" marker-end="url(#arrow)"/>
+
+        <!-- Verified tokens -->
+        <rect x="490" y="180" width="50" height="40" rx="6" fill="#065f46" stroke="#34d399" stroke-opacity="0.5" stroke-width="1.5"/>
+        <text x="515" y="206" text-anchor="middle" fill="#34d399" font-size="14" font-weight="600">E</text>
+        <rect x="546" y="180" width="46" height="40" rx="6" fill="#065f46" stroke="#34d399" stroke-opacity="0.5" stroke-width="1.5"/>
+        <text x="569" y="206" text-anchor="middle" fill="#34d399" font-size="14" font-weight="600">F</text>
+        <rect x="598" y="180" width="46" height="40" rx="6" fill="#3b1a1a" stroke="#f87171" stroke-opacity="0.4" stroke-width="1.5"/>
+        <text x="621" y="206" text-anchor="middle" fill="#f87171" font-size="14" font-weight="600">G</text>
+        <text x="656" y="206" fill="#8892a8" font-size="11">(已丢弃)</text>
+
+        <!-- Arrow: scheduler -> verified -->
+        <line x1="595" y1="156" x2="595" y2="178" stroke="#4a9eff" stroke-opacity="0.3" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Correction -->
+        <rect x="598" y="240" width="70" height="40" rx="6" fill="url(#box4)" stroke="#34d399" stroke-opacity="0.4" stroke-width="1"/>
+        <text x="633" y="264" text-anchor="middle" fill="#34d399" font-size="14" font-weight="600">G*</text>
+
+        <!-- Arrow: verified -> correction -->
+        <line x1="621" y1="220" x2="633" y2="238" stroke="#34d399" stroke-opacity="0.3" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Labels -->
+        <text x="90" y="160" text-anchor="middle" fill="#8892a8" font-size="10">生成阶段</text>
+        <text x="595" y="300" text-anchor="middle" fill="#8892a8" font-size="10">验证阶段</text>
+        <line x1="180" y1="145" x2="180" y2="280" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Key Innovations -->
+  <div class="section-block fade-in fade-in-d3">
+    <div class="section-title"><span class="num">4</span> 核心技术</div>
+    <div class="insight-grid">
+      <div class="insight-card">
+        <span class="emoji-icon">⚡</span>
+        <h4>半自回归生成</h4>
+        <p>并行主干（DFlash）一次前向生成所有草稿 → 轻量级顺序头（马尔可夫 / RNN）从左到右注入 token 间依赖。T<sub>draft</sub> 几乎不变，但 τ 大幅提升。</p>
+      </div>
+      <div class="insight-card">
+        <span class="emoji-icon">🎯</span>
+        <h4>置信度头</h4>
+        <p>线性投影 + sigmoid 预测每位置条件接受概率 c<sub>k</sub>。经过顺序温度缩放（STS）校准后，提供精确的累积存活概率估计。</p>
+      </div>
+      <div class="insight-card">
+        <span class="emoji-icon">🧠</span>
+        <h4>硬件感知前缀调度</h4>
+        <p>将验证长度选择形式化为全局吞吐量最大化问题。利用预分析的 SPS(B) 吞吐曲线，为每个请求动态定制验证长度。</p>
+      </div>
+      <div class="insight-card">
+        <span class="emoji-icon">📊</span>
+        <h4>生产级验证</h4>
+        <p>在 DeepSeek-V4 真实流量下，将帕累托前沿推向新的交互层级。开源了 DSpark 检查点 + DeepSpec 训练仓库。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="section-block fade-in fade-in-d4">
+    <div class="section-title"><span class="num">5</span> 核心结果</div>
+
+    <div class="highlight-box">
+      <h4>离线基准测试（Qwen3 目标模型）</h4>
+      <p>相对于自回归 Eagle3，宏平均接受长度提升 26.7%–30.9%；相对于并行 DFlash，提升 16.3%–18.4%。</p>
+    </div>
+
+    <div class="results-table-wrap">
+      <table>
+        <tr>
+          <th>对比基线</th>
+          <th>Qwen3-4B</th>
+          <th>Qwen3-8B</th>
+          <th>Qwen3-14B</th>
+        </tr>
+        <tr>
+          <td>vs Eagle3（自回归）</td>
+          <td class="highlight">+30.9%</td>
+          <td class="highlight">+26.7%</td>
+          <td class="highlight">+30.0%</td>
+        </tr>
+        <tr>
+          <td>vs DFlash（并行）</td>
+          <td class="highlight">+16.3%</td>
+          <td class="highlight">+18.4%</td>
+          <td class="highlight">+18.3%</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="highlight-box">
+      <h4>在线部署（DeepSeek-V4 真实流量）</h4>
+      <p>相较于 MTP-1 生产基线，在匹配总吞吐容量下：</p>
+      <ul>
+        <li><strong>V4-Flash：</strong> 单用户生成速度提升 <strong class="highlight">60%–85%</strong></li>
+        <li><strong>V4-Pro：</strong> 单用户生成速度提升 <strong class="highlight">57%–78%</strong></li>
+        <li>在严格的 SLA 约束下，防止了严重的吞吐退化，解锁此前不可达的交互层级</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ===== TAB 2: Socratic Q&A ===== -->
+<div class="tab-content" id="tab-qa">
+<div class="qa">
+
+  <div class="qa-intro">
+    <h2>苏格拉底问答</h2>
+    <p>从浅入深，逐步理解 DSpark 的核心思想与技术细节</p>
+  </div>
+
+  <!-- Q1 -->
+  <div class="qa-item open">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">1</span>
+      <span class="q-text">LLM 推理为什么慢？推测解码怎么解决？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p><strong>问题根源：</strong>LLM 是自回归的——每生成一个 token 都需要一次完整的前向传播。这意味着生成 1000 个 token 就需要 1000 次前向传播，延迟与输出长度成正比。</p>
+        <p><strong>推测解码的思路：</strong>用一个小而快的"草稿模型"先快速生成一段候选 token，然后大模型（目标模型）一次性验证这整段。验证是并行的——目标模型一次前向传播就能检查所有候选 token。如果草稿质量好，一个周期就能前进多个 token，大幅减少目标模型的调用次数。</p>
+        <p>核心公式：每 token 延迟 <code>L = (T_draft + T_verify) / τ</code>，其中 τ 是每周期接受的 token 数。</p>
+        <p><span class="tag arch">基础</span> 加速的关键就是：让 τ 尽可能大，同时让 T_draft 和 T_verify 尽可能小。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="qa-item">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">2</span>
+      <span class="q-text">现有草稿器有什么问题？为什么 DSpark 要"半自回归"？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p>现有方案有两种，各有各的毛病：</p>
+        <p><strong>自回归草稿器（如 Eagle3）：</strong> 每个 token 依赖前面的 token，质量高，但是顺序生成——草稿延迟随块大小线性增长（T<sub>draft</sub> ∝ γ）。只能用短块，限制了加速潜力。</p>
+        <p><strong>并行草稿器（如 DFlash）：</strong> 一次性生成所有草稿 token，速度极快（T<sub>draft</sub> 几乎与 γ 无关），但每个位置独立预测，<strong>缺乏 token 间依赖</strong>。假设上下文说"好的，____"，合理的回答可能是"当然"或"没问题"。并行草稿器可能预测出"当然问题"这种不连贯的组合，因为位置 1 选了"当然"，位置 2 却选了"问题"。</p>
+        <p><span class="tag arch">DSpark 方案</span> <strong>半自回归架构：</strong>既要并行速度，又要自回归质量。并行主干处理主要计算，一个轻量级顺序头再从左到右注入 token 间依赖，修正不连贯的组合。主干带来速度，顺序头带来质量，两者兼得。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="qa-item">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">3</span>
+      <span class="q-text">顺序头具体怎么工作？马尔可夫头和 RNN 头有什么区别？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p>顺序头的核心公式：<code>p_k(v) ∝ exp(U_k(v) + B_k(...))</code></p>
+        <p>其中 U<sub>k</sub> 是并行主干给出的基础分数，B<sub>k</sub> 是顺序头注入的"转移偏差"——它根据前面已经采样的 token 来调整当前 token 的分数。</p>
+        <p><strong>马尔可夫头：</strong>只依赖前一个 token。一阶转移 <code>B(x_{k-1}, x_k)</code>，用低秩分解 <code>W₁ × W₂</code> 实现。上面例子中，一旦位置 1 采了"当然"，马尔可夫头就会提升"没问题"、抑制"问题"。计算量极小。</p>
+        <p><strong>RNN 头：</strong>维护一个循环状态 s<sub>k</sub>，累积整个前缀的历史。可以依赖前面所有的 token，而不只是上一个。建模能力更强，但计算量相应增加。</p>
+        <p><span class="tag arch">关键</span> 顺序头必须足够轻量（T<sub>sequential</sub> ≪ T<sub>parallel</sub>），这样总草稿延迟仍然由并行阶段主导。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="qa-item">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">4</span>
+      <span class="q-text">为什么不能永远验证全部草稿 token？"置信度调度"解决什么问题？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p>直觉上，草稿块越长越好——生成更多 token，总有机会多接受几个。但问题在于：<strong>验证 token 不是免费的</strong>。</p>
+        <p>在高并发系统中，目标模型需要同时服务多个请求。每次验证都在批次容量里占一个位置。验证一个几乎肯定被拒绝的 token，等于占用了一个本可以服务其他活跃请求的位置。这会导致整体吞吐量下降。</p>
+        <p>而且接受率不是均匀的——代码问题接受率高，开放对话接受率低。固定长度的验证策略无法适应这种变化。</p>
+        <p><span class="tag sys">DSpark 方案</span> <strong>置信度调度验证：</strong>不固定验证长度，而是为每个位置预测接受概率，然后动态决定保留哪些 token。只验证"值得"的 token，扔掉几乎肯定被拒绝的尾巴。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="qa-item">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">5</span>
+      <span class="q-text">置信度头和硬件感知调度器具体是怎么配合的？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p>这是两个组件的前后配合：</p>
+        <p><strong>1️⃣ 置信度头：</strong>一个轻量级线性投影 + sigmoid，以主干隐藏状态和前一个 token 的嵌入为输入，输出 <code>c_k ∈ (0,1)</code>——位置 k 的草稿 token 被<strong>条件</strong>接受的估计概率（假设前面所有 token 已经通过验证）。训练时用确切的总变差距离来监督。</p>
+        <p>但神经网络经常过于自信。因此用 <strong>顺序温度缩放（STS）</strong> 校准：从左到右逐个位置做网格搜索，找到使累积乘积的期望校准误差最小的温度系数。校准后，累积概率 <code>∏cᵢ</code> 能可靠地估计完整前缀的存活概率。</p>
+        <p><strong>2️⃣ 硬件感知调度器：</strong>形式化为一个全局吞吐量最大化问题。输入是一批请求的置信度序列 + 预分析的引擎吞吐曲线 SPS(B)。贪心算法逐个添加"存活概率最高"的 token，计算期望吞吐量 <code>Θ = τ · SPS(B)</code>，一旦吞吐量开始下降就停止。</p>
+        <p><span class="tag sys">效果</span> 轻负载时验证所有 token（几乎免费），重负载时智能裁剪——把宝贵的批次容量留给最有希望的 token。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="qa-item">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">6</span>
+      <span class="q-text">DSpark 在真实部署中表现如何？比之前的方案好在哪？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p>DSpark 部署在 DeepSeek-V4 服务系统中，经受真实用户流量考验：</p>
+        <p><strong>离线基准（Qwen3 系列）：</strong></p>
+        <ul>
+          <li>比自回归 Eagle3：接受长度提升 <strong>26.7%–30.9%</strong></li>
+          <li>比并行 DFlash：接受长度提升 <strong>16.3%–18.4%</strong></li>
+        </ul>
+        <p><strong>在线部署（vs MTP-1 生产基线）：</strong></p>
+        <ul>
+          <li>V4-Flash：单用户生成速度提升 <strong>60%–85%</strong></li>
+          <li>V4-Pro：单用户生成速度提升 <strong>57%–78%</strong></li>
+        </ul>
+        <p><span class="tag result">关键价值</span> 更关键的是，在严格的 SLA 约束下，基线容量严重恶化，而 DSpark 通过避免不必要的验证，保持了稳健的吞吐量。这推动了 LLM 服务的帕累托前沿——解锁了之前不可能达到的交互层级。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="qa-item">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">7</span>
+      <span class="q-text">DSpark 开源了什么？别人怎么用？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p>DSpark 团队开源了两样东西：</p>
+        <p><strong>1. DSpark 检查点：</strong>针对 DeepSeek-V4-Flash（预览版）和 DeepSeek-V4-Pro（预览版）训练好的模型权重。可以直接用于推理加速。</p>
+        <p><strong>2. DeepSpec 训练仓库：</strong>一个算法驱动的推测解码训练仓库，包含 Eagle3、DFlash 和 DSpark 的实现。研究人员可以基于此进行二次开发。</p>
+        <p><span class="tag arch">社区</span> 这使得整个推测解码领域有了一个统一的开源基准平台。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="qa-item">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <span class="q-label">8</span>
+      <span class="q-text">一句话总结：DSpark 到底做了什么？</span>
+      <span class="q-arrow">▾</span>
+    </div>
+    <div class="qa-answer">
+      <div class="qa-answer-inner">
+        <p><strong>DSpark 解决了并行推测解码中的两个核心矛盾：</strong></p>
+        <blockquote>
+          <strong>更好地草稿 + 更聪明地验证</strong>
+        </blockquote>
+        <p><strong>更好地草稿：</strong>用半自回归架构（并行主干 + 轻量级顺序头）同时获得并行速度和自回归质量。</p>
+        <p><strong>更聪明地验证：</strong>用置信度头 + 硬件感知调度器动态裁剪低质量后缀，把 GPU 算力花在最值得验证的 token 上。</p>
+        <p><span class="tag result">结果</span> 在 DeepSeek-V4 生产系统中，将单用户生成速度提升了 60%–85%，并推动了 LLM 服务的性能极限。</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ===== TAB 3: Original Text ===== -->
+<div class="tab-content" id="tab-original">
+<div class="original">
+
+  <div class="original-content">
+    <div id="paper-text"></div>
+  </div>
+
+  <div class="footer">
+    <a href="14-DSpark.md" style="color:var(--accent);text-decoration:none;">查看 Markdown 源文件</a>
+    <span style="margin:0 12px;opacity:0.3;">·</span>
+    <span>DeepSeek 技术论文 · CC BY-NC-SA 4.0</span>
+  </div>
+
+</div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    window.scrollTo({ top: document.querySelector('.tabs-container').offsetTop - 10, behavior: 'smooth' });
+  });
+});
+
+// Q&A toggle
+function toggleQA(el) {
+  const item = el.closest('.qa-item');
+  // Close others
+  // document.querySelectorAll('.qa-item.open').forEach(o => { if (o !== item) o.classList.remove('open'); });
+  item.classList.toggle('open');
+}
+
+// Convert markdown to HTML for the original text tab
+async function loadPaper() {
+  try {
+    const resp = await fetch('14-DSpark.md');
+    const md = await resp.text();
+    const html = mdToHtml(md);
+    document.getElementById('paper-text').innerHTML = html;
+  } catch(e) {
+    document.getElementById('paper-text').innerHTML = '<p style="color:#f87171;">加载原文失败。请直接查看 <a href="14-DSpark.md" style="color:var(--accent);">Markdown 源文件</a>。</p>';
+  }
+}
+
+function mdToHtml(text) {
+  // Simple markdown to HTML converter for our needs
+  let html = text;
+
+  // Pre-process: separate metadata header
+  html = html.replace(/^# (.+)$/m, '<h1>$1</h1>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+
+  // Bold/italic
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Blockquote lines
+  html = html.replace(/^> (.*)$/gm, '<blockquote>$1</blockquote>');
+
+  // Horizontal rules
+  html = html.replace(/^---$/gm, '<hr>');
+
+  // List items
+  html = html.replace(/^- (.*)$/gm, '<li>$1</li>');
+  html = html.replace(/^\d+\. (.*)$/gm, '<li>$1</li>');
+
+  // Paragraphs: double newline -> paragraph
+  html = html.replace(/\n\n/g, '</p><p>');
+  html = '<p>' + html + '</p>';
+
+  // Fix nested issues
+  html = html.replace(/<p><h([1-4])>/g, '<h$1>');
+  html = html.replace(/<\/h([1-4])><\/p>/g, '</h$1>');
+  html = html.replace(/<p><li>/g, '<li>');
+  html = html.replace(/<\/li><\/p>/g, '</li>');
+  html = html.replace(/<p><blockquote>/g, '<blockquote>');
+  html = html.replace(/<\/blockquote><\/p>/g, '</blockquote>');
+  html = html.replace(/<p><hr>/g, '<hr>');
+  html = html.replace(/<hr><\/p>/g, '<hr>');
+  html = html.replace(/<p><code>/g, '<code>');
+  html = html.replace(/<\/code><\/p>/g, '</code>');
+  html = html.replace(/<p><em>/g, '<em>');
+  html = html.replace(/<\/em><\/p>/g, '</em>');
+  html = html.replace(/<p><strong>/g, '<strong>');
+  html = html.replace(/<\/strong><\/p>/g, '</strong>');
+
+  // Remove empty paragraphs
+  html = html.replace(/<p>\s*<\/p>/g, '');
+
+  // Wrap consecutive <li> in <ul>
+  html = html.replace(/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/gs, '<ul>$1</ul>');
+
+  return html;
+}
+
+loadPaper();
+</script>
+
+</body>
+</html>

@@ -78,6 +78,10 @@
 | [12](zh/innovations/12-memory-granularity.md) | **Memory 粒度控制** | Memory 不是越强越好——收敛任务要强记忆，发散任务要弱记忆 |
 | [13](zh/innovations/13-byte-stable-prefix-architecture.md) | **Byte-Stable Prefix 作为架构约束** | 不只是缓存 System Prompt——让整个 Agent 以 Cache 优先 |
 | [14](zh/innovations/14-reasoning-content-stripping.md) | **Reasoning Content 回传陷阱** | Agent 应该知道什么不该回传——每个 Token 都要证明自己的存在价值 |
+| [15](zh/innovations/15-dsml-tool-call-optimization.md) | **DSML 工具调用格式优化** | DeepSeek V4 独有的 XML 标记格式，string="true/false" 参数类型区分 |
+| [16](zh/innovations/16-quick-instruction-routing.md) | **Quick Instruction 路由** | V4 内置的 action/query/authority/domain/title/read_url 6 种特殊 token 路由 |
+| [17](zh/innovations/17-reasoning-effort-control.md) | **推理强度控制** | reasoning_effort max/high/None 三级控制，Max 模式注入强制深度推理指令 |
+| [18](zh/innovations/18-latest-reminder-injection.md) | **最新提醒注入** | latest_reminder 独立消息角色，注入时效信息到注意力权重最高的位置 |
 
 ### 产品分析
 

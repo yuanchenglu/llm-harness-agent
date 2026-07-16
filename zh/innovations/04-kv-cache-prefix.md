@@ -2,7 +2,7 @@
 
 > **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
-> **创新点索引**：I-06
+> **创新点索引**：I-04
 > **LLM + Harness = Agent** · 第 4 篇
 > **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[03 注意力预算管理](03-attention-budget.md)
@@ -164,6 +164,122 @@ KV Cache 的物理结构提供了一个天然的隔离区：**前缀区**。
 | 额外成本 | 每次压缩消耗 token 做摘要 | 前缀区每多 1K tokens → 每个新 token 生成成本微量上升 |
 
 Claude Code 的 compaction 是业界最成熟的方案，但它的本质仍然是在「压缩后保留最重要信息」上做优化。前缀注入换了一个命题——**不压缩**最重要信息。
+
+### 4.4 V4 Compressor：学习型池化对静态边界的挑战
+
+> **证据说明：** 本节基于 DeepSeek V4 Flash 固定源码分析（`inference/model.py`，commit 签出状态），所有行号引用以该签出版本为准。V4 Compressor 在 I-04 前缀注入方案上的效果对比 = **B 级证据**（待端到端实验验证）；源码结构分析 = **A1 级证据**（可复现读取）。
+
+#### 4.4.1 回顾原论断的前提
+
+I-04 的核心主张建立在 Harness 层的物理约束之上：
+
+> 硬约束 C 进入前缀区 → 不经压缩函数 f → P(保留) = 1（物理保证）
+
+这个主张在 Harness 层是**完全正确的**。Harness 运行在模型外部——它看不到注意力矩阵、看不到门控权重、不知道模型内部哪些 token 对当前生成最重要。因此在 Harness 层，「无法精确实现压缩与硬约束的静态边界」这个论断仍然成立——你不能用一个看不见模型内部运作的外部系统，来决定「前 100 个 token 保留，第 101 个 token 压缩」。
+
+但在模型层，DeepSeek V4 的 Compressor 机制提供了一个新的视角：**模型可以通过学习来逼近「精确选择保留什么」**。
+
+#### 4.4.2 Compressor 机制：学习型门控池化
+
+DeepSeek V4 Flash 的 `Compressor` 类（`inference/model.py` L279-377）实现了一种与 Harness 层静态隔离截然不同的思路——**学习型门控池化（learned gated pooling）**。
+
+它的 docstring 明确说明了设计意图：
+
+```python
+# inference/model.py L279-281
+class Compressor(nn.Module):
+    """Compresses KV cache via learned gated pooling over `compress_ratio` consecutive tokens.
+    When overlap=True (ratio==4), uses overlapping windows for smoother compression boundaries."""
+```
+
+关键组件（`inference/model.py` L283-298）：
+
+```python
+# L283: 默认 4:1 压缩比
+def __init__(self, args: ModelArgs, compress_ratio: int = 4, ...):
+    # L294: 可学习的位置编码 —— 给压缩窗口内每个位置一个可训练的权重偏置
+    self.ape = nn.Parameter(torch.empty(compress_ratio, coff * self.head_dim, ...))
+    # L297: 可学习的 KV 投影层
+    self.wkv = Linear(self.dim, coff * self.head_dim, ...)
+    # L298: 可学习的门控权重层 —— 这是关键：不是静态平均，而是学习每个 token 在目标压缩 token 中的贡献权重
+    self.wgate = Linear(self.dim, coff * self.head_dim, ...)
+```
+
+核心操作在 L342——这是 Compressor 的**灵魂**：
+
+```python
+# inference/model.py L324, L338, L342
+score = self.wgate(x)        # 对每个 token 输出门控分数
+score = score.unflatten(1, (-1, ratio)) + self.ape  # 加上可学习位置编码
+kv = (kv * score.softmax(dim=2)).sum(dim=2)  # 按 softmax 权重聚合 ratio 个 token 为一个
+```
+
+**这不是简单的平均池化。** `score.softmax(dim=2)` 为压缩窗口内的每个 token 分配一个**连续的学习权重**（总和为 1），`wgate` 和 `ape` 在端到端训练中共同优化，使模型学会了：**在 4 个（或 128 个）连续的 token 中，哪个对未来生成最重要，给它更大的压缩权重。**
+
+更进一步，V4 Flash 在不同的 Transformer 层使用不同的压缩比（`inference/model.py` L65 默认值，`config.json` L66 实际配置）：
+
+```python
+# ModelArgs L65: 默认压缩比配置
+compress_ratios: Tuple[int] = (0, 0, 4, 128, 4, 128, 4, 0)
+# 0 = 不压缩, 4 = CSA 4:1 压缩, 128 = HCA 128:1 压缩
+# 交替出现：浅层 CSA 压缩温和，深层 HCA 压缩激进
+```
+
+```
+config.json L66（Flash：43 层 hidden + 1 MTP 层共 44 个 ratio 值）：
+[0, 0, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, ..., 4, 0]
+  L0 L1 L2  L3  L4  L5  L6  L7 ...
+```
+
+这意味着：**不同深度层看到的历史信息粒度不同**——浅层保留更细粒度的上下文，深层用更激进的比例压缩，形成「金字塔」式的 KV 压缩结构。每一层的 Compressor 都有自己独立的 `wgate` 和 `ape` 参数，学会了自己该保留什么。
+
+此外，V4 的 `Indexer` 类（`inference/model.py` L380-433）负责稀疏注意力的 top-k 选择——它内部也有一个独立的 `Compressor`（L398），用于对压缩后的 KV 做评分。这说明学习型压缩不只用在 KV cache 的存储上，也用在「该注意哪些历史位置」的选择上。
+
+#### 4.4.3 两种方案的对比
+
+| 维度 | Harness 层静态前缀（I-04 原方案） | V4 模型层 Compressor |
+|------|------|------|
+| **隔离机制** | 物理隔离——约束在前缀区，不经 f | 学习型池化——每个 token 有 softmax 权重 |
+| **确定性** | 确定——P(保留) = 1 | 概率——P(保留) ∝ 学习权重，随输入变化 |
+| **学习成本** | 零——不需要训练 | 端到端训练优化 wgate/ape |
+| **粒度** | 粗粒度——要么全保留，要么不保留 | 细粒度——每个 token 有连续权重 [0, 1] |
+| **可解释性** | 高——可以精确列出前缀区中每一条约束 | 低——门控权重是隐式学习的，难以逐 token 解释 |
+| **对 Harness 的可见性** | 完全可见——前缀区内容由 Harness 构造 | 不可见——Harness 看不到模型内部的注意力权重 |
+| **适用场景** | 「绝对不能丢」的硬约束 | 「相对重要」的对话上下文 |
+
+#### 4.4.4 互补而非互斥
+
+V4 Compressor 的发现不否定 I-04 的核心主张，而是揭示了两条**互补**的优化路径：
+
+- **Harness 层前缀注入**：保证「绝对不能丢」的硬约束（系统 prompt 核心规则、安全红线、环境限制）。这些约束必须得到确定性的物理保证，不能依赖模型在长上下文中的隐式判断。
+- **V4 模型层 Compressor**：在「相对重要」的对话历史中，通过门控学习来区分重要信息和噪音——第 7 轮那个 warning 也许比第 3 轮提到的一个边缘配置更重要，模型学会了按 softmax 权重聚合而非简单截断或平均。
+
+两者的分工可以概括为：
+
+```
+Harness 层（I-04 前缀注入）        模型层（V4 Compressor）
+─────────────────────────        ────────────────────────
+保证约束「物理存在」                学习历史中「哪些重要」
+确定性保证                         概率性优化
+架构约束                         训练中习得
+「不丢」                          「选对」
+```
+
+> **比喻**：Harness 层的前缀注入像是把重要的文件从待粉碎的纸堆里拿出来单独锁进保险柜——**物理上不会丢**。V4 的 Compressor 则像是训练了一个分拣员——它学会了在纸堆里快速挑出有价值的那几张，但它不保证永远不出错。两者解决的问题不同：前者针对「绝对不能丢」的硬约束，后者针对「相对重要」的软上下文。
+
+#### 4.4.5 对原论断的修正
+
+本文的早期版本有一个更尖锐的表述：**「压缩与硬约束的静态边界无法精确实现」**。这一论断在 Harness 层**仍然成立**——因为 Harness 运行在模型外部，它没有能力看到模型内部的注意力分布，无法「精确地」告诉模型「前 100 个 token 保留，第 101 个压缩」。
+
+但 V4 Compressor 提供了一个**模型层的修正视角**：
+
+1. **在模型内部**，通过 `wgate` + `ape` + `softmax` 的学习型门控，模型可以学会「精确选择」——不是在 token 级别做硬边界（保留 vs 丢弃），而是在压缩窗口内按重要性分配连续权重。
+2. **Compressor 的边界是软的**：`overlap=True`（ratio=4 时）使用重叠窗口实现更平滑的压缩边界——这进一步说明了 V4 的设计选择：**不做硬截断，用学习来逼近最优的保留策略**。
+3. **不同层的不同压缩比**意味着模型在不同抽象层次学习不同的「保留策略」——浅层 CSA（4:1）保留更多位置细节，深层 HCA（128:1）只保留最核心的语义信息。
+
+因此，完整的图景是：
+
+> **Harness 层（I-04）提供「确定性的物理保证」——约束不丢。模型层（V4 Compressor）提供「学习型的信息筛选」——历史中什么重要。两者各司其职，组合使用才能最大化 Agent 在长任务中的信息可靠性。**
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
-> **创新点索引**：I-10, I-11
+> **创新点索引**：I-03
 > **LLM + Harness = Agent** · 第 3 篇
 > **系列**：[LLM + Harness = Agent](../../README.md)
 > **上一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent.md)
