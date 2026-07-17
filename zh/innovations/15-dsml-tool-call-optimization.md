@@ -142,6 +142,8 @@ DSML 格式的解析路径：
 
 **对 Harness 的影响**（置信度：大概率 95%）：
 
+> ⚠️ **Spike 修正（2026-07-16）**：以下三条论断已被 API 实测推翻。DeepSeek 服务器端已将 DSML 自动转换为 OpenAI 格式返回，客户端拿到的就是标准 `tool_calls`，无需实现 DSML 解析器。详见 `oh-my-deepseek-harness/.omo/notepads/mid-term-v4-features/spike-results.md` Test 2。
+
 - 任何接入 DeepSeek V4 的 Agent 都必须实现 DSML 解析器
 - 不能假定 `json.loads()` 能处理模型输出——parse 失败率比 JSON 格式高一个数量级
 - 错误处理逻辑更复杂：JSON 错误是语法错误，DSML 错误可能是标记缺失、嵌套错误、属性解析错误
@@ -187,7 +189,9 @@ OpenAI 的工具 Schema 用 JSON Schema 描述：
 
 **Harness 有两种选择**：
 
-1. **发送 JSON Schema + 接收 DSML**：当前 DeepSeek API 的实际做法——输入 accept JSON 工具定义，输出返回 DSML。Harness 只需实现 DSML 解码端。
+1. **发送 JSON Schema + 接收 DSML**：~~当前 DeepSeek API 的实际做法——输入 accept JSON 工具定义，输出返回 DSML。Harness 只需实现 DSML 解码端。~~
+
+> ⚠️ **Spike 修正（2026-07-16）**：实测输出为标准 OpenAI `tool_calls` 格式（含 `function`、`name`、`arguments`、`id`、`type` 字段），**非 DSML**。服务器端已完成 DSML→OpenAI 格式转换，客户端无需实现 DSML 解码端。此条描述与 API 实际行为不符。
 
 2. **发送 DSML 格式 + 接收 DSML**：理论最优方案——Harness 将工具定义也编码为 DSML 发送。但 API 是否接受取决于 endpoint 实现。
 
