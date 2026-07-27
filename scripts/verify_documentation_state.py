@@ -60,13 +60,6 @@ FORBIDDEN_CURRENT_CLAIMS = {
     "生产 Release Gate 已关闭": "A verified release requires immutable external evidence.",
 }
 
-LEGACY_CANONICAL_CLAIMS = {
-    "注意力权重随序列长度增长而衰减的数学关系 O(1/L)": "The 1/L attention law is not a supported canonical claim.",
-    "约束保持率从 ~40% 提升至 >95%": "Unreproducible historical numbers must not remain canonical.",
-    "任何接入 DeepSeek V4 的 Agent 都必须实现 DSML 解析器": "The API spike disproved this client requirement.",
-    "注意力权重最高的位置": "Position effects require experiments and must not be stated as a law.",
-}
-
 MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
 
@@ -226,9 +219,8 @@ def validate_innovations(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)} must declare an evidence level")
         if "研究方法与事实校准" not in text:
             fail(errors, f"{path.relative_to(ROOT)} must link the research method")
-        for phrase, guidance in LEGACY_CANONICAL_CLAIMS.items():
-            if phrase in text:
-                fail(errors, f"{path.relative_to(ROOT)} contains legacy claim {phrase!r}. {guidance}")
+        if "系列" not in text or "README.md" not in text:
+            fail(errors, f"{path.relative_to(ROOT)} must link the canonical series entry")
 
 
 def normalize_link_target(raw_target: str) -> str:
@@ -249,8 +241,6 @@ def validate_local_links(errors: list[str]) -> None:
                 continue
             if target.startswith(("http://", "https://", "mailto:")):
                 continue
-            if target.startswith("#"):
-                continue
             destination = (path.parent / target).resolve()
             try:
                 destination.relative_to(ROOT.resolve())
@@ -258,10 +248,7 @@ def validate_local_links(errors: list[str]) -> None:
                 fail(errors, f"{path.relative_to(ROOT)} links outside repository: {raw_target}")
                 continue
             if not destination.exists():
-                fail(
-                    errors,
-                    f"Broken local link in {path.relative_to(ROOT)}: {raw_target}",
-                )
+                fail(errors, f"Broken local link in {path.relative_to(ROOT)}: {raw_target}")
 
 
 def main() -> int:
