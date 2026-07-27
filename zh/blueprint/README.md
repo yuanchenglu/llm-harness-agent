@@ -1,646 +1,241 @@
-# DeepSeek Agent 项目交接包 README
+# DeepSeek Agent Blueprint 交接包
 
-> 版本：v0.1
-> 日期：2026-06-04
-> 用途：这是 DeepSeek Agent 项目的总控包 / 交接包。任何 AI 或人接手本项目时，应先阅读本 README，然后按阶段顺序执行任务，并在完成后更新勾选状态。
-> 当前状态：**Stage 0–5 已完成；Stage 6 研究 MVP Gate 已完成；生产 Release Gate 已关闭；当前没有最早未完成项。完成声明以 `stage-gates.json` 为准。**
+> 当前状态先读：[项目状态真源](../../STATUS.md)  
+> 机器可读状态：[`stage-gates.json`](stage-gates.json)  
+> 本目录性质：历史研究、证据、阶段审计、产品架构和 MVP 记录的交接索引。
 
----
+## 1. 重要边界
 
-## 0. 中文阅读说明
+本目录不是当前 DeepSeekAgent Runtime 的完整实现仓库，也不是 Production Release 的独立证明。
 
-本文档包是 DeepSeek Agent 的证据库和阶段真相源，不是产品经理友好的轻量说明书。它保留技术术语、实验编号、阶段编号和历史判断，是为了让后来的人能追溯“为什么这么判断”。
-
-如果只是判断当前产品下一步，优先读：
-
-| 目的 | 推荐入口 |
-| --- | --- |
-| 看当前产品化口径和术语 | [PRD TechPlan 中文表达与术语表](../prd-tech-plan/00-中文表达与术语表.md) |
-| 看产品定位和范围 | [PRD TechPlan 产品定位与范围](../prd-tech-plan/01-product-and-scope.md) |
-| 看 0.1.x 下一步 | [PRD TechPlan 版本路线与 Release Gates](../prd-tech-plan/04-roadmap-and-release-gates.md) |
-| 追溯阶段真相 | `stage-gates.json` 和本文档下方阶段计划 |
-
-阅读原则：
-
-- 先看阶段状态，再看具体证据。
-- `确定`、`大概率`、`不确定` 不要混读。
-- 术语不懂时先看 PRD TechPlan 术语表，不要直接改写证据正文。
-- 历史 extracted 文档只作为证据归档，不代表当前产品口径。
-
----
-
-## 1. 项目一句话目标
-
-构建一个针对 **DeepSeek V4 Flash / Pro** 独特优化的桌面端 Agent 产品：
+必须区分：
 
 ```text
-DeepSeek Agent = DeepSeek V4 + Cache-first / Layout-driven / Checkpoint-gated / Flash-Pro-routed Harness
+研究结论
+规格和 ADR
+脱敏实验摘要
+本地/外部工作区实现记录
+固定 Commit 验证
+远端 Release
 ```
 
-产品形态：
+当前可确认：
+
+- Stage 0–5 的研究和规格资产已完成；
+- Stage 6 research MVP 有 E3/E4、安全写入、回滚和恢复等摘要证据；
+- Production Release 在本仓库中仍为 `unverified_in_this_repository`；
+- 最早未完成项是 `6-release-evidence-reconciliation`。
+
+任何历史文档中的“已完成”“Gate 已关闭”或“已发布”，若没有实际 Runtime 仓库、完整 Commit SHA、Tag、Artifact、Checksum、平台矩阵和发布决策，均视为历史记录或外部工作区声明，不作为当前产品发布事实。
+
+## 2. 推荐阅读顺序
+
+### 判断当前状态
+
+1. [项目状态真源](../../STATUS.md)
+2. [`stage-gates.json`](stage-gates.json)
+3. [PRD TechPlan](../prd-tech-plan/README.md)
+4. [版本路线与 Release Gates](../prd-tech-plan/04-roadmap-and-release-gates.md)
+
+### 理解研究方法
+
+5. [研究方法与事实校准](../theory/research-method.md)
+6. [DeepSeek Agent 理论总纲](../theory/theory-guide.md)
+7. [Stage 0–6 全阶段完成度审计](01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md)
+
+### 追溯实验和架构
+
+8. [协议与 Prefix Cache 实证报告](03-5-DeepSeek-Agent协议与Benchmark验证-DeepSeek-Agent-Protocol-and-Benchmark-Validation/18-0-协议与Prefix-Cache实证报告-Protocol-and-Prefix-Cache-Evidence.md)
+9. [E4 真实任务与 Release Gate 结果](07-代码Fork整合与MVP实现-Code-Fork-Integration-and-MVP/7-3-E4真实任务与Release-Gate结果-2026-06-05.md)
+10. [竞品架构对比](04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md)
+11. [产品战略和技术架构目录](05-DeepSeek-Agent产品战略与技术架构-Product-Strategy-and-Technical-Architecture/)
+12. [PRD / UX / 研发拆解目录](06-PRD-UX与研发拆解-PRD-UX-and-Engineering-Breakdown/)
+
+## 3. 目录地图
 
 ```text
-Mac / Windows 桌面端优先
-CLI 作为附属入口
-Agent Mode + Code Mode
+00-项目总纲与交接提示词
+01-总体计划与阶段管理
+02-DeepSeek-V4源码调研
+03-Agent竞品Harness调研
+03-5-DeepSeek-Agent协议与Benchmark验证
+04-竞品架构对比与借鉴评估
+05-DeepSeek-Agent产品战略与技术架构
+06-PRD-UX与研发拆解
+07-代码Fork整合与MVP实现
+99-归档与原始压缩包
 ```
 
----
+### `00` 项目总纲与交接提示词
 
-## 2. 为什么要做这个项目
+保存历史执行提示词和接手规则。提示词中的“下一步”具有日期上下文，不自动代表当前优先级。
 
-核心公式：
+### `01` 总体计划与阶段管理
+
+保存阶段定义、完成度审计和状态变化记录。当前状态以根目录 `STATUS.md` 和 `stage-gates.json` 为准。
+
+### `02` DeepSeek V4 源码调研
+
+保存固定来源、模型结构、Encoding、Kernel 和能力边界研究。必须区分：
 
 ```text
-LLM + Harness = Agent
+当前官方事实
+旧版本外推
+产品声明
+工程推论
+unknown
 ```
 
-历史调研提出了以下待逐项校准的 DeepSeek V4 模型侧能力假设：
+### `03` Agent 竞品 Harness 调研
+
+保存 Claude Code、Codex、Trae、Reasonix、Hermes、CodeWhale、OpenCode、OMO、OpenSpec、Superpowers 等固定版本审计。
+
+竞品结论只能在固定 Commit 和扫描范围内成立。
+
+### `03-5` 协议与 Benchmark
+
+保存 DeepSeek API 协议、Prefix Cache、Capability Matrix、Manifest 和脱敏实验摘要。
+
+注意：
+
+- 历史 Pilot 不是确认性实验；
+- HTTP 200 不等于参数语义生效；
+- Cache Hit 不等于任务质量；
+- 结果只适用于记录的 Endpoint、账户和时间窗口。
+
+### `04` 架构对比
+
+保存跨产品能力矩阵、可借鉴模式和反模式。借鉴结论不是代码实现完成证明。
+
+### `05` 产品战略与技术架构
+
+保存产品定位、Runtime 分层、Provider、Context、Policy、Evidence、路由和 ADR。
+
+### `06` PRD / UX / 研发拆解
+
+保存生产规格、Desktop UX、Runtime API/Data、威胁模型和验收拆解。
+
+### `07` 代码整合与 MVP
+
+保存研究 MVP、OpenCode Spike、E3/E4 和 Release Gate 历史结果。
+
+其中 2026-06-05 的结论明确是：
 
 ```text
-1M context
-CSA / HCA Hybrid Attention
-sliding_window=128
-sparse top-k retrieval
-MoE routed/shared experts
-mHC multi-copy residual
-FP4 routed experts + FP8 mixed precision
-DSML tool calling / dedicated encoding
-thinking effort modes
-API cache hit/miss pricing
+research MVP Gate passed
+production release Gate not passed
 ```
 
-其中只有完成固定来源校准或 E3 实证的能力才能进入最终架构约束；其余保持为外推、工程假设或 unknown。
+后续计划若称外部工作区已完成更多版本，必须补实际实现仓库映射后才能晋级状态。
 
----
+### `99` 归档
 
-## 3. 当前目录结构
+只用于历史追溯。归档内容不能作为当前事实或默认执行入口。
+
+## 4. 阶段状态
+
+| 阶段 | 当前状态 | 说明 |
+| --- | --- | --- |
+| Stage 0 | completed | 总纲、交接和机器状态框架 |
+| Stage 1 | completed | DeepSeek V4 固定来源与事实边界研究 |
+| Stage 2 | completed | 竞品固定版本审计与统一矩阵 |
+| Stage 2.5 | completed | E3 协议和 Prefix Cache 限定范围实验 |
+| Stage 3 | completed | 架构比较和借鉴评估 |
+| Stage 4 | completed | 产品战略与技术架构规格 |
+| Stage 5 | completed | PRD、UX、威胁模型和工程拆解 |
+| Stage 6 Research MVP | completed | 研究型实现和受控任务证据 |
+| Stage 6 Production Release | unverified | 需实际 Runtime 的不可变发布证据 |
+
+## 5. 当前缺口
+
+Production Release 对账至少需要：
 
 ```text
-README.md
-00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/
-01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/
-02-DeepSeek-V4源码调研-DeepSeek-V4-Source-Research/
-03-Agent竞品Harness调研-Agent-Competitor-Harness-Research/
-03-5-DeepSeek-Agent协议与Benchmark验证-DeepSeek-Agent-Protocol-and-Benchmark-Validation/
-04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/
-05-DeepSeek-Agent产品战略与技术架构-Product-Strategy-and-Technical-Architecture/
-06-PRD-UX与研发拆解-PRD-UX-and-Engineering-Breakdown/
-07-代码Fork整合与MVP实现-Code-Fork-Integration-and-MVP/
-99-归档与原始压缩包-Archives-and-Original-Zips/
+runtime_repository_url
+runtime_commit_sha
+release_tag
+release_notes
+artifact_manifest
+artifact_checksum
+platform_compatibility_matrix
+install_upgrade_uninstall_report
+rollback_report
+diagnostics_redaction_report
+E4_style_release_report
+production_release_decision
 ```
 
----
+如果实际能力分布在多个仓库，应建立映射表：
 
-## 4. 总体阶段计划与进度
+| 能力 | 仓库 | Commit | Tag | Evidence |
+| --- | --- | --- | --- | --- |
+| Runtime | 待登记 | 待登记 | 待登记 | 待登记 |
+| Desktop | 待登记 | 待登记 | 待登记 | 待登记 |
+| OpenSpec | 待登记 | 待登记 | - | 待登记 |
+| Release Scripts | 待登记 | 待登记 | - | 待登记 |
 
-### Stage 0：项目总纲与交接机制
-
-- [x] 明确项目目标
-- [x] 明确执行顺序：先模型事实，再行业事实，再架构综合，再产品 PRD，再代码实现
-- [x] 建立 README 作为任务总控入口
-- [x] 写入 Stage 0–6 全阶段执行总控提示词和 Stage 6 子提示词
-
-### Stage 1：DeepSeek V4 源码与物理特性调研（已完成：事实边界已校准）
-
-- [x] 定位 DeepSeek V4 官方源码、模型卡、config、技术报告、kernel、encoding
-- [x] 完成 Phase 1-2：源码地图 + config 差异
-- [x] 完成 Phase 3-4：模型结构 + Hybrid Attention
-- [x] 完成 Phase 5-6：MoE + mHC
-- [x] 完成 Phase 7-8：Kernel + Encoding
-- [x] 完成 Phase 9-10：能力矩阵 + Harness 约束初稿
-- [x] 生成 DeepSeek V4 源代码调研全量终版包 v1.1
-- [x] 将 v1.1 整合进本交接包
-- [x] 建立当前官方来源的固定版本 / 访问日期索引
-- [x] 区分 V4 当前事实、V3/V3.2 外推、产品声明和工程推论
-- [x] 校准高影响 Harness 结论并建立 unknowns register
-
-### Stage 2：Agent 产品 / Harness 竞品调研（已完成：固定快照与边界内）
-
-> 已完成 P0 固定 commit Pass 2、统一运行/测试矩阵、P1 范围决策和过度声明复核；E4 真实任务收益不属于本阶段完成声明。
-
-- [x] Claude Code 第一轮预研完成；源码深读未完成
-- [x] OpenAI Codex 第一轮预研完成；源码深读未完成
-- [x] Trae / Trae SOLO 第一轮预研完成；源码深读未完成
-- [x] DeepSeek Reasonix 源码审计 Pass 1 完成
-- [x] Hermes Agent 源码审计 Pass 1 完成
-- [x] CodeWhale / DeepSeek-TUI 源码审计 Pass 1 完成
-- [x] Claude Code / Codex / Trae / Reasonix / Hermes / CodeWhale 官方源码事实校准完成
-- [x] 纠正 Trae 开源 test-time scaling 与 CodeWhale 完整 three-zone contract 误报
-- [x] DeepSeek API 协议与 Prefix Cache 实验基础设施；E3 Flash/Pro protocol/cache/cross-time evidence bundle 已完成
-- [x] OpenCode 源码审计 Pass 1 完成
-- [x] Oh My OpenAgent 源码审计 Pass 1 完成
-- [x] Oh My ClaudeCode 源码审计 Pass 1 完成
-- [x] OpenSpec 源码审计 Pass 1 完成
-- [x] Superpowers 源码审计 Pass 1 完成
-- [x] 五项目综合借鉴评估完成
-- [x] 五项目源码审计 Pass 2：核心 loop / hooks / team state / schema / skills tests
-- [x] 其余第二优先级竞品逐项完成纳入 / 延期 / 排除决策
-- [x] 建立十一项目统一运行/测试证据矩阵和机器可读证据清单
-
-### Stage 3：竞品架构对比与可借鉴性评估
-
-- [x] OpenCode / OMO / OMC / OpenSpec / Superpowers 分层能力与借鉴矩阵
-- [x] 全量 Agent Harness 对比矩阵
-- [x] Agent Harness 设计模式总结
-- [x] 哪些可借鉴 / 哪些不可照搬
-- [x] DeepSeek Agent Gap Analysis v1.0（已接入 E3/E4 tiny-fixture 输入）
-
-### Stage 4：DeepSeek Agent 产品战略与技术架构 v1.0（研究 MVP 定稿）
-
-- [x] 产品背景与定位 v0.1
-- [x] 模型侧事实与实测边界
-- [x] 竞品拆解与 Gap Analysis
-- [x] 产品定位（evidence-first runtime）
-- [x] 核心分层架构
-- [x] DeepSeek 专属协议与缓存策略
-- [x] 技术 ADR
-- [x] MVP 功能边界
-- [x] 技术选型建议
-- [x] 研发路线图
-- [x] 风险与取舍
-- [x] PRD / 代码整合计划
-- [x] E3/E4 约束后的 Flash/Pro、Cache、Runtime 底座 ADR 定稿
-
-### Stage 5：PRD / UX / 研发拆解（生产规格与可执行验收）
-
-- [x] DeepSeek Agent PRD v0.1
-- [x] CLI MVP UX / IA
-- [x] 核心数据结构与 API
-- [x] Runtime Spec v0.1
-- [x] Engineering Breakdown
-- [x] Roadmap
-- [x] 生产 PRD、桌面双模式 UX、Runtime API/Data、威胁模型、可执行验收拆解
-
-### Stage 6：代码 Fork / 整合 / MVP 实现（研究 MVP Gate 完成；生产 Release Gate 已关闭）
-
-- [x] OpenCode 固定 commit 源码 Spike；installed CLI provider smoke 与 fixed-source live probe 已完成
-- [x] Fork / Adapter / 自研最终选择：当前采用小型自研 runtime + OpenCode adapter 候选
-- [x] 只读研究型 MVP 实现计划
-- [x] Permission policy / sandbox / diff preview / rollback / session resume
-- [x] 20-task E4 live tiny-fixture benchmark：rotated-key final Flash 20/20，Pro 20/20
-- [x] 研究 MVP；[ ] 生产 Release Gate
-
----
-
-## 5. 下一步应该做什么
-
-新的 AI 或人员接手时，必须使用：[Stage 0–6 全阶段执行总控提示词](00-项目总纲与交接提示词-Project-Overview-and-Handoff-Prompt/0-3-Stage0至Stage6全阶段执行总控提示词-All-Stage-Execution-Master-Prompt.md)。
-
-当前研究阶段顺序已经完成。后续不能写成“生产发布完成”；正确下一步是 Release Gate：
+## 6. 证据等级
 
 ```text
-Windows compatibility drill
-→ desktop installer drill
-→ signing/uninstall drill
-→ release rollback drill
-→ production release decision
+A0：固定 Commit 的真实运行路径与测试共同证明
+A1：固定 Commit 的实现源码证明，运行效果未确认
+A2：官方 README / Docs / Config 声明
+B：基于事实的工程推论或设计方案
+C：非官方逆向或社区线索
+N：公开证据中未找到实现
 ```
 
-详细依据见：[Stage 0–6 全阶段完成度审计](01-总体计划与阶段管理-Master-Plan-and-Stage-Tracking/1-2-Stage0至Stage6全阶段完成度审计-All-Stage-Completion-Audit.md)。Stage 6 子提示词只有在到达 Stage 6 时使用。
+每个关键结论应说明：
 
----
+- 来源；
+- 固定版本；
+- 扫描范围；
+- 是否进入真实运行路径；
+- 是否有测试；
+- 可外推范围；
+- 未验证项。
 
-## 6. 调研证据要求
+## 7. Benchmark 纪律
 
-所有论点必须优先基于：
+报告必须区分：
 
 ```text
-官方源码 > 官方 Docs > 官方模型卡 / 官方博客 > 可信第三方 > 明确标注的工程推论
+development set
+prompt-tuning set
+validation set
+held-out test set
+first-pass success
+success after retry
+human intervention
+failure samples
 ```
 
-每个关键论点旁边必须带链接，最好是源代码行号链接或官方文档链接。
+任务专用 Acceptance Hint、Verifier Feedback 和多次 Retry 后的最终完成率，不能直接写成未见任务上的泛化成功率。
 
-如果使用泄露源码、非官方镜像、社区逆向仓库，必须明确标注：
+## 8. 交接执行规则
+
+新的 AI 或工程执行者应：
+
+1. 先读取 `STATUS.md` 和 `stage-gates.json`；
+2. 确认任务属于本知识库还是实际 Runtime 仓库；
+3. 使用固定 Commit，不依赖移动分支；
+4. 将计划、实现、验证、发布状态分开；
+5. 对强结论提供 Evidence；
+6. 不提交 Secret、完整 CoT 或未授权文件正文；
+7. 更新状态时同步所有当前入口；
+8. 历史文档只增加“已被取代”说明，不篡改原始实验结果。
+
+## 9. 当前正确下一步
 
 ```text
-来源性质：非官方泄露/镜像，需谨慎使用
-可信度：高/中/低
-可作为：线索/佐证/不可作为最终事实
+确认实际 Runtime / Desktop / OpenSpec 仓库
+→ 固定 Commit 和版本
+→ 对账历史计划与真实实现
+→ 运行 Release Gate
+→ 生成 Artifact / Checksum / Platform Matrix
+→ 创建 Tag / Release Notes
+→ 记录 Production Release Decision
+→ 同步本知识库状态
 ```
 
----
-
-## 7. AI 继续执行提示词
-
-下面这段提示词可以直接给新的 AI，让它接着执行本项目。
-
-```markdown
-# AI 继续执行提示词 AI Continuation Prompt
-
-你正在接手一个名为 **DeepSeek Agent** 的产品战略与技术架构项目。
-
-## 你的角色
-
-你是一个顶级 AI Agent 产品架构师、模型应用工程师、源码调研员和技术文档作者。你需要与用户一起，通过“先调研、再讨论、再开发”的方式，设计并最终实现一个针对 **DeepSeek V4 Flash / Pro** 独特优化的桌面端 Agent 产品。
-
-## 项目最终目标
-
-设计并实现一个名为 **DeepSeek Agent** 的产品：
-
-- 形态：纯客户端优先，Mac / Windows 可安装，CLI 作为附属入口。
-- 模式：
-  - Agent Mode：默认模式，用于通用任务、文件、研究、自动化。
-  - Code Mode：代码库模式，用于代码理解、修改、测试、提交。
-- 核心思想：`LLM + Harness = Agent`
-- DeepSeek 专属优势：
-  - V4 Flash / Pro 的 1M context；
-  - DeepSeek API 的 cache hit / miss 成本结构；
-  - V4 的 CSA / HCA、mHC、MoE、FP4/FP8、DSML encoding 等物理特性；
-  - Flash-first / Pro-on-checkpoint 的成本质量路由。
-
-## 重要方法论
-
-必须遵守以下顺序：
-
-```text
-先模型事实
-再行业事实
-再架构综合
-再产品 PRD
-再代码实现
-```
-
-不要跳过竞品调研直接定 Harness 架构。
-
-## 当前状态
-
-已经完成：
-
-- DeepSeek V4 Flash / Pro 官方源码、配置、模型卡、kernel、encoding、API cache 的第一轮完整调研。
-- 相关文档已放在：
-  - `02-DeepSeek-V4源码调研-DeepSeek-V4-Source-Research/`
-
-接下来应该做：
-
-> Stage 3：Agent 竞品 / Harness 深度调研
-
-第一优先级调研对象：
-
-```text
-1. Claude Code
-2. OpenAI Codex
-3. Trae / Trae SOLO
-4. DeepSeek Reasonix
-5. Hermes Agent
-6. CodeWhale / DeepSeek-TUI
-```
-
-其中下一步应优先做：
-
-```text
-Claude Code 深度调研
-```
-
-## 调研证据要求
-
-所有论点必须基于：
-
-```text
-官方源码 > 官方 Docs > 官方模型卡 / 官方博客 > 可信第三方 > 明确标注的工程推论
-```
-
-每个关键论点旁边必须带链接，最好是源代码行号链接或官方文档链接。
-
-如果使用泄露源码、非官方镜像、社区逆向仓库，必须明确标注来源性质：
-
-```text
-来源性质：非官方泄露/镜像，需谨慎使用
-可信度：高/中/低
-可作为：线索/佐证/不可作为最终事实
-```
-
-不要把泄露源码当作官方事实。
-
-## 文档规范
-
-所有输出文档：
-
-- 正文使用简体中文；
-- 文件名格式：`阶段序号-简体中文-English.md`；
-- 每个核心文档都要有：
-  - 目标；
-  - 关键问题；
-  - 证据来源；
-  - 结论；
-  - 对 DeepSeek Agent 的启发；
-  - 待验证问题。
-
-## 下一步任务
-
-请从以下任务开始：
-
-```text
-3-1-Claude-Code产品形态调研-Claude-Code-Product-Analysis.md
-3-2-Claude-Code-Harness架构调研-Claude-Code-Harness-Architecture.md
-3-3-Claude-Code上下文权限记忆机制-Claude-Code-Context-Permission-Memory.md
-3-4-Claude-Code对DeepSeekAgent的启发-Claude-Code-Lessons-for-DeepSeek-Agent.md
-```
-
-调研维度：
-
-```text
-1. 产品形态：CLI / IDE / Desktop / Web / Mobile / GitHub / Slack
-2. Agent Loop：任务输入、计划、工具调用、执行、审查、恢复
-3. Context：CLAUDE.md、memory、compaction、skills、subagents
-4. Tool Runtime：file、shell、edit、browser、MCP、git、CI
-5. Permission：ask / allow / deny / sandbox / policy
-6. State：session、checkpoint、background agents、cloud session
-7. Review：diff、tests、logs、PR review、proof
-8. UI：plan、logs、permissions、cost、task center
-9. 可借鉴点：哪些能借鉴
-10. 不可照搬点：哪些不适合 DeepSeek V4 和纯客户端 MVP
-```
-
-## 交付方式
-
-每完成一个阶段：
-
-1. 更新根目录 `README.md` 的任务勾选状态；
-2. 将新文档放入对应阶段文件夹；
-3. 如有新证据，更新证据索引；
-4. 不删除旧文档，不覆盖原始调研；
-5. 必要时生成新的版本压缩包。
-
-```
-
----
-
-
----
-
-## 9. 每个竞品调研都必须回答的 DeepSeek V4 适配问题
-
-从 v0.3 开始，每一个 Agent / AGI / Coding Agent 产品调研的最终文档，都必须单独回答以下问题：
-
-```text
-1. 如果这个产品接入 DeepSeek V4 Flash / Pro，它能发挥 DeepSeek V4 的哪些能力？
-2. 为什么能发挥？对应的是该产品 Harness 的哪些设计？
-3. 它发挥不了 DeepSeek V4 的哪些能力？
-4. 为什么发挥不了？是模型协议、上下文、缓存、工具、权限、路由、UI、部署形态，还是产品定位导致？
-5. 如果要让它更好地适配 DeepSeek V4，需要做哪些迭代？
-6. 这些迭代它自己有没有可能做？为什么？
-7. 对 DeepSeek Agent 的启发是什么？
-```
-
-分析维度必须覆盖：
-
-```text
-1M context
-DeepSeek cache hit/miss pricing
-CSA / HCA long-context layout
-sliding_window=128 下的 active working set
-Flash / Pro / Thinking / Max 路由
-V4 DSML tool calling / encoding
-reasoning_content drop / archive / summarize
-checkpoint-driven Pro review
-cost/cache telemetry
-local-first / cloud / endpoint 部署差异
-```
-
-这部分统一放在每个竞品的 `Lessons for DeepSeek Agent` 文档中，作为最终结论章节。
-
-## 10. 更新规则
-
-每完成一个任务：
-
-1. 更新本 README 的勾选状态；
-2. 将新文档放到对应阶段文件夹；
-3. 不删除旧文件；
-4. 如果发现旧结论错误，新增修订说明，不直接覆盖历史；
-5. 需要交付时，重新打包为新版本 zip。
-
-
----
-
-## v0.2 更新记录
-
-- [x] 查证并确认 `anthropics/claude-code` 为 Anthropic 官方公开 GitHub 仓库。
-- [x] Claude Code 调研证据优先级调整为：官方 GitHub 仓库 + 官方 Docs 双主线。
-- [x] 新增 Stage 2A 文档：
-  - `3-0-Claude-Code证据索引-Claude-Code-Evidence-Index.md`
-  - `3-1-Claude-Code产品形态调研-Claude-Code-Product-Analysis.md`
-  - `3-2-Claude-Code-Harness架构调研-Claude-Code-Harness-Architecture.md`
-  - `3-3-Claude-Code上下文权限记忆机制-Claude-Code-Context-Permission-Memory.md`
-  - `3-4-Claude-Code对DeepSeekAgent的启发-Claude-Code-Lessons-for-DeepSeek-Agent.md`
-
-
----
-
-## v0.3 更新记录
-
-- [x] 明确总包生成机制：每次基于上一版总包增量修改，然后重新打成完整总包；不会丢弃旧文件。
-- [x] 新增“每个竞品调研都必须回答的 DeepSeek V4 适配问题”。
-- [x] 增强 Claude Code `Lessons for DeepSeek Agent` 文档，补充“Claude Code 如果接入 DeepSeek V4，能发挥什么、发挥不了什么、为什么、如何迭代”。
-
-
----
-
-
----
-
-## 11. v0.5 竞品调研深度升级：Model-Harness Fit
-
-从 v0.5 开始，竞品调研不再停留在“产品功能 / Harness 模块”层面，而必须升级为：
-
-```text
-模型物理特性 × Agent Harness 适配机制
-```
-
-每个竞品都必须回答：
-
-```text
-1. 它如何配合自家模型的物理特性？
-2. 这些适配在源码 / Docs / UI / runtime / config 中如何体现？
-3. 如果接 DeepSeek V4，能发挥哪些 V4 特性？
-4. 发挥不了哪些 V4 特性？为什么？
-5. 需要哪些迭代才能变成 V4-native Harness？
-6. 它自己是否可能做这些迭代？
-7. DeepSeek Agent 应如何借鉴与超越？
-```
-
-已新增：
-
-```text
-3-A-竞品调研升级方法论-Model-Harness-Fit-Framework.md
-3-B-Claude-Code模型适配深度复盘-Claude-Code-Model-Fit-Deep-Dive.md
-4-B-Codex模型适配深度复盘-Codex-Model-Fit-Deep-Dive.md
-```
-
-## v0.4 更新记录
-
-- [x] 完成 OpenAI Codex 第一轮深度调研。
-- [x] 明确 Codex 三条主线：CLI（开源本地 Rust Agent）、App（桌面 command center）、Web/Cloud（异步云端任务）。
-- [x] 新增 Stage 2B 文档：
-  - `4-0-Codex证据索引-Codex-Evidence-Index.md`
-  - `4-1-Codex产品形态调研-Codex-Product-Analysis.md`
-  - `4-2-Codex官方源码与CLI架构-Codex-Official-Source-and-CLI-Architecture.md`
-  - `4-3-Codex客户端云端审查沙箱-Codex-App-Cloud-Review-Sandbox.md`
-  - `4-4-Codex对DeepSeekAgent的启发-Codex-Lessons-for-DeepSeek-Agent.md`
-
----
-
-## v0.5 更新记录
-
-- [x] 将竞品调研标准从“功能/Harness模块调研”升级为“模型物理特性 × Harness适配机制调研”。
-- [x] 新增 `3-A-竞品调研升级方法论-Model-Harness-Fit-Framework.md`。
-- [x] 新增 `3-B-Claude-Code模型适配深度复盘-Claude-Code-Model-Fit-Deep-Dive.md`。
-- [x] 新增 `4-B-Codex模型适配深度复盘-Codex-Model-Fit-Deep-Dive.md`。
-- [x] 明确 v0.4 的 Claude Code / Codex 文档属于“第一轮产品功能级调研”，v0.5 新增文档才是“模型适配深度复盘”。
-
-
----
-
-## v0.6 更新记录
-
-- [x] 完成 Trae / Trae SOLO 第一轮深度调研。
-- [x] 按 Model-Harness Fit 标准拆分 Trae 两条线：
-  - Trae / SOLO 产品线：Work / Code 双模式、Workspace、多格式上下文、云端并行、用户审查产物。
-  - Trae Agent 开源研究线：多 provider、工具链、sequential thinking、trajectory recording、Docker mode、test-time scaling。
-- [x] 新增 Stage 2C 文档：
-  - `5-0-Trae证据索引-Trae-Evidence-Index.md`
-  - `5-1-Trae-SOLO产品形态调研-Trae-SOLO-Product-Analysis.md`
-  - `5-2-Trae-Agent开源源码与模型适配-Trae-Agent-Open-Source-and-Model-Fit.md`
-  - `5-3-Trae-Model-Harness-Fit深度分析-Trae-Model-Harness-Fit-Deep-Dive.md`
-  - `5-4-Trae对DeepSeekAgent的启发-Trae-Lessons-for-DeepSeek-Agent.md`
-
-
----
-
-## v0.7 重要纠偏记录
-
-- [x] 承认并修正：v0.2 / v0.4 / v0.6 的 Claude Code / Codex / Trae 调研属于第一轮预研，不是完整源码深读。
-- [x] 新增 `3-Z-竞品源码深读审计计划与状态修正-Source-Code-Audit-Plan-and-Status-Correction.md`。
-- [x] README 中将 Claude Code / Codex / Trae 状态改为“第一轮预研完成；源码深读未完成”。
-- [ ] 下一步应补做 Claude Code / Codex / Trae 的源码深读审计。
-
-
----
-
-## 12. 源码深读硬性规则
-
-从 v0.8 开始，所有竞品源码调研必须执行以下 8 步，不允许跳步：
-
-```text
-1. 仓库结构扫描
-2. 关键模块清单
-3. 逐文件阅读
-4. 函数 / 类 / 配置摘录
-5. 证据链接整理
-6. Model-Harness Fit Matrix
-7. 对 DeepSeek Agent 的迁移判断
-8. 产出源码审计报告
-```
-
-状态命名必须严格区分：
-
-```text
-第一轮预研完成 ≠ 源码深读完成
-源码边界确认完成 ≠ 完整 engine 源码审计完成
-源码深读 Pass 1 完成 ≠ 全量源码审计完成
-```
-
-本规则详见：
-
-```text
-03-Agent竞品Harness调研-Agent-Competitor-Harness-Research/
-03-5-DeepSeek-Agent协议与Benchmark验证-DeepSeek-Agent-Protocol-and-Benchmark-Validation/
-└── 3-Y-源码深读硬性规则-Source-Audit-Mandatory-Rules.md
-```
-
-
----
-
-## v0.8 更新记录
-
-- [x] 将源码深读 8 步流程写入 README 和项目规则。
-- [x] 新增 `3-Y-源码深读硬性规则-Source-Audit-Mandatory-Rules.md`。
-- [x] 补做 Claude Code 官方源码边界审计：确认官方仓库主要公开 README + plugins 生态，完整 engine 源码未公开。
-- [x] 补做 Codex 源码深读 Pass 1：README / AGENTS.md / config.schema.json。
-- [x] 补做 Trae Agent 源码深读 Pass 1：BaseAgent / TraeAgent / TrajectoryRecorder / tools docs。
-- [x] 新增源码审计报告：
-  - `3-C-Claude-Code源码深读报告-Claude-Code-Source-Audit.md`
-  - `4-C-Codex源码深读报告-Codex-Source-Audit.md`
-  - `5-C-Trae-Agent源码深读报告-Trae-Agent-Source-Audit.md`
-
-
----
-
-## v0.9 更新记录
-
-- [x] 按用户补充，将 `oboard/claude-code-rev` 纳入 Claude Code 审计，严格标注为 C 级逆向源码线索。
-- [x] 新增 `3-D-Claude-Code-C级逆向源码审计-Claude-Code-Reverse-Source-Audit.md`。
-- [x] 完成 Codex Pass 2：context fragments、InternalModelContextFragment、EnvironmentContext、TurnContext、run_turn、auto compact、config schema。
-- [x] 新增 `4-D-Codex源码深读报告Pass2-Codex-Source-Audit-Pass2.md`。
-- [x] 完成 Trae Agent Pass 2：BaseAgent、TraeAgent、TrajectoryRecorder、tools/trajectory docs。
-- [x] 新增 `5-D-Trae-Agent源码深读报告Pass2-Trae-Agent-Source-Audit-Pass2.md`。
-- [x] 新增三者总评：`6-0-ClaudeCode-Codex-Trae源码审计总评-Final-Source-Audit-Summary.md`。
-- [x] 将 Claude Code / Codex / Trae 三者调研推进到“足以支撑下一阶段架构设计”的源码审计状态。
-
-
----
-
-## v1.0 更新记录
-
-- [x] 完成 Reasonix 源码审计 Pass 1。
-- [x] 完成 Hermes Agent 源码审计 Pass 1。
-- [x] 完成 CodeWhale / DeepSeek-TUI 源码审计 Pass 1。
-- [x] 新增三者总评：`10-0-Reasonix-Hermes-CodeWhale源码审计总评-Source-Audit-Summary.md`。
-- [ ] 下一步继续 CodeWhale Rust core、Reasonix Go core、Hermes gateway/cron/memory/skill 的逐文件深读。
-
-
----
-
-## v1.1 更新记录
-
-- [x] 按用户要求，不再等待“继续”，独立完成 Reasonix / Hermes / CodeWhale 三者 Pass 2 深度源码调研。
-- [x] 新增 CodeWhale Pass 2：`9-1-CodeWhale源码审计Pass2-CodeWhale-Source-Audit-Pass2.md`。
-- [x] 新增 Reasonix Pass 2：`7-1-Reasonix源码审计Pass2-Reasonix-Source-Audit-Pass2.md`。
-- [x] 新增 Hermes Pass 2：`8-1-Hermes-Agent源码审计Pass2-Hermes-Agent-Source-Audit-Pass2.md`。
-- [x] 新增终版综合：`10-1-Reasonix-Hermes-CodeWhale深度源码调研终版综合-Final-Deep-Source-Synthesis.md`。
-- [x] 三者已完成到“可支撑 DeepSeek Agent 产品战略与技术架构设计”的源码调研深度。
-- [ ] 下一阶段：撰写《DeepSeek Agent 产品战略与技术架构 v0.1》。
-
-
----
-
-## v1.2 更新记录
-
-- [x] 按用户要求，将 OpenCode、Oh My OpenAgent、Oh My ClaudeCode、OpenSpec、Superpowers 纳入正式竞品 / 插件调研范围。
-- [x] 严格按源码深读硬性规则标注为“源码审计 Pass 1”，未将仓库扫描和官方文档调研误报为全量源码审计。
-- [x] 新增五份独立报告：
-  - `11-0-OpenCode源码审计Pass1-OpenCode-Source-Audit-Pass1.md`
-  - `12-0-Oh-My-OpenAgent源码审计Pass1-Oh-My-OpenAgent-Source-Audit-Pass1.md`
-  - `13-0-Oh-My-ClaudeCode源码审计Pass1-Oh-My-ClaudeCode-Source-Audit-Pass1.md`
-  - `14-0-OpenSpec源码审计Pass1-OpenSpec-Source-Audit-Pass1.md`
-  - `15-0-Superpowers源码审计Pass1-Superpowers-Source-Audit-Pass1.md`
-- [x] 新增综合分层与迁移优先级报告：`16-0-五项目综合借鉴评估-Five-Project-Synthesis.md`。
-- [x] 初步明确五层借鉴关系：OpenCode Runtime、OMO Harness 增强、OMC 编排状态机、OpenSpec Artifact 协议、Superpowers 工程技能方法论。
-- [x] 五项目 Pass 2、统一证据矩阵与 P1 范围决策已完成；真实任务收益统一转交 Stage 3/6 E4。
-
-
----
-
-## v1.3 更新记录：既有六项目源码事实校准
-
-- [x] 通过 GitHub API 获取 Claude Code、Codex、Trae Agent、Reasonix、Hermes Agent、CodeWhale 官方仓库固定 commit 源码快照。
-- [x] 新增统一事实校准方法、证据等级和实现成熟度规则：`17-0-六项目源码事实校准方法与证据清单-Six-Project-Source-Calibration-Method.md`。
-- [x] 新增两组六项目事实复核与一份校准后综合结论：`17-1`、`17-2`、`17-3`。
-- [x] 为既有 Claude Code / Codex / Trae 产品与源码报告，以及 Reasonix / Hermes / CodeWhale 源码报告加入校准提示，要求与固定 commit 校准报告共同阅读。
-- [x] 纠正 Trae Agent：官方开源源码未发现 multi-candidate generation–pruning–selection / test-time scaling runtime。
-- [x] 纠正 CodeWhale：已接入的是 system prompt + tool catalog 的 prefix drift check；完整 three-zone request contract 仍明确标注尚未接入 request path。
-- [x] 明确 Claude Code 官方仓库不含完整 engine；Codex 核心判断成立但路径持续变化；Reasonix/Hermes 的实现事实与设计评估必须分栏。
-- [ ] 下一步先执行 DeepSeek API 协议与成本 benchmark，再将相关结论写入产品战略和技术架构。
-
-
----
-
-## v1.4 更新记录：理论引导文档重构
-
-- [x] 将 `docs/llm-harness-agent` 从观点文章集合升级为 DeepSeek Agent 理论与调研入口。
-- [x] 新增中英文理论总纲：`THEORY-GUIDE-zh.md` / `THEORY-GUIDE.md`。
-- [x] 新增中英文研究方法与事实校准：`RESEARCH-METHOD-zh.md` / `RESEARCH-METHOD.md`。
-- [x] 将交接调研中的模型事实、竞品源码校准和产品综合结论提炼进理论文档，而非复制完整交接目录。
-- [x] 纠正 CodeWhale 官方归属、Trae test-time scaling、完整 three-zone contract、reasoning_content 普遍删除、tool schema delta 等错误或过度观点。
-- [x] 为 14 组中英文创新论文统一增加证据说明，要求区分源码事实、设计假设与待验证实验。
-- [ ] 下一步仍是协议与 benchmark 验证，并用实验结果继续修订理论文档。
+在上述证据完成前，本目录继续作为研究和产品交接知识库，不宣称生产版本已完成发布。
