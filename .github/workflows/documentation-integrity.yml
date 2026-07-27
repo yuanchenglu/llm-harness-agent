@@ -1,0 +1,46 @@
+name: Documentation Integrity
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "STATUS.md"
+      - "schemas/**"
+      - "scripts/verify_documentation_state.py"
+      - "zh/blueprint/stage-gates.json"
+      - "zh/prd-tech-plan/**"
+      - ".github/workflows/documentation-integrity.yml"
+  push:
+    branches:
+      - master
+      - develop
+    paths:
+      - "README.md"
+      - "STATUS.md"
+      - "schemas/**"
+      - "scripts/verify_documentation_state.py"
+      - "zh/blueprint/stage-gates.json"
+      - "zh/prd-tech-plan/**"
+      - ".github/workflows/documentation-integrity.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify stage and release state
+        run: python scripts/verify_documentation_state.py
+
+      - name: Validate JSON syntax
+        run: python -m json.tool zh/blueprint/stage-gates.json >/dev/null
