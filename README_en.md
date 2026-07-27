@@ -13,13 +13,15 @@
 3. **This repository is a knowledge base for research, product specifications, architecture decisions, and redacted experiment summaries.** It is not the complete current DeepSeekAgent Runtime repository and does not independently prove that a production release exists.
 4. **The current release state is defined by [`STATUS.md`](STATUS.md) and [`stage-gates.json`](zh/blueprint/stage-gates.json).** Without an immutable Runtime commit, tag, artifact, checksum, platform matrix, and release decision, the Production Release Gate remains unverified.
 
+> **Translation status:** the Chinese innovation articles were methodologically rewritten on 2026-07-27 and are the current canonical versions. Older files under `en/innovations/` may lag behind and must not be used as the evidence source until their translations are refreshed.
+
 ## Product and Research Entry Points
 
 | Document | Purpose |
 |---|---|
 | [Repository Status](STATUS.md) | What this repository can confirm and which external release evidence is still missing |
 | [PRD TechPlan](zh/prd-tech-plan/README.md) | Product scope, PRD, architecture, release gates, and decision records |
-| [Blueprint Handover Pack](zh/blueprint/README.md) | Historical stages, evidence chains, and research materials; stale status statements defer to the current status source |
+| [Blueprint Handover Pack](zh/blueprint/README.md) | Historical stages, evidence chains, and research materials |
 | [Research Method and Evidence Calibration](en/theory/research-method.md) | Distinguishes source facts, official claims, engineering inference, experiments, and missing evidence |
 
 Read `STATUS.md` first, then the PRD TechPlan, and only then use the Blueprint to trace historical evidence.
@@ -61,28 +63,28 @@ Read `STATUS.md` first, then the PRD TechPlan, and only then use the Blueprint t
 
 ## Core Innovations
 
-> The following articles combine source observations, design proposals, and testable hypotheses. A mechanism name in a title does not mean that a public benchmark or production implementation has already been completed.
+> The links below intentionally point to the current canonical Chinese articles. A mechanism name does not mean that a public benchmark or production implementation has already been completed.
 
 | # | Article | Accurate Current Positioning |
 |---|---------|------------------------------|
-| [01](en/innovations/01-agent-immune-system.md) | **Agent Immune System** | Runtime checks and governed Skills may reduce constraint failures in long tasks |
-| [02](en/innovations/02-bidirectional-agent.md) | **Brain Drives the Cerebellum** | Structured meta-requests from the model, with the Runtime retaining execution authority |
-| [03](en/innovations/03-attention-budget.md) | **Attention Budget Management** | Study how layout, interference, and active working sets affect task quality |
-| [04](en/innovations/04-kv-cache-prefix.md) | **Stable Constraints vs. Compressible History** | Separate information lifecycles and measure retention, compliance, and cache hit rate independently |
-| [05](en/innovations/05-document-kv-cache.md) | **Stable-Prefix Documents** | Surface core conclusions early and measure repeated-read cache benefits |
-| [06](en/innovations/06-okr-planstep-cascade.md) | **OKR PlanStep + Cascade Correction** | Encode acceptance criteria, hierarchy, and dependencies as a computable execution graph |
-| [07](en/innovations/07-review-switching.md) | **Dynamic Review Strategy** | Select review methods from risk, evidence quality, task complexity, and context state |
-| [08](en/innovations/08-scope-creep.md) | **Two-Level Scope Governance** | Separate demand-boundary expansion from execution-time dependency discovery |
-| [09](en/innovations/09-skills-self-evolution.md) | **Skills Self-Evolution** | Propose reusable Skills, subject to provenance, permission, tests, approval, and rollback |
-| [10](en/innovations/10-intent-routing.md) | **7+1 Intent→Strategy Routing** | A design proposal extending ideas observed in OMO and Hermes, not a complete existing implementation |
-| [11](en/innovations/11-checkpoint-review.md) | **Checkpoint Multi-Round Review** | Bound review context with snapshots while preserving traceability to original evidence |
-| [12](en/innovations/12-memory-granularity.md) | **Memory Granularity Control** | Study how memory strength affects determinism and exploration across task types |
-| [13](en/innovations/13-byte-stable-prefix-architecture.md) | **Byte-Stable Prefix Hypothesis** | Treat cache stability as an observable optimization constraint, subordinate to correctness and safety |
-| [14](en/innovations/14-reasoning-content-stripping.md) | **Reasoning Content Replay Policy** | Decide drop/replay by provider, endpoint, thinking mode, and tool protocol |
-| [15](en/innovations/15-dsml-tool-call-optimization.md) | **DSML Encoding Research** | Public API tests returned standard `tool_calls`; the client-side DSML parser requirement was disproven |
-| [16](en/innovations/16-quick-instruction-routing.md) | **Quick Instruction Availability Hypothesis** | Special tokens exist in encoding source, but public API exposure still requires end-to-end verification |
-| [17](en/innovations/17-reasoning-effort-control.md) | **Reasoning Effort Experiment Design** | Parameter acceptance, semantics, quality, latency, and cost must be tested separately |
-| [18](en/innovations/18-latest-reminder-injection.md) | **Latest Reminder Experiment** | Compare accuracy and cache effects across message positions and roles |
+| [01](zh/innovations/01-agent-immune-system.md) | **Agent Hardening Loop** | Convert incidents into governed Policy, Test, Schema, or Skill improvements |
+| [02](zh/innovations/02-bidirectional-agent.md) | **Model Meta-Requests** | The model may request context, review, or escalation while Runtime retains authority |
+| [03](zh/innovations/03-attention-budget.md) | **Context Allocation** | Replace the unsupported `1/L` dilution law with measurable context and evidence controls |
+| [04](zh/innovations/04-kv-cache-prefix.md) | **Stable Constraints vs. Compressible History** | Separate retention, compliance, enforcement, and Provider cache behavior |
+| [05](zh/innovations/05-document-kv-cache.md) | **Agent-Readable Documents** | Versioned summaries, stable section IDs, evidence indexes, and tiered reading |
+| [06](zh/innovations/06-okr-planstep-cascade.md) | **PlanGraph** | Nodes, typed edges, acceptance criteria, evidence, and cascading invalidation |
+| [07](zh/innovations/07-review-switching.md) | **Risk/Evidence Review Router** | Select review modes from risk, reversibility, blast radius, and evidence completeness |
+| [08](zh/innovations/08-scope-creep.md) | **Scope Change Control** | Separate product scope expansion from implementation dependency discovery |
+| [09](zh/innovations/09-skills-self-evolution.md) | **Governed Skill Supply Chain** | Provenance, permission, tests, approval, canary, monitoring, and rollback |
+| [10](zh/innovations/10-intent-routing.md) | **Intent→Strategy Routing** | A 7+1 design proposal built from observed OMO/Hermes routing ideas |
+| [11](zh/innovations/11-checkpoint-review.md) | **Traceable Checkpoints** | Versioned state, evidence references, stale verdicts, and idempotent resume |
+| [12](zh/innovations/12-memory-granularity.md) | **Scoped Memory Compilation** | Source, scope, confidence, validity, privacy, and user control |
+| [13](zh/innovations/13-byte-stable-prefix-architecture.md) | **Bounded Byte-Stability** | Canonical segments and explicit invalidation, subordinate to correctness and safety |
+| [14](zh/innovations/14-reasoning-content-stripping.md) | **Reasoning Replay Policy** | Provider/endpoint-specific replay, drop, or conservative fallback |
+| [15](zh/innovations/15-dsml-tool-call-optimization.md) | **DSML Encoding Research** | Encoding internals do not imply a client-side DSML protocol |
+| [16](zh/innovations/16-quick-instruction-routing.md) | **Quick Instruction Capability Probe** | Encoding evidence exists; public API availability remains to be verified |
+| [17](zh/innovations/17-reasoning-effort-control.md) | **Reasoning Policy and Budget** | Separate parameter acceptance, semantic effect, and task benefit |
+| [18](zh/innovations/18-latest-reminder-injection.md) | **Dynamic Context Placement** | Source, trust, scope, TTL, privacy, and A/B testing matter more than position slogans |
 
 ---
 
