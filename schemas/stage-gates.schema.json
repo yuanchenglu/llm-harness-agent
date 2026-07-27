@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/yuanchenglu/llm-harness-agent/schemas/stage-gates.schema.json",
+  "title": "LLM Harness Agent Stage Gates",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assessed_at",
+    "repository_scope",
+    "truth_source",
+    "earliest_incomplete_stage",
+    "stages",
+    "product_release"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "3.0"
+    },
+    "assessed_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "repository_scope": {
+      "type": "string",
+      "minLength": 20
+    },
+    "truth_source": {
+      "type": "string",
+      "minLength": 20
+    },
+    "earliest_incomplete_stage": {
+      "type": ["string", "null"]
+    },
+    "stages": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/stage"
+      }
+    },
+    "product_release": {
+      "$ref": "#/$defs/productRelease"
+    }
+  },
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "passed", "open"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "in_progress",
+            "blocked",
+            "research_mvp_completed_release_unverified"
+          ]
+        },
+        "passed": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "open": {
+          "$ref": "#/$defs/stringArray"
+        }
+      }
+    },
+    "productRelease": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason",
+        "required_external_evidence",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "unverified_in_this_repository",
+            "blocked",
+            "waived_with_reason",
+            "verified_released"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 20
+        },
+        "required_external_evidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "value"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

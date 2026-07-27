@@ -1,29 +1,55 @@
-# Quick Instruction 路由: DeepSeek V4 的内置任务分发机制
+# Quick Instruction 路由：编码层能力与公共 API 可用性必须分开
 
-> **证据说明：** 本文基于 `encoding_dsv4.py` 源码中 Quick Instruction 特殊 Token 的定义与消息渲染逻辑提出设计假设。各 Task 的实际效果需要在真实 API 场景中验证。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
+> **证据等级：A1 + N/B**  
+> - **A1**：固定 `encoding_dsv4.py` 源码可确认 `action / query / authority / domain / title / read_url` 特殊 Token 和渲染逻辑存在。  
+> - **N/B**：当前公开证据不足以证明客户端可在标准 API 请求中直接设置 `task` 字段并稳定触发这些行为；产品集成仍需 Endpoint Spike。  
+> 请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
-> 创新索引: I-16
-> **LLM + Harness = Agent** · 第 16 篇
-> 系列: [LLM + Harness = Agent](../../README.md)
-> 上一篇: [I-15 DSML 工具调用格式优化](15-dsml-tool-call-optimization.md)
-> 下一篇: [I-17 推理强度控制](17-reasoning-effort-control.md)
-
----
-
-## 问题: 一个模型如何同时做聊天、搜索路由、标题生成？
-
-传统做法是每种任务部署一个专用模型或 prompt。聊天有聊天模型，搜索意图识别有分类模型，标题生成有摘要模型。每个模型独立训练、独立部署、独立调用——延迟叠加，成本叠加。
-
-DeepSeek V4 的做法不同：**一个模型处理所有这些任务，通过特殊 Token 在文本流中触发不同行为模式。**这就是 Quick Instruction 系统。
+> **创新点索引**：I-16  
+> **系列**：[LLM + Harness = Agent](../../README.md)  
+> **上一篇**：[15 DSML 编码层研究](15-dsml-tool-call-optimization.md)  
+> **下一篇**：[17 推理强度控制](17-reasoning-effort-control.md)
 
 ---
 
-## 关键证据: 六个任务 Token 的定义
+## 摘要
 
-`encoding_dsv4.py` 明确定义了六种 Quick Instruction 特殊 Token（L28-35）：
+DeepSeek V4 编码源码定义了六类任务特殊 Token：
+
+```text
+action
+query
+authority
+domain
+title
+read_url
+```
+
+它们表明模型编码/服务栈可能支持短输出分类、查询生成、标题生成和 URL 判断等专用任务模式。
+
+但存在关键边界：
+
+```text
+编码函数接受 task 字段
+≠
+标准公开 Chat API 接受客户端 task 字段
+```
+
+因此 Harness 的正确策略是：
+
+1. 把 Quick Instruction 作为 Provider Capability；
+2. 先做原始 HTTP 端到端探针；
+3. 只有 Wire Contract 和行为稳定后才进入默认路由；
+4. 始终保留标准 Prompt / Tool 路由回退；
+5. 不把源码中的内部分类用途直接写成产品承诺。
+
+---
+
+## 1. 源码可以确认什么
+
+固定源码中存在类似映射：
 
 ```python
-# Task special tokens for internal classification tasks
 DS_TASK_SP_TOKENS = {
     "action": "<｜action｜>",
     "query": "<｜query｜>",
@@ -32,100 +58,298 @@ DS_TASK_SP_TOKENS = {
     "title": "<｜title｜>",
     "read_url": "<｜read_url｜>",
 }
-VALID_TASKS = set(DS_TASK_SP_TOKENS.keys())
 ```
 
-这些 Token 不是给用户看的，也不是给 Agent 开发者手动拼接的。它们通过消息对象的 `task` 字段注入到编码后的 prompt 中。
+并在消息渲染时根据 `task` 选择特殊 Token。
+
+A1 级结论：
+
+> DeepSeek V4 编码实现包含六类专用任务 Token，以及对应的 Prompt 渲染路径。
+
+不能仅凭该源码确认：
+
+- 公共 API 请求 Schema 暴露 `task`；
+- SDK 会透传 `task`；
+- 服务端线上版本与源码一致；
+- 输出值和格式稳定；
+- 该模式比普通 Prompt 更快、更便宜或更准确。
 
 ---
 
-## 机制: Task Token 如何触发模型行为
+## 2. 三层边界
 
-在 `render_message()` 中（L369-383），当消息携带 `task` 字段时，编码逻辑会根据 task 类型在消息末尾附加对应的特殊 Token：
+### 2.1 模型编码层
 
-```python
-task = messages[index].get("task")
-if task is not None:
-    assert task in VALID_TASKS, f"Invalid task: '{task}'..."
-    task_sp_token = DS_TASK_SP_TOKENS[task]
+负责把结构化消息转换为模型 Token 序列。
 
-    if task != "action":
-        # Non-action tasks: append task sp token directly after the message
-        prompt += task_sp_token
-    else:
-        # Action task: append Assistant + thinking token + action sp token
-        prompt += ASSISTANT_SP_TOKEN
-        prompt += thinking_end_token if thinking_mode != "thinking" else thinking_start_token
-        prompt += task_sp_token
+### 2.2 Provider 服务层
+
+可能：
+
+- 使用上述编码逻辑；
+- 对客户端字段做白名单过滤；
+- 在内部调用这些任务；
+- 不向外部用户暴露；
+- 使用不同版本实现。
+
+### 2.3 Harness 客户端
+
+只能依赖：
+
+- 官方 API 文档；
+- SDK 行为；
+- 原始 HTTP Wire Evidence；
+- 可重复 Endpoint 实验。
+
+客户端不应向标准 API 随意加入未文档化字段，然后以 HTTP 200 判断功能生效。
+
+---
+
+## 3. 六类任务的合理假设
+
+以下是基于 Token 名称和渲染位置的工程解释，不是已确认公共产品语义。
+
+| Task | 候选用途 | 需要验证 |
+| --- | --- | --- |
+| `action` | 搜索/回答或动作路由 | 输出枚举、准确率、thinking 交互 |
+| `query` | 生成搜索查询 | 多语言、长度、注入风险 |
+| `authority` | 判断来源权威要求 | 标签集合、校准、领域迁移 |
+| `domain` | 领域分类 | 分类体系、开放集、混淆矩阵 |
+| `title` | 生成会话标题 | 长度、语言、敏感信息泄露 |
+| `read_url` | 判断 URL 是否需抓取 | 多 URL、恶意 URL、输出格式 |
+
+“候选用途”不能替代协议文档或端到端结果。
+
+---
+
+## 4. Capability Probe
+
+### 4.1 请求路径
+
+至少比较：
+
+```text
+raw HTTP with documented fields
+raw HTTP with task field
+official SDK with task field
+standard prompt emulation
 ```
 
-关键区别:
-- **非 action 任务**（query, authority, domain, title, read_url）：Task Token 直接附加在消息后面，不带 Assistant 前缀。这意味着模型被要求直接输出任务结果，不需要生成完整的对话回复。
-- **action 任务**：在 Token 前额外添加 `＜｜Assistant｜＞` 和 thinking 标记，模拟一个标准的 assistant 回复开头。模型从这个起点开始生成，输出的是路由决策（如 "Search" 或 "Answer"）。
+### 4.2 结果分类
 
----
+| 结果 | 含义 |
+| --- | --- |
+| 4xx 未知字段 | 公共 API 不支持 |
+| 200 但行为无差异 | 字段可能被忽略 |
+| 200 且输出短但不稳定 | 实验能力，暂不产品化 |
+| 200 且跨模型/时间稳定 | 可进入 Capability Snapshot |
+| SDK 丢弃字段 | 只能用 raw HTTP，需评估维护成本 |
 
-## 六个 Task 各司何职
+HTTP 200 只证明请求被接受，不证明参数语义生效。
 
-| Task | 编码位置 | 用途 |
-|------|---------|------|
-| **action** | 用户消息后 + `＜｜Assistant｜＞` + thinking + `＜｜action｜＞` | 判断用户问题是否需要联网搜索，还是可以直接回答。输出一个简短的路由决策。 |
-| **query** | 直接附加在用户消息后 | 根据用户 prompt 生成搜索引擎查询词。不生成完整回复，只输出查询字符串。 |
-| **authority** | 直接附加在用户消息后 | 分类用户 prompt 对信息权威性的需求程度（如金融、医疗需要高权威来源）。 |
-| **domain** | 直接附加在用户消息后 | 识别用户 prompt 的领域分类（如编程、数学、文学等）。 |
-| **title** | 附加在 Assistant 回复后 | 根据对话内容生成简洁的对话标题。用于多轮对话列表展示。 |
-| **read_url** | 伴随 `＜｜extracted_url｜＞` 使用 | 判断 prompt 中提到的每个 URL 是否需要抓取和阅读。 |
+### 4.3 Manifest
 
----
-
-## 为什么这对 Harness 重要
-
-### 1. 请求延迟的大幅降低
-
-传统架构下，一个"用户问问题→搜索→回答"的流程可能需要 3 次模型调用：路由（要不要搜）、查询生成（搜什么）、最终回答。每次调用的网络延迟是独立叠加的。
-
-Quick Instruction 把 routing 和 query generation 压缩到单 token 或极短输出中。`action` 任务输出可能只有 "Search" 一个词——几个 token 就能完成原来一整轮推理的工作。
-
-### 2. 实现成本
-
-Quick Instruction Token 是拼接到 prompt 末尾的，不额外增加 system prompt 长度。但每次 Quick Instruction 调用仍然是一次独立的 API 请求，prompt 需要重新发送。如果你的应用需要在"search"和"no-search"之间快速路由，可以先用短 prompt + action task 做决策，再决定是否构造完整的 search prompt——而不是每条消息都带完整的 system prompt 和工具定义。
-
-### 3. Harness 层面的集成
-
-Harness 可以在消息对象中设置 `task` 字段来触发这些行为：
-
-```python
-# 判断是否需要搜索
-messages = [
-    {"role": "user", "content": "今天天气怎么样？", "task": "action"}
-]
-# → model outputs "Search"
-
-# 生成搜索查询词
-messages = [
-    {"role": "user", "content": "今天天气怎么样？", "task": "query"}
-]
-# → model outputs "北京 天气预报 2026-07-16"
+```yaml
+probe_id: quick-instruction-action-20260727
+provider: deepseek
+endpoint: <redacted-endpoint-id>
+model: deepseek-v4-pro
+sdk_version: null
+request_variant: raw-http-task-field
+repeats: 20
+observed_at: 2026-07-27
+response_schema:
+  fields: [choices, usage]
+behavior:
+  expected_labels: [Search, Answer]
+  exact_match_rate: null
+status: unverified
+limitations:
+  - endpoint/account/time scoped
 ```
 
-不需要额外的模型或 prompt engineering。Harness 只需要知道哪个场景用哪个 task，然后把 `task` 字段塞进消息对象即可。
+---
+
+## 5. 产品集成架构
+
+### 5.1 Provider-Neutral Router
+
+```typescript
+interface RouteRequest {
+  task: string;
+  context?: unknown;
+  allowedLabels?: string[];
+}
+
+interface RouteResult {
+  label: string;
+  confidence?: number;
+  rawOutputRef: string;
+  providerCapability: string;
+  fallbackUsed: boolean;
+}
+```
+
+Router 不应把 `action` 等私有 Token 暴露给上层产品逻辑。
+
+### 5.2 Adapter 选择
+
+```text
+if provider capability verified:
+    use quick-instruction adapter
+else:
+    use standard structured prompt or lightweight classifier
+```
+
+### 5.3 输出清洗
+
+即使专用模式只预期输出一个词，也要处理：
+
+- 前后空白；
+- 大小写；
+- 多行解释；
+- 未知标签；
+- 空输出；
+- 截断；
+- Prompt Injection；
+- 流式增量。
+
+建议使用 Allowlist 和 Unknown 回退，不能模糊匹配后直接执行高风险动作。
 
 ---
 
-## 局限与待验证
+## 6. 风险分层
 
-1. **Task 输出不可控。**Quick Instruction 的输出格式没有严格 schema。模型可能返回 "Search" 也可能返回 "Search\n" 或带额外解释。Harness 需要做输出清洗。
-2. **与其他功能交互未知。**当 message 同时有 `task` 和 `tools` 时行为如何？源码中的行为是 task token 拼接在消息末尾，但如果消息同时有 tool_calls，可能会出现意外的 token 序列。
-3. **不同 thinking mode 下的行为差异。**`action` task 在 chat mode 和 thinking mode 下的编码逻辑不同（L381），但实际上两者的最小差异需要实验验证。
+### 6.1 低风险用途
+
+- 会话标题；
+- 搜索查询候选；
+- UI 分类标签。
+
+错误通常可恢复。
+
+### 6.2 中风险用途
+
+- 是否联网搜索；
+- 是否抓取 URL；
+- 工具目录选择。
+
+需要回退和可观察性。
+
+### 6.3 高风险用途
+
+- 权限等级；
+- 是否允许写入；
+- 是否执行外部副作用；
+- 医疗/法律/金融权威判断。
+
+不能只依赖 Quick Instruction。必须由 Policy、确定性规则或人工审批兜底。
 
 ---
 
-## 验证路径
+## 7. 性能假设
 
-1. 对同一 prompt 分别设置 `task="action"` 和 `task=None`，对比模型输出的长度和内容差异。
-2. 测量 action task 的端到端延迟：`task="action"` 的一次调用 vs. 完整对话的第一轮推理——验证延迟优势。
-3. 测试 task 与 tool_calls 共存时的行为：是否会产生 token 序列错误。
+Quick Instruction 可能产生短输出，但端到端收益受以下因素影响：
+
+```text
+额外网络往返
+是否重新发送长前缀
+Provider Cache 命中
+模型排队
+输出长度
+后续调用是否被避免
+```
+
+一次额外分类调用可能比直接让主模型完成任务更慢。应比较完整工作流：
+
+```text
+Router + Main Call
+vs.
+Single Main Call
+```
+
+而不是只比较 Router 自身输出 Token。
 
 ---
 
-*本文基于 `encoding_dsv4.py` 第 28-35 行 `DS_TASK_SP_TOKENS` 定义与第 369-383 行 task token 渲染逻辑，结合 DeepSeek V4 编码文档中的 Quick Instruction 描述。*
+## 8. 评测
+
+### 8.1 分类质量
+
+```text
+accuracy
+macro F1
+open-set rejection
+confidence calibration
+cost-weighted errors
+```
+
+### 8.2 查询质量
+
+```text
+search recall
+result relevance
+query injection rate
+language quality
+```
+
+### 8.3 URL 判断
+
+```text
+necessary-fetch recall
+unnecessary-fetch rate
+malicious-url handling
+multi-url accuracy
+```
+
+### 8.4 性能
+
+```text
+router latency
+workflow latency
+total tokens
+cache hit/miss
+cost per successful task
+```
+
+### 8.5 对照
+
+比较：
+
+- Quick Instruction；
+- 标准短 Prompt；
+- 规则分类器；
+- 小模型分类器；
+- 不单独路由。
+
+使用 Held-out 数据和跨时间重复。
+
+---
+
+## 9. 边界与失败模式
+
+- 字段可能被 API 静默忽略；
+- 输出标签未文档化；
+- 模型版本更新改变行为；
+- 与 Tools / Thinking / Streaming 组合不兼容；
+- 专用任务可能只用于服务端内部；
+- 多一步路由增加延迟；
+- 分类错误可能选择错误工具或来源；
+- 私有 Token 直接拼接可能破坏协议。
+
+必须提供 Feature Flag、Fallback、Capability Version 和禁用开关。
+
+---
+
+## 10. 结论
+
+Quick Instruction 的源码证据很有研究价值，但当前准确结论是：
+
+1. 六类特殊 Token 和编码路径真实存在；
+2. 公共 API 是否暴露 `task` 字段仍需 Wire Evidence；
+3. 客户端不能直接根据编码源码实现未文档化协议；
+4. 产品层应使用 Provider-Neutral Router 和标准回退；
+5. 高风险决策不能只依赖短分类输出；
+6. 价值必须用完整工作流的质量、延迟和成本验证。
+
+源码确认“可能有什么能力”，Endpoint 实验决定“客户端现在能否可靠使用”。

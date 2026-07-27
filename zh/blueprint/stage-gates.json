@@ -1,56 +1,151 @@
 {
-  "schema_version": "2.0",
-  "assessed_at": "2026-06-07",
-  "truth_source": "Stage completion requires scope, evidence, usable artifacts, consistent status, validation, and the stage definition of done.",
-  "earliest_incomplete_stage": null,
+  "schema_version": "3.0",
+  "assessed_at": "2026-07-27",
+  "repository_scope": "Research, product specification, architecture decisions, and redacted experiment summaries for Agent Harness work. This repository is not the complete current DeepSeekAgent runtime implementation.",
+  "truth_source": "Stage completion requires scope, evidence, usable artifacts, consistent status, validation, and the stage definition of done. Production release completion additionally requires immutable evidence from the actual runtime repository.",
+  "earliest_incomplete_stage": "6-release-evidence-reconciliation",
   "stages": {
     "0": {
       "name": "Project overview and handoff",
       "status": "completed",
-      "passed": ["master_readme", "machine_readable_gates", "all_stage_master_prompt", "repository_hygiene_check", "submodule_path_migration", "repository_link_integrity"],
+      "passed": [
+        "master_readme",
+        "machine_readable_gates",
+        "all_stage_master_prompt",
+        "repository_hygiene_check",
+        "submodule_path_migration",
+        "repository_link_integrity"
+      ],
       "open": []
     },
     "1": {
       "name": "DeepSeek V4 source and physical-trait research",
       "status": "completed",
-      "passed": ["v1.1_research_package", "phase_1_to_10_documents", "evidence_standard", "fixed_source_snapshot_index", "current_fact_calibration", "v3_to_v4_inference_separation", "high_impact_harness_claim_review", "unknowns_register"],
+      "passed": [
+        "v1.1_research_package",
+        "phase_1_to_10_documents",
+        "evidence_standard",
+        "fixed_source_snapshot_index",
+        "current_fact_calibration",
+        "v3_to_v4_inference_separation",
+        "high_impact_harness_claim_review",
+        "unknowns_register"
+      ],
       "open": []
     },
     "2": {
       "name": "Agent product and harness competitor research",
       "status": "completed",
-      "passed": ["six_project_fixed_commit_calibration", "five_project_pass1", "partial_pass2_audits", "five_project_pass2", "p1_competitor_scope_decision", "uniform_runtime_and_test_evidence_matrix", "remaining_overclaim_audit"],
+      "passed": [
+        "six_project_fixed_commit_calibration",
+        "five_project_pass1",
+        "partial_pass2_audits",
+        "five_project_pass2",
+        "p1_competitor_scope_decision",
+        "uniform_runtime_and_test_evidence_matrix",
+        "remaining_overclaim_audit"
+      ],
       "open": []
     },
     "2.5": {
       "name": "DeepSeek protocol and Prefix Cache validation",
       "status": "completed",
-      "passed": ["offline_harness_tests", "versioned_official_capability_snapshot", "randomized_manifested_runner", "E3_flash_and_pro_protocol_matrix", "E3_cache_cross_time_matrix", "redacted_evidence_bundle_index"],
+      "passed": [
+        "offline_harness_tests",
+        "versioned_official_capability_snapshot",
+        "randomized_manifested_runner",
+        "E3_flash_and_pro_protocol_matrix",
+        "E3_cache_cross_time_matrix",
+        "redacted_evidence_bundle_index"
+      ],
       "open": []
     },
     "3": {
       "name": "Architecture comparison and borrowing assessment",
       "status": "completed",
-      "passed": ["partial_layered_matrix", "gap_analysis_v0.1", "full_uniform_harness_matrix", "design_patterns_and_antipatterns", "evidence_backed_borrow_adapt_reject_matrix", "E4_real_task_input"],
+      "passed": [
+        "partial_layered_matrix",
+        "gap_analysis_v0.1",
+        "full_uniform_harness_matrix",
+        "design_patterns_and_antipatterns",
+        "evidence_backed_borrow_adapt_reject_matrix",
+        "E4_real_task_input"
+      ],
       "open": []
     },
     "4": {
       "name": "Product strategy and technical architecture",
       "status": "completed",
-      "passed": ["architecture_ADRs_v0.1", "research_mvp_boundary", "complete_product_strategy", "evidence_backed_routing_and_cache_ROI_decisions", "final_runtime_foundation_ADR", "production_architecture_spec"],
+      "passed": [
+        "architecture_ADRs_v0.1",
+        "research_mvp_boundary",
+        "complete_product_strategy",
+        "evidence_backed_routing_and_cache_ROI_decisions",
+        "final_runtime_foundation_ADR",
+        "production_architecture_spec"
+      ],
       "open": []
     },
     "5": {
       "name": "PRD, UX, and engineering breakdown",
       "status": "completed",
-      "passed": ["read_only_cli_mvp_scope", "initial_engineering_breakdown", "production_PRD", "desktop_agent_and_code_mode_UX", "production_runtime_API_and_data_spec", "security_threat_model", "acceptance_criteria_and_executable_breakdown"],
+      "passed": [
+        "read_only_cli_mvp_scope",
+        "initial_engineering_breakdown",
+        "production_PRD",
+        "desktop_agent_and_code_mode_UX",
+        "production_runtime_API_and_data_spec",
+        "security_threat_model",
+        "acceptance_criteria_and_executable_breakdown"
+      ],
       "open": []
     },
     "6": {
-      "name": "Fork, integration, and MVP implementation",
-      "status": "completed",
-      "passed": ["read_only_research_mvp", "workspace_boundary_tests", "opencode_fixed_commit_source_spike", "opencode_installed_cli_smoke", "opencode_fixed_source_live_probe", "permission_policy", "sandbox", "diff_preview", "rollback", "session_resume", "E4_acceptance_benchmark", "final_foundation_ADR", "install_uninstall_smoke", "cli_doctor_diagnostics", "release_artifact_manifest", "release_safety_drill", "release_observability_smoke", "public_alpha_release_docs", "production_gate_audit", "production_release_gate"],
-      "open": []
+      "name": "Fork, integration, MVP, and production release",
+      "status": "research_mvp_completed_release_unverified",
+      "passed": [
+        "read_only_research_mvp",
+        "workspace_boundary_tests",
+        "opencode_fixed_commit_source_spike",
+        "opencode_installed_cli_smoke",
+        "opencode_fixed_source_live_probe",
+        "permission_policy",
+        "sandbox",
+        "diff_preview",
+        "rollback",
+        "session_resume",
+        "E4_acceptance_benchmark",
+        "final_foundation_ADR",
+        "install_uninstall_research_smoke"
+      ],
+      "open": [
+        "identify_actual_runtime_repository_and_commit",
+        "reconcile_openspec_and_release_evidence",
+        "verify_platform_compatibility_matrix",
+        "verify_remote_release_tag_and_notes",
+        "verify_release_artifact_and_checksum",
+        "verify_upgrade_uninstall_rollback_and_diagnostics",
+        "record_production_release_decision"
+      ]
     }
+  },
+  "product_release": {
+    "status": "unverified_in_this_repository",
+    "reason": "Later planning documents describe work completed in an external or uncommitted workspace, but this repository does not contain immutable runtime, tag, artifact, checksum, platform, and release-decision evidence sufficient to close the production gate.",
+    "required_external_evidence": [
+      "runtime_repository_url",
+      "runtime_commit_sha",
+      "release_tag",
+      "release_notes",
+      "artifact_manifest",
+      "artifact_checksum",
+      "platform_compatibility_matrix",
+      "install_upgrade_uninstall_report",
+      "rollback_report",
+      "diagnostics_redaction_report",
+      "E4_style_release_report",
+      "production_release_decision"
+    ],
+    "evidence": []
   }
 }

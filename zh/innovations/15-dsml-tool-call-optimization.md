@@ -1,293 +1,402 @@
-# DSML 工具调用格式优化：当模型用自己的语言定义工具
+# DSML 编码层研究：内部表示不等于客户端协议
 
-> **证据说明：** 本文基于 DeepSeek V4 Flash/Pro 固定源码分析（encoding_dsv4.py）和 OpenAI 函数调用协议公开文档。所有对照以源码签出状态为准；DSML 对 tokenizer 效率、推理速度和 Harness 适配成本的影响属于待验证推论。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
+> **证据等级：A1 + A0 + B**  
+> - **A1**：固定版本 `encoding_dsv4.py` 可确认 DSML 特殊 Token、模板和参数编码逻辑存在。  
+> - **A0（本项目 API Spike）**：公开 API 返回标准 OpenAI-compatible `tool_calls`，客户端不需要 DSML 解析器。  
+> - **B**：DSML 是否减少 Token、降低生成错误或改善推理效率，仍需专用 benchmark。  
+> 请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
-> 创新索引: I-15
-> **LLM + Harness = Agent** · 第 15 篇
-> 系列: [LLM + Harness = Agent](../../README.md)
-> 关联: [I-14 Reasoning Content Stripping](14-reasoning-content-stripping.md) · [I-13 Byte-Stable Prefix 架构](13-byte-stable-prefix-architecture.md)
-
----
-
-## 问题：JSON 不是模型的原生语言
-
-OpenAI 定义函数调用（Function Calling）时做了一个自然的选择：用 JSON。JSON 是 Web 时代的通用数据格式，每门语言都有解析器，工具定义和参数传递都用它。Anthropic 跟进。Google 跟进。整个行业跟进。
-
-这个选择在工程上合情合理。但在模型内部，它意味着：
-
-```
-模型必须先理解 JSON schema（人类设计的序列化格式）
-→ 然后在推理过程中生成符合 schema 的 JSON 字符串
-→ 再确保 JSON 语法完全正确（一个逗号错误就导致解析失败）
-→ 同时 JSON 的大括号、引号、逗号在 tokenization 时消耗额外 token
-```
-
-这是人类迁就机器的格式，不是机器最擅长的格式。
-
-DeepSeek V4 做了一个不同的选择。
+> **创新点索引**：I-15  
+> **系列**：[LLM + Harness = Agent](../../README.md)  
+> **关联**：[I-14 Reasoning Content 回传策略](14-reasoning-content-stripping.md) · [I-13 Byte-Stable Prefix 架构假设](13-byte-stable-prefix-architecture.md)
 
 ---
 
-## 行业默认：JSON 函数调用格式
+## 摘要
 
-几乎所有主流 LLM 的工具调用格式都基于 JSON：
+DeepSeek V4 的编码源码中存在 DSML（DeepSeek Markup Language）特殊 Token 和 XML 风格工具调用模板。这说明模型编码层可能使用专门格式表示工具调用。
 
-| 模型/平台 | 工具调用格式 | 参数传递 | 工具结果格式 |
-|-----------|-------------|---------|-------------|
-| **OpenAI** | JSON `function_call` / `tool_calls` 数组 | JSON `arguments` 字符串 | JSON `tool` role message |
-| **Anthropic** | XML `<function_calls>` 内含 JSON | JSON 参数对象 | `<function_results>` 内含 JSON |
-| **Google Gemini** | JSON `functionCall` 对象 | JSON `args` 对象 | JSON `functionResponse` |
-| **DeepSeek V3** | 兼容 OpenAI JSON 格式 | JSON `arguments` | JSON `tool` role |
-| **DeepSeek V4** | **DSML**（XML 风格，`｜DSML｜` 标记）| DSML `<parameter>` 标签 | `<tool_result>` 标签 |
+但客户端 Harness 应以实际公开 API 契约为准。本项目 2026-07-16 的 API Spike 已观察到：
 
-在此之前的 DeepSeek V3，采用的是与 OpenAI 兼容的 JSON 函数调用格式。V4 是第一个全面转向 DSML 的版本。
+```text
+客户端发送 OpenAI-compatible tools / JSON Schema
+→ 服务端内部完成编码、模型生成和结果转换
+→ 客户端收到标准 tool_calls
+```
 
-OpenAI 的方案是通用标准，跨模型移植成本最低；Anthropic 用 XML 包装 JSON，在人类可读性和结构化之间做了一个折中；DeepSeek V4 的 DSML 则是完全不同的方向——它把工具调用的编码和解码**嵌入到模型的 tokenizer 层面**。
+因此，以下早期结论已被否定：
+
+- “任何接入 DeepSeek V4 的 Agent 都必须实现 DSML 解析器”；
+- “公开 API 直接返回 DSML 文本”；
+- “客户端不能继续使用标准 `tool_calls` 数据结构”。
+
+DSML 当前最有价值的研究方向，不是让客户端绕过公共协议，而是理解：模型内部工具表示如何影响服务端行为、Token 使用、错误恢复和未来 Provider 能力。
 
 ---
 
-## 关键洞察：DSML 是 tokenizer 原生的工具调用语言
+## 1. 三层协议必须分开
 
-### DSML 是什么
+### 1.1 客户端公共协议
 
-DSML（DeepSeek Markup Language）不是标准 XML。它的核心是一个特殊的 Unicode token `｜DSML｜`（全角竖线 + DSML + 全角竖线），直接编码在 DeepSeek V4 的 tokenizer 词表中：
-
-```python
-# encoding_dsv4.py L21
-dsml_token = "｜DSML｜"
-```
-
-基于这个 token，整个工具调用协议用一套 XML 风格的模板定义：
-
-```python
-# encoding_dsv4.py L52-57
-tool_call_template: str = (
-    "<{dsml_token}invoke name=\"{name}\">\n{arguments}\n</{dsml_token}invoke>"
-)
-tool_calls_template = (
-    "<{dsml_token}{tc_block_name}>\n{tool_calls}\n</{dsml_token}{tc_block_name}>"
-)
-tool_calls_block_name: str = "tool_calls"
-```
-
-实际生成的工具调用块格式如下：
-
-```xml
-<｜DSML｜tool_calls>
-<｜DSML｜invoke name="get_weather">
-<｜DSML｜parameter name="city" string="true">北京</｜DSML｜parameter>
-<｜DSML｜parameter name="days" string="false">7</｜DSML｜parameter>
-</｜DSML｜invoke>
-</｜DSML｜tool_calls>
-```
-
-### 核心创新：`string="true|false"` 类型区分
-
-DSML 最独特的设计是参数标签上的 `string` 属性：
-
-```python
-# encoding_dsv4.py L139-166
-def encode_arguments_to_dsml(tool_call: Dict[str, str]) -> str:
-    p_dsml_template = (
-        '<{dsml_token}parameter name="{key}" string="{is_str}">'
-        '{value}</{dsml_token}parameter>'
-    )
-    for k, v in arguments.items():
-        is_str = "true" if isinstance(v, str) else "false"
-        value = v if isinstance(v, str) else to_json(v)
-```
-
-这意味着：
-
-| 参数类型 | `string` 属性 | 值的编码方式 | token 影响 |
-|---------|-------------|------------|-----------|
-| 字符串 | `string="true"` | 原始文本，**不包引号** | 节省 JSON 的 `"..."` 转义开销 |
-| 数字、布尔、数组、对象 | `string="false"` | JSON 序列化 | 与 OpenAI 相同 |
-
-这个设计很精妙。字符串参数直接内嵌——不需要 JSON 的两层引号转义。对于工具调用中常见的大量字符串参数（文件名、搜索词、代码片段），这避免了 `\"` 转义链，减少了 token 数量，同时也降低了模型生成有效转义字符串的难度。
-
-解码端也对应处理：
-
-```python
-# encoding_dsv4.py L169-186
-def decode_dsml_to_arguments(tool_name: str, tool_args: Dict[str, Tuple[str, str]]) -> Dict[str, str]:
-    def _decode_value(key: str, value: str, string: str):
-        if string == "true":
-            value = to_json(value)  # 将原始字符串重新 JSON 序列化
-        return f"{to_json(key)}: {value}"
-
-    tool_args_json = "{" + ", ".join([_decode_value(k, v, string=is_str) for k, (v, is_str) in tool_args.items()]) + "}"
-    return dict(name=tool_name, arguments=tool_args_json)
-```
-
----
-
-## 分析：DSML 对 Agent Harness 意味着什么
-
-### 1. 解析层的根本变化
-
-OpenAI JSON 格式的解析路径：
-
-```
-模型输出 → JSON 字符串 → json.loads() → Python dict
-```
-
-DSML 格式的解析路径：
-
-```
-模型输出 → XML 风格文本 → 正则/SAX 解析 → 提取参数和 string 属性 → 按类型解码 → Python dict
-```
-
-`json.loads()` 是库函数调用，一行代码。DSML 解析需要实现完整的标记化解析器。`encoding_dsv4.py` 中的解析逻辑（`parse_message_from_completion_text` 和相关函数）超过 100 行，包含正则匹配、状态机遍历、字符串分割和错误恢复。
-
-**对 Harness 的影响**（置信度：大概率 95%）：
-
-> ⚠️ **Spike 修正（2026-07-16）**：以下三条论断已被 API 实测推翻。DeepSeek 服务器端已将 DSML 自动转换为 OpenAI 格式返回，客户端拿到的就是标准 `tool_calls`，无需实现 DSML 解析器。详见 `oh-my-deepseek-harness/.omo/notepads/mid-term-v4-features/spike-results.md` Test 2。
-
-- 任何接入 DeepSeek V4 的 Agent 都必须实现 DSML 解析器
-- 不能假定 `json.loads()` 能处理模型输出——parse 失败率比 JSON 格式高一个数量级
-- 错误处理逻辑更复杂：JSON 错误是语法错误，DSML 错误可能是标记缺失、嵌套错误、属性解析错误
-
-### 2. tokenizer 层面的效率优势（待验证推论）
-
-`｜DSML｜` 作为单个 token 而非三个字符 `"f"`, `"u"`, `"n"`，意味着：
-
-```
-OpenAI 格式: {"function": {"name": "get_weather"}}
-→ tokenized: [, ", f, u, n, c, t, i, o, n, ", :,  , {, ...  (约 15-20 tokens)
-
-DSML 格式: <｜DSML｜invoke name="get_weather">
-→ tokenized: <, ｜DSML｜, invoke,  name, =, ", get_weather, ", >  (约 8-10 tokens)
-```
-
-`｜DSML｜` 标记作为一个整体被 tokenizer 识别，每个标记和属性名在词表中都有固定位置。这带来两个潜在优势：
-- **更少的 token 消耗**：相同的语义信息用更少的 token 表示
-- **更稳定的 KV Cache**：工具定义块的 token 序列高度可预测，prefix caching 命中率更高
-
-> **证据等级：B**（工程推论，未经专用 benchmark 验证）。需要 DeepSeek tokenizer 的具体词表分析和 token 计数对比才能确认。详见下文"验证路径"。
-
-### 3. 工具 Schema 表示的重新思考
-
-OpenAI 的工具 Schema 用 JSON Schema 描述：
+Harness 实际发送和接收的结构，例如：
 
 ```json
 {
-  "type": "function",
-  "function": {
-    "name": "get_weather",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "city": {"type": "string"}
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "city": {"type": "string"}
+          },
+          "required": ["city"]
+        }
       }
     }
-  }
+  ]
 }
 ```
 
-在 DSML 模型中，工具定义同样可以用 DSML 格式发送——模型训练时就以 DSML 格式理解和生成工具调用。这意味着：
+响应中的标准结构：
 
-**Harness 有两种选择**：
+```json
+{
+  "tool_calls": [
+    {
+      "id": "call_xxx",
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "arguments": "{\"city\":\"北京\"}"
+      }
+    }
+  ]
+}
+```
 
-1. **发送 JSON Schema + 接收 DSML**：~~当前 DeepSeek API 的实际做法——输入 accept JSON 工具定义，输出返回 DSML。Harness 只需实现 DSML 解码端。~~
+这是 Provider Adapter 必须支持的契约。
 
-> ⚠️ **Spike 修正（2026-07-16）**：实测输出为标准 OpenAI `tool_calls` 格式（含 `function`、`name`、`arguments`、`id`、`type` 字段），**非 DSML**。服务器端已完成 DSML→OpenAI 格式转换，客户端无需实现 DSML 解码端。此条描述与 API 实际行为不符。
+### 1.2 服务端请求编译与结果转换
 
-2. **发送 DSML 格式 + 接收 DSML**：理论最优方案——Harness 将工具定义也编码为 DSML 发送。但 API 是否接受取决于 endpoint 实现。
+服务端可能执行：
 
-> **证据等级：A1**（源码确认：`render_message` 中包含 `tool_call_template` 工具定义的注入逻辑；但 API endpoint 是否同时接受 DSML 和 JSON 输入缺乏公开文档确认）。
+```text
+JSON Schema
+→ 模型专用 Prompt / Token 表示
+→ 模型输出
+→ 结构化解析
+→ 标准 API Response
+```
 
-### 4. 与 I-13 Byte-Stable Prefix 的交叉影响
+客户端通常看不到这层，也不应根据 tokenizer 源码猜测线上服务的全部实现。
 
-I-13 提出将工具 Schema 稳定排序以最大化 prefix cache 命中率。DSML 将这一约束提升了一个层面：
+### 1.3 模型编码层
 
-- JSON 格式中，`{"type":"function","function":{"name":"x"}}` 和 `{"function":{"name":"x"},"type":"function"}` 语义等价但 token 序列不同——必须排序
-- DSML 格式中，`<｜DSML｜invoke name="x">` 的 `<parameter>` 顺序仍然影响 token 序列——同样需要稳定排序
+`encoding_dsv4.py` 中的 DSML 模板属于模型输入/输出编码逻辑。它可以证明某种内部表示存在，但不能单独证明：
 
-但 DSML 的标签结构天然比 JSON 更严格：XML 风格的开始和结束标签限制了结构变化的空间，减少了因 key 顺序不一致导致的 prefix cache 失效。
+- 公共 Endpoint 接受客户端直接提交 DSML；
+- 公共 Endpoint 原样返回 DSML；
+- 线上服务与公开源码使用完全相同版本；
+- DSML 比 JSON 更省 Token 或更可靠。
 
 ---
 
-## DSML 全景对比表
+## 2. 源码可以确认什么
 
-| 维度 | OpenAI JSON | Anthropic XML+JSON | DeepSeek V4 DSML |
-|------|-----------|-------------------|-----------------|
-| 核心语法 | JSON 对象/数组 | XML 包装 + JSON 内容 | ｜DSML｜ 标记 + XML 风格 |
-| 标记 token | 无（JSON 关键字按字符拆分） | `<function_calls>` 按字符拆分 | `｜DSML｜` 为独立 token |
-| 字符串参数 | `"\"value\""`（两层转义） | `"\"value\""`（同 OpenAI） | `string="true">value<`（零转义） |
-| 类型系统 | JSON 类型隐式 | JSON 类型隐式 | `string="true/false"` 显式声明 |
-| 解析复杂度 | `json.loads()` 一行 | XML 解析 + JSON 解析 | 自定义正则/状态机 ~100 行 |
-| 跨模型可移植性 | 最好（行业标准） | 好（Anthropic 生态） | 差（仅 DeepSeek V4） |
-| Prefix Cache 友好度 | 中（key 顺序敏感） | 中（同左） | 高（标签结构受限，标记 token 固定） |
-| 证据等级 | A0 | A0 | A1（源码确认） |
+### 2.1 DSML 特殊 Token
+
+固定源码中定义了类似：
+
+```python
+dsml_token = "｜DSML｜"
+```
+
+工具调用模板使用 XML 风格标签：
+
+```xml
+<｜DSML｜tool_calls>
+  <｜DSML｜invoke name="get_weather">
+    <｜DSML｜parameter name="city" string="true">北京</｜DSML｜parameter>
+  </｜DSML｜invoke>
+</｜DSML｜tool_calls>
+```
+
+这可以支持以下 A1 结论：
+
+> DeepSeek V4 编码实现包含模型专用的结构化工具调用表示。
+
+### 2.2 字符串与非字符串参数区分
+
+编码逻辑通过 `string="true|false"` 区分：
+
+- 字符串直接作为文本内容；
+- 数字、布尔、数组和对象继续使用 JSON 序列化。
+
+这是一种内部类型编码设计。它可能减少字符串转义复杂度，但“节省多少 Token、是否降低错误率”仍是 B 级推论。
+
+### 2.3 编码与解码逻辑
+
+源码中存在 DSML 渲染和解析代码，说明完整编码链路需要处理：
+
+- 标签边界；
+- 工具名；
+- 参数名；
+- 参数类型；
+- 嵌套值；
+- 不完整输出和错误恢复。
+
+这证明服务端或本地推理栈需要相应转换逻辑，但不能推出每个 API 客户端都要重复实现。
 
 ---
 
-## 验证路径
+## 3. API Spike 修正
 
-以下验证可提升证据等级到 A0：
+### 3.1 已观察行为
 
-### 实验 1：Token 效率对比
+本项目的固定 Spike 记录显示：
 
-```
-工具：DeepSeek V4 tokenizer + tiktoken
-输入：相同的 5 函数工具集，200 个典型工具调用
-对比：
-  A. JSON 格式 → token count
-  B. DSML 格式 → token count
-预期结论：DSML 格式 token 数量更少（估计差距 15-30%）
+```text
+输入：标准 OpenAI-compatible tools
+输出：标准 tool_calls
+客户端：无需 DSML Parser
 ```
 
-### 实验 2：Prefix Cache 命中率
+因此 Provider Adapter 的默认实现应：
 
-```
-工具：DeepSeek V4 API，100 轮工具调用 session
-对比：
-  A. Harness 发送 JSON 工具 Schema，随机 key 顺序 vs 稳定排序
-  B. DSML 格式工具 Schema，同样做稳定排序
-预期结论：DSML 组 prefix cache 命中率更高，delta 随工具数增加而扩大
+1. 发送公开文档支持的标准 Tool Schema；
+2. 读取结构化 `tool_calls`；
+3. 校验 `name`、`arguments`、`id` 和 `finish_reason`；
+4. 对无效 JSON Arguments 做明确错误处理；
+5. 不依赖响应正文中的私有标记。
+
+### 3.2 仍未确认的边界
+
+当前 Spike 不能证明：
+
+- 所有 Endpoint、区域和账户行为永久一致；
+- 流式工具调用的每个 Chunk 字段完全稳定；
+- 本地部署或原始推理 Endpoint 也返回标准结构；
+- 未来 API 不会提供显式 DSML 模式；
+- 服务端内部转换没有版本差异。
+
+因此需要 Capability Snapshot，而不是把一次观察写死为永久协议。
+
+---
+
+## 4. 对 Harness 的正确启示
+
+### 4.1 Provider Contract 优先
+
+Provider Adapter 的优先级：
+
+```text
+真实 API 行为
+> 官方 API 文档
+> 官方 SDK
+> 模型编码源码
+> 第三方实现
+> 工程推论
 ```
 
-### 实验 3：解析鲁棒性
+编码源码用于解释和提出实验，不用于绕过公开契约。
 
-```
-工具：1000 个真实模型生成的工具调用
-对比：
-  A. json.loads() 直接解析（期望 JSON 输出时）
-  B. encoding_dsv4.parse* 解析（DSML 格式输出时）
-预期结论：DSML 解析错误率在模型输出格式正确时与 JSON 相当；在模型产生"接近正确但语法错误"的输出时，DSML 的恢复能力取决于实现质量
+### 4.2 保持内部工具模型与 Wire Format 分离
+
+建议 Runtime 内部使用统一类型：
+
+```typescript
+interface ToolCall {
+  id: string;
+  name: string;
+  arguments: unknown;
+  rawArguments?: string;
+  provider: string;
+  protocolVersion: string;
+}
 ```
 
-### 实验 4：Harness 适配成本
+Provider Adapter 负责：
 
+```text
+内部 Tool Definition
+↔ Provider Request
+↔ Provider Response
+↔ 内部 ToolCall
 ```
-任务：为一个开源 Agent 框架（如 Reasonix/Hermes）编写 V4 DSML 解析适配器
-测量：代码行数、测试用例数、集成时间
-基准：V3/OpenAI JSON provider 实现
-预期结论：适配成本 ~200 行 Go/Python（含错误处理），测试 ~300 行
+
+这样未来即使 Provider 暴露 DSML、JSON、Protobuf 或其他格式，Orchestrator、Policy 和 Tool Runtime 都不需要重写。
+
+### 4.3 不要直接执行模型生成参数
+
+无论服务端返回 JSON 还是其他格式，都必须：
+
+- 验证工具名在允许列表中；
+- 按 Schema 验证参数；
+- 拒绝未知字段或按明确策略处理；
+- 做路径、权限和副作用检查；
+- 保存原始响应 Hash 和规范化参数；
+- 对解析错误提供可恢复状态。
+
+结构化格式只降低解析歧义，不提供安全保证。
+
+### 4.4 Tool Schema 稳定性
+
+为了便于诊断和可能的 Prefix Cache 复用：
+
+- 工具按稳定规则排序；
+- JSON Key 使用确定性序列化；
+- Schema 计算 Fingerprint；
+- 权限变化或 Schema 修复时主动更新版本；
+- 不为了 Cache 命中保留已经撤销的工具权限。
+
+---
+
+## 5. 需要验证的研究问题
+
+### RQ-1：公共 API 的 Wire Contract
+
+矩阵：
+
+```text
+Flash / Pro
+thinking / non-thinking
+stream / non-stream
+single / parallel / sequential tools
+valid / invalid schema
+valid / malformed arguments
+```
+
+记录：
+
+- HTTP 状态；
+- Response 字段；
+- Chunk 字段；
+- `finish_reason`；
+- Tool Call ID；
+- 错误类型；
+- 下一轮是否可继续。
+
+### RQ-2：DSML Token 效率
+
+只有在可获得相同 Tokenizer 和相同语义表示时，才能比较：
+
+```text
+JSON representation token count
+DSML representation token count
+escaping overhead
+schema size
+argument size
+```
+
+不能根据字符数量估算 Token 数量，也不能仅凭特殊 Token 名称断言更省。
+
+### RQ-3：生成可靠性
+
+在固定任务集上比较：
+
+```text
+valid structured-call rate
+argument schema pass rate
+incorrect tool-name rate
+truncated call rate
+recovery success rate
+```
+
+如果公共 API 已完成 DSML→标准结构转换，客户端只能测量端到端结果，不能直接把收益归因于 DSML。
+
+### RQ-4：本地推理与公共 API 差异
+
+如果未来使用本地 V4 权重或低层推理接口，需要单独确认：
+
+- 是否输出原始 DSML；
+- 官方 Parser 是否可复用；
+- Parser 的错误恢复行为；
+- 与公共 API 的语义兼容性；
+- 是否需要 Provider-specific Adapter。
+
+本地推理结论不能自动外推到托管 API，反之亦然。
+
+---
+
+## 6. 反模式
+
+### 6.1 从编码源码直接推导公共 API
+
+错误链条：
+
+```text
+Tokenizer 中有 DSML
+→ API 一定接收 DSML
+→ API 一定返回 DSML
+→ 客户端必须写 Parser
+```
+
+每一步都需要独立证据。
+
+### 6.2 为了“模型原生”绕过官方协议
+
+直接拼接私有 Token 可能造成：
+
+- Endpoint 拒绝；
+- Prompt Injection 面扩大；
+- Tool Schema 与权限系统脱节；
+- SDK 和服务端升级后不兼容；
+- 调试、审计和错误处理复杂化。
+
+除非官方提供稳定接口和兼容承诺，否则不应进入产品主路径。
+
+### 6.3 把格式效率当作任务质量
+
+即使 DSML 少用一些 Token，也不代表：
+
+- 工具选得更对；
+- 参数语义更准确；
+- 副作用更安全；
+- 任务首次完成率更高。
+
+格式指标和任务指标必须分开。
+
+---
+
+## 7. 当前实现建议
+
+```text
+默认路径：OpenAI-compatible Tool API
+内部表示：Provider-neutral ToolCall
+验证层：Schema + Policy + Permission + Side-effect classification
+遥测层：Protocol version + Tool schema fingerprint + Parse errors
+实验路径：独立 DSML/tokenizer benchmark，不进入默认客户端执行链路
+```
+
+Provider Capability 建议记录：
+
+```yaml
+provider: deepseek
+endpoint: <redacted-host-id>
+model: deepseek-v4-pro
+observed_at: 2026-07-16
+request_tools_format: openai-compatible-json-schema
+response_tool_calls_format: openai-compatible
+dsml_visible_on_wire: false
+source_commit: <fixed-commit>
+limitations:
+  - endpoint/account/time scoped
+  - local inference not tested
 ```
 
 ---
 
-## 结论：DSML 是 tokenizer 优先的架构选择——代价是生态可移植性
+## 8. 结论
 
-DSML 代表的不是"另一种序列化格式"，而是一种架构立场：
+DSML 是值得研究的模型编码机制，但当前客户端架构结论非常明确：
 
-> **如果一个模型既是工具调用的生产者又是消费者，且训练时已经将特定 token 序列化进 tokenizer，那么使用一个为人类互操作性设计的格式（JSON）可能是次优的。**
+1. 编码层存在 DSML，不等于公共 API 直接暴露 DSML；
+2. 本项目 API Spike 已否定“客户端必须实现 DSML Parser”；
+3. Harness 应围绕公开 Provider Contract 和统一内部 ToolCall 类型构建；
+4. DSML 的 Token、延迟和生成可靠性收益仍需专用 benchmark；
+5. 即使格式更结构化，Tool Schema、权限、参数和副作用仍必须由 Runtime 验证。
 
-DeepSeek V4 选择了 tokenizer 原生格式：`｜DSML｜` 作为词表 token，`string="true|false"` 消除字符串转义，XML 风格标签提供结构约束。这些设计在 token 效率、prefix cache 命中率、字符串处理简洁性上可能有显著优势——代价是放弃了 OpenAI JSON 生态的即插即用。
-
-对 Agent Harness 设计者而言，这意味着：
-
-1. **任何支持 DeepSeek V4 的 Harness 都需要专门的 DSML 解析器**，不能复用 OpenAI provider 的 `json.loads()` 路径
-2. **工具 Schema 的发送格式**是开放问题——API endpoint 的输入格式仍在 JSON Schema 和 DSML 之间过渡，Harness 应该支持两种输入格式并测试哪种更优
-3. **DSML 的 `string` 类型属性**是一个值得借鉴的设计——即使在 JSON 格式中，显式类型声明也可能减少模型的类型猜测错误
-4. **DSML 验证**是下一个需要固定 commit + 可复现实验来将本文证据等级从 B/推论提升到 A0/实测的话题
-
-当前证据状态：**A1 for format implementation, B for efficiency claims**。DSML 的存在和实现方式已由 `encoding_dsv4.py` 源码确认（Flash 和 Pro 版本实现一致）；token 效率和 cache 优势是工程推论，需要 tokenizer 级别的 benchmark 校准。
-
----
-
-*本文基于 DeepSeek V4 Flash/Pro `encoding/encoding_dsv4.py`（744 行，两个版本 diff 完全一致）和 OpenAI Function Calling 协议文档的固定 commit 分析。OpenAI/Anthropic/Google 工具调用格式基于官方 API 文档。*
-
-> 下一篇: [I-16 Quick Instruction 路由](16-quick-instruction-routing.md)
+源码用于提出问题，Wire Evidence 决定客户端实现。

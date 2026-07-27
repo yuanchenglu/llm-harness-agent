@@ -1,313 +1,456 @@
-# A Divide-and-Conquer Strategy for Two-Level Scope Creep
+# Scope Governance: Distinguishing Product Expansion from Implementation-Dependency Discovery
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
+> **Evidence level: B (engineering design proposal)**  
+> This article corrects the earlier absolute framing that “scope creep is two diseases and all existing solutions confuse them.” A more precise engineering split is: one class of change adds to or alters the approved user-value scope; another class discovers work required to implement an already approved objective. Both must be recorded, assessed, and controlled, but they use different approval thresholds. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> Innovation Index: I-08
-> **LLM + Harness = Agent** · Part 8
-> Series: [LLM + Harness = Agent](../../README.md)
-> Previous: [07 Review Switching Engine](07-review-switching.md)
-> Next: [09 Skills Self-Evolution Loop](09-skills-self-evolution.md)
-
----
-
-> **Abstract**: Everyone talks about Agent "Scope Creep" — the Agent takes on a task, does more and more, and drifts further and further from the original request. But "scope creep" is not one problem — it is two entirely different pathologies: demand-alignment creep (the user never said what *not* to include, so the Agent freely explores the ambiguity) and technical-planning creep (unforeseeable dependencies emerge as the task is decomposed, and the Plan naturally inflates). Every existing anti-creep solution treats both as the same problem — a one-size-fits-all "scope limit" that neither stops demand creep nor spares the necessary elasticity in technical planning. This article proposes a two-level divide-and-conquer strategy: at the demand-alignment level, Metis reverse-questions "what must *not* be included" to close the scope boundary loop; at the technical-planning level, the Cascade Correction Engine (I-03) manages dependency inflation that emerges during task decomposition. The two levels have different root causes, different solutions, and different evaluation criteria — govern them separately to defeat each.
+> **Innovation index**: I-08  
+> **Series**: [LLM + Harness = Agent](../../README_en.md)  
+> **Previous**: [07 Risk- and Evidence-Driven Review Switching](07-review-switching.md)  
+> **Next**: [09 Skills Self-Evolution](09-skills-self-evolution.md)
 
 ---
 
-## 1. Problem Definition
+## Abstract
 
-### 1.1 The Phenomenon
+When a user asks for “basic JWT login,” execution may reveal two different classes of change.
 
-You give an Agent a task: "Add user authentication to this project."
+### A. Product Scope Expansion
 
-The Agent gets to work. It first adds login and registration, then thinks "if there's authentication, there should be permission management," so it adds an RBAC role system. Next it considers "users need to change passwords," so it adds a password reset flow. Then "users might forget passwords," so it adds email verification and two-factor authentication. By the time you notice, the Agent is already implementing OAuth 2.0 third-party login integration — and all you wanted was a simple JWT login.
+New user capabilities:
 
-This is not the Agent being malicious. During execution, the Agent continuously discovers "this is also related" and "that's also needed" — every individual expansion looks locally reasonable. But all locally reasonable expansions accumulate until the final output deviates from the user's original intent.
-
-At the same time, this scenario contains another dimension of scope inflation: when the Agent decomposes the sub-task "implement JWT login," it discovers that it must simultaneously handle token refresh mechanisms, session management, cookie-vs-header transport strategy, and cross-origin CORS configuration — these are not things the Agent proactively added; they are technical dependencies that *emerged* once the task was decoupled.
-
-Two dimensions of scope inflation are happening simultaneously, but from the outside there is only one symptom: "The Agent did more than I wanted."
-
-### 1.2 Two Different Root Causes
-
-Scope creep is not one disease. It is two pathologies with different etiologies, different mechanisms, and different prescriptions.
-
-**Level 1: Demand-Alignment Creep**
-
-The root cause is not the Agent's technical capability — it is the openness of the requirement boundary. The user says "add user authentication," but does not say "no permission management," "no password reset," "no OAuth." In natural language communication, humans implicitly share vast amounts of contextual assumptions — "of course no OAuth, it's just an internal tool." But the Agent has none of these assumptions. The parts of the requirement where the user did *not* say "don't do X" are undefined territory for the Agent — it can freely explore, and the more it explores, the more reasonable it feels.
-
-Formalized: let the user's true requirement set be R_true, and the user's explicitly expressed requirements be R_explicit. The Agent freely explores the complement space of R_explicit — and the direction of exploration is driven by "technical inertia of the current task" ("after doing A, of course you do B," "industry best practices include C"). The Agent cannot know which elements of R_true \ R_explicit the user deliberately excluded and which the user forgot to mention — it substitutes "technical reasonableness" for "requirement boundaries."
-
-**Level 2: Technical-Planning Creep**
-
-The root cause is the unforeseeability of task decomposition. When the Agent decomposes a high-level task into atomic steps, "implement JWT login" is not an atomic operation — it decouples into 7–8 sub-steps: token generation, verification middleware, refresh endpoint, expiration policy, error handling, and so on. The dependency relationships among these sub-steps are not fully foreseeable at the planning stage — only when the Agent reaches step 3 does it discover that step 2's assumptions need adjustment, which in turn affects steps 5 and 7.
-
-Formalized: let the initial Plan contain n steps P₀ = {p₁, ..., pₙ}. During execution of pₖ, the Agent discovers that the actual prerequisite set D(pₖ) exceeds the dependencies declared in P₀ — that is, D_actual(pₖ) ⊈ dependency_ids(pₖ). The Agent must expand the Plan to incorporate the missing dependencies — the Plan inflates from P₀ to P₁ = P₀ ∪ ΔP, where ΔP is the set of patch steps for emergent dependencies. This is not the Agent "wanting to do more" — without these steps, pₖ simply cannot be completed.
-
-### 1.3 Key Differences Between the Two Levels
-
-| Dimension | Demand-Alignment Creep | Technical-Planning Creep |
-|-----------|------------------------|--------------------------|
-| **Root Cause** | Openness of requirement boundaries — user never said "don't do X" | Incompleteness of task decomposition — hidden dependencies emerge during execution |
-| **Expansion Direction** | Outward — adding new feature modules (permissions, OAuth, password reset) | Inward — existing modules' internal steps inflate (token refresh, session management, CORS config) |
-| **Agent's Motivation** | "Industry best practices," "after A naturally comes B" | "Without this step, the current step can't be completed" |
-| **Value to Humans** | Low — user never wanted these features | Medium-to-high — if hidden dependencies go unaddressed, core functionality is defective |
-| **Correct Handling** | Preemptive blocking: clarify boundaries upfront | In-flight management: control inflation scope |
-| **Wrong Handling** | One-size-fits-all scope limit → also kills necessary elasticity in technical planning | Encouraging free exploration → demand creep also runs unchecked |
-
----
-
-## 2. Existing Solutions and Their Limitations
-
-| Solution | Core Idea | Why It Doesn't Work |
-|----------|-----------|---------------------|
-| **Step Count Limit** | Cap the Agent at N steps; stop when exceeded | Confuses both levels: demand creep should indeed be truncated, but hidden technical dependencies should not be skipped just because "the step limit was reached" — skipping them creates functional defects. A one-size-fits-all step cap neither stops demand creep (10 unrelated modules stuffed into the first 5 steps) nor spares necessary technical dependencies (the 7th dependency needed for step 6) |
-| **Task Scope Declaration** | User writes "only do X, don't do Y" in the prompt | Only partially covers Level 1. Users can only think of so many Ys — the truly dangerous creep happens in areas the user never imagined ("how would I think the Agent would add RBAC on its own?"). Declaration-based approaches fundamentally rely on the user predicting all possible wrong directions — exactly the cognitive load users want to offload to Agents |
-| **Plan Approval Mechanism** | Agent generates Plan → user approves → then execute | Approval only happens before execution. Technical-planning creep emerges during execution — an approved Plan still inflates by step 3. Approval mechanisms work for Level 1 (demand alignment) but are ineffective for Level 2 (technical planning) |
-| **Human-in-the-Loop** | Pause on scope changes; wait for user decision | Popping up "Agent wants to add a step — approve?" every 5 minutes — frequent interruptions destroy the experience more than scope creep itself. And users, busy with other things, lack the energy to judge the necessity of every technical sub-step |
-| **CodeWhale's Scope Guard** | Define task scope as a file set; Agent can only modify specified files | Only constrains code modification scope, not Plan inflation. Under the constraint "only modify auth.ts," the Agent can still implement OAuth + RBAC + password reset all inside auth.ts — file-scope constraints cannot prevent functional-scope creep |
-| **OpenSPEC's Scope Proposal** | Write Spec first → confirm Spec → then code | Spec covers "what to do," but "what not to do" still relies on implicit assumptions. And Spec shares the same flaw as Plan approval — emergent dependencies during execution are not in the Spec |
-
-**Shared Flaw**: All solutions attempt to use a single dimension ("limit scope") to solve problems from two different dimensions. Demand-alignment creep needs "boundary closure" — making the Agent proactively confirm "what *not* to do." Technical-planning creep needs "dependency management" — letting the Agent manage emergent dependencies during execution rather than one-size-fits-all rejection. The consequence of conflating the two: if the limit is too loose, demand creep floods in; if too tight, the necessary elasticity in technical planning is strangled — the Agent can't finish what it needs to do.
-
----
-
-## 3. Solution Design
-
-### 3.1 Level 1: Metis Reverse-Questioning — Closing the Demand Boundary Loop
-
-**Core Idea**: The root cause of demand-alignment creep is not that the Agent is too proactive — it's that the user's requirement expression has only positive boundaries ("what to do") and lacks negative boundaries ("what *not* to do"). The Metis reverse-questioning mechanism fills this gap.
-
-**Mechanism**:
-
-When a user issues a task, Metis does not start from "how to do it" — it starts from "what *cannot* be done." Metis analyzes the user's task description and proactively poses reverse questions:
-
-```
-User: "Add user authentication to this project"
-
-Metis reverse-questions:
-  1. Scope of "user authentication" — limited to basic login/registration only, or does it need to include:
-     - Permission/role management?
-     - Password reset/recovery?
-     - Third-party login (Google/GitHub OAuth)?
-     - Two-factor authentication (2FA)?
-  2. Inferred from project nature: this appears to be an internal tool — is multi-tenancy/organization management needed?
-  3. What hard constraints exist on technology choices? For example:
-     - Must use the existing database (no new storage)?
-     - Must be compatible with the existing frontend framework?
+```text
+RBAC
+OAuth
+password recovery
+2FA
+multi-tenancy
 ```
 
-Key design: Metis does not wait for the user to proactively fill in constraints — it **generates** reverse questions from the following sources:
+Even when technically adjacent, these exceed the approved scope of basic login and require a Change Request and a user decision.
 
-1. **Common creep patterns by task type**: Historically, 73% of "user authentication" task creep comes from "permission management" and "OAuth integration" — Metis learns high-frequency creep directions from historical data and proactively asks
-2. **Project context inference**: From codebase structure, infer project nature (internal tool / SaaS / open-source project); each project type has different typical unnecessary features
-3. **User's implicit constraints**: From codebase tech stack, infer hard constraints ("database is SQLite → doesn't support complex transactional operations → don't add features requiring advanced transactions")
+### B. Implementation Dependency Discovery
 
-**Reverse-questioning output**: A structured "Exclusion List."
+Work required to complete basic login:
 
-```json
-{
-  "task": "Add user authentication",
-  "explicitly_excluded": [
-    "Permission/role management system",
-    "OAuth third-party login",
-    "Two-factor authentication (2FA)",
-    "Multi-tenancy support"
-  ],
-  "hard_constraints": [
-    "Do not introduce new database/storage engine",
-    "Compatible with existing React frontend; do not introduce new frontend libraries"
-  ],
-  "scope_boundary": "Implement JWT-based login/registration + token refresh only; do not include any authentication-related features beyond this scope"
-}
+```text
+password hashing
+token-signing configuration
+authentication middleware
+error handling
+required tests
 ```
 
-The Exclusion List is not a soft constraint "prompting the Agent to take note" — it is a **hard boundary** injected into the execution context. When the Agent generates a Plan, the Exclusion List participates as a constraint condition — any excluded module will not appear in the Plan. During execution, every time the Agent proposes a new step, Harness checks whether that step hits the Exclusion List — if it does, it is automatically rejected with the note: "This feature is in the Exclusion List. Please confirm with the user before adding."
+These usually do not change the user objective, but they may change effort, file scope, and risk. They require Impact Analysis and may still require approval when thresholds are exceeded.
 
-**Why "reverse-questioning" rather than "positive confirmation"?**
+Reliable scope governance is neither “forbid every new step” nor “automatically do anything technically reasonable.” It uses a versioned Scope Contract, Change Proposals, impact analysis, and approval policy.
 
-The problem with positive confirmation ("You want login + registration + token refresh, right?") is that users tend to confirm — "yeah, about right." But "about right" may contain sub-features the user assumed wouldn't be done. Reverse-questioning ("You *don't* want permission management, OAuth, 2FA — correct?") makes the user actively reject — cognitive psychology research shows that humans make more precise judgments when "rejecting" than when "confirming."
+---
 
-### 3.2 Level 2: Cascade Correction Engine — Managing Emergent Dependencies in Technical Planning
+## 1. Public Corrections
 
-**Core Idea**: The root cause of technical-planning creep is not that the Plan isn't detailed enough — it's that hidden dependencies after task decomposition are unforeseeable at the planning stage. The Cascade Correction Engine (I-03) solves the problem of "what to do after dependencies emerge," but does not solve "which emergences should be accepted and which should be rejected" — and this is precisely the classification problem that Level 2 of this solution addresses.
+### 1.1 Do not use a “two pathologies” metaphor as the model
 
-**Boundary determination for technical-planning creep**:
+A scope change may combine product, technical, safety, compliance, and operational factors. This article uses executable change types rather than a medical metaphor:
 
-When the Agent proposes "need to add step S_new" during execution, Harness performs three checks:
-
-```python
-def should_accept_scope_expansion(proposed_step, current_plan, exclusion_list):
-    # Check 1: Does it hit the Exclusion List? (Level 1 hard boundary)
-    if matches_exclusion(proposed_step, exclusion_list):
-        return REJECT, "This step is in the Exclusion List"
-
-    # Check 2: Is it a necessary prerequisite for an existing PlanStep?
-    # If some existing step p_k's key (verifiable completion criteria) cannot
-    # be met without adding S_new — then S_new is a necessary technical patch,
-    # not scope creep
-    for step in current_plan:
-        if step.depends_on(proposed_step) and not step.can_complete_without(proposed_step):
-            return ACCEPT_AS_DEPENDENCY, f"Step {step.id} depends on this step"
-
-    # Check 3: Is it an "improvement" rather than a "necessity" for an existing PlanStep?
-    # Agent says "if we add S_new, the user experience will be better" — this is scope creep, reject
-    if proposed_step.is_improvement_not_necessity():
-        return REJECT, "Non-essential improvement — exceeds task scope"
-
-    # Check 4: Does it trigger cascade correction?
-    # If accepting S_new, propagate impact through Cascade Correction Engine (I-03)
-    # If cascade correction scope exceeds threshold (e.g., new steps > 30% of original Plan),
-    # pause and ask user
-    cascade_impact = cascade_correct(proposed_step, current_plan)
-    if cascade_impact.new_steps > len(current_plan) * 0.3:
-        return PAUSE_AND_ASK, "This step has a long dependency chain. Accept?"
-
-    return ACCEPT_AS_DEPENDENCY
+```text
+scope expansion
+implementation dependency
+requirement clarification
+corrective work
+risk mitigation
 ```
 
-**Key classification: Necessary Dependency vs. Scope Creep**
+### 1.2 A missing list of non-goals does not authorize free expansion
 
-Two typical utterances when the Agent proposes a new step — corresponding to two different categories:
+The default rule should be:
 
-| Agent Says | Category | Handling |
-|------------|----------|----------|
-| "To complete JWT auth, we must implement a token refresh endpoint — otherwise the access token expires and the user can't renew" | **Necessary technical dependency** | Accept, trigger cascade correction |
-| "Now that we have JWT auth, adding permission management would make it more complete — RBAC is industry standard" | **Scope creep** | Reject — this is a demand-level expansion, not a technical necessity |
-| "Token refresh requires storing refresh tokens — the current user table needs a refresh_token field" | **Necessary technical dependency** | Accept — this is a data dependency for the current PlanStep |
-| "If we add session management, we can support multi-device login — many apps do this" | **Scope creep** | Reject — feature improvement, not necessary |
+> Perform only the minimum work necessary to achieve the confirmed objective and acceptance criteria. Adjacent features are out of scope by default.
 
-Core criterion for distinction: without this step, can the steps already committed in the current Plan be completed? Yes → scope creep; No → necessary dependency.
+Negative boundaries are useful, but the user should not bear the burden of enumerating every possible non-goal.
 
-### 3.3 Two-Level Synergy
+### 1.3 An implementation dependency is not automatically approved
 
-The two levels do not operate independently — they work together in the execution flow:
+Even when work is necessary, it must become a Change Request if it:
 
+- changes the architecture;
+- adds an external service;
+- expands permissions;
+- modifies production data;
+- materially increases time or cost;
+- reduces compatibility.
+
+### 1.4 Remove unsupported percentages
+
+Earlier examples that assigned specific proportions of scope creep to particular causes had no reproducible data source and are removed.
+
+---
+
+## 2. Scope Contract
+
+```yaml
+scope_id: auth-jwt-v1
+version: 3
+objective: Add basic username-and-password login to the existing Web application
+in_scope:
+  - login endpoint
+  - JWT issuance and verification
+  - secure password storage
+  - authentication middleware
+  - unit and integration tests
+non_goals:
+  - RBAC
+  - OAuth
+  - password recovery
+  - 2FA
+  - multi-tenancy
+acceptance_criteria:
+  - A valid user can log in and receive a Token
+  - An incorrect password returns 401
+  - A protected endpoint rejects an invalid Token
+constraints:
+  - use the existing database
+  - do not add an external identity service
+change_budget:
+  max_files_without_approval: 8
+  max_estimated_hours_without_approval: 4
+  external_dependency_requires_approval: true
+  permission_change_requires_approval: true
+owner: user-or-product-owner
+status: approved
 ```
-User issues task
-  │
-  ▼
-[Level 1] Metis reverse-questioning → generate Exclusion List
-  │
-  ▼
-Agent generates Plan (Exclusion List participates as hard constraint in Plan generation)
-  │
-  ▼
-Agent executes Plan
-  │
-  ├─ Agent proposes new step ──→ [Level 1] Check: hits Exclusion List?
-  │                                    │
-  │                               Hit → REJECT (does not enter Level 2)
-  │                               Not hit ↓
-  │                                    │
-  │                               [Level 2] Necessary dependency vs. scope creep?
-  │                                    │
-  │                               Necessary → ACCEPT → trigger Cascade Correction Engine (I-03)
-  │                               Scope creep → REJECT
-  │
-  ▼
-Task complete
+
+### 2.1 Objective
+
+Describe user value, not an implementation method.
+
+### 2.2 In Scope
+
+List capabilities explicitly included in the confirmed objective.
+
+### 2.3 Non-goals
+
+List likely adjacent features. Exhaustive enumeration is unnecessary; cover common expansion directions for the current task.
+
+### 2.4 Acceptance Criteria
+
+Scope completion is determined by acceptance criteria, not the number of Steps.
+
+### 2.5 Constraints
+
+Include technical, time, platform, compatibility, and permission boundaries.
+
+### 2.6 Change Budget
+
+Define which small changes the Runtime may process automatically and which must be escalated for approval.
+
+---
+
+## 3. Change Classification
+
+### 3.1 Clarification
+
+Removes ambiguity without changing the objective.
+
+Example: should Token validity be 30 minutes or 24 hours?
+
+### 3.2 Implementation Dependency
+
+Necessary to satisfy an approved Acceptance Criterion.
+
+Decision question:
+
+```text
+If this work is omitted, can the approved acceptance criteria still be satisfied honestly?
 ```
 
-Level 1 is the **firewall** — establishing hard boundaries at the demand level, intercepting all features the user explicitly doesn't want. Level 2 is the **smart valve** — at the technical level, distinguishing "must-add" from "want-to-add," letting only necessary dependencies through.
+If the answer is no, it may be a necessary dependency.
+
+### 3.3 Corrective Work
+
+Repairs an error introduced or exposed by the current change.
+
+Distinguish:
+
+- a regression introduced by this change: repair it;
+- a pre-existing unrelated defect: create an Issue and do not include it by default.
+
+### 3.4 Risk Mitigation
+
+Work required for the approved implementation to meet a minimum safety, data-integrity, or compliance baseline.
+
+High-impact Risk Mitigation still requires approval.
+
+### 3.5 Product Scope Expansion
+
+Adds a user capability, platform, integration, or product behavior. Product-owner approval is required by default.
+
+### 3.6 Refactor Opportunity
+
+“Refactor while we are here” or “make the code cleaner” is not a necessary dependency. Unless an acceptance, safety, or maintainability Gate explicitly requires it, record it as future work.
 
 ---
 
-## 4. Analysis
+## 4. Change Proposal
 
-### 4.1 Why Divide-and-Conquer Is Key
+```yaml
+change_id: change-auth-7
+scope_version: 3
+type: implementation_dependency
+description: Add a password-hashing library and migrate existing plaintext passwords
+reason: Basic username-and-password login cannot be considered secure without protected storage
+trigger:
+  node_id: step-password-storage
+impact:
+  files: 5
+  data_migration: true
+  external_dependency: argon2
+  permissions_changed: false
+  estimated_effort_hours: 6
+  rollback_complexity: medium
+alternatives:
+  - name: Support new users only
+    tradeoff: Existing users cannot log in
+  - name: Migrate progressively on first login
+    tradeoff: Higher implementation complexity
+recommendation: Request user approval for the migration strategy
+approval_required: true
+status: proposed
+```
 
-The core problem with conflating the two levels is: **strategies effective for Level 1 are harmful to Level 2, and vice versa.**
+A Change Proposal must state:
 
-A one-size-fits-all "limit scope" strategy:
-- For Level 1 (demand creep): effective. The user didn't ask for RBAC — one-size-fits-all rejection: correct.
-- For Level 2 (technical dependencies): harmful. The Plan needs token refresh to complete JWT auth — one-size-fits-all rejection: broken functionality.
-
-A loose "let the Agent freely explore" strategy:
-- For Level 1 (demand creep): harmful. The Agent expands from JWT to OAuth to RBAC to 2FA.
-- For Level 2 (technical dependencies): partially reasonable. Necessary technical dependencies should indeed be allowed.
-
-The value of divide-and-conquer is not choosing between "strict" or "loose" — it's choosing different strategies for different levels. Strict at the demand level (reverse-questioning + Exclusion List + hard rejection), elastic at the technical level (classification judgment + cascade correction + necessary dependency pass-through).
-
-### 4.2 Why Existing "Reverse-Questioning" Attempts Haven't Scaled
-
-Claude Code and Cursor already have some form of reverse-questioning ("Do you mean A or B?"), but three problems limit them:
-
-1. **Passive triggering, not a system-level mechanism**: Existing reverse-questioning happens when the Agent encounters ambiguity and "decides for itself whether to ask" — but the Agent often chooses not to. Agents lean toward "act fast" rather than "pause to confirm" — this is a behavioral preference baked in by RLHF training. Metis reverse-questioning is proactively initiated by Harness at task reception — it does not depend on the Agent's judgment.
-2. **Positive confirmation, not negative exclusion**: "You want JWT login + registration, right?" vs. "You *don't* want permission management, OAuth, 2FA — correct?" Positive confirmation yields "yeah, about right" — users won't proactively list unwanted things. Negative exclusion yields "correct, none of those" — users are good at rejecting what they don't want.
-3. **No structured output, no execution constraint**: Existing reverse-questioning results are just text in the conversation. After 15 turns, the Agent forgets the earlier confirmation — and continues adding features it shouldn't. Metis's Exclusion List is structured JSON, injected into Plan generation and execution checks — it does not rely on the Agent's memory.
-
-### 4.3 Boundary Conditions
-
-The following scenarios **cannot** be covered by this solution:
-
-- **The user is also unclear about boundaries**: The user says "add auth" without a clear internal definition of scope. Metis reverse-questioning is still effective — the questioning process itself helps the user clarify boundaries — but the user may respond "I don't know, what do you think?" In this case, the system falls back to a conservative strategy: take the minimal common scope for similar tasks, reject everything else.
-- **Misclassification of emergent dependencies**: Distinguishing "necessary dependency" from "scope creep" relies on the Agent accurately judging "without this step, can the existing steps be completed?" But the Agent may overestimate necessity — framing "it wouldn't be elegant without it" as "it can't be done without it." Cross-session statistical calibration is needed — if a certain type of step was historically accepted but the user later manually removed it, lower the auto-acceptance rate for that type.
-- **Cross-task implicit creep**: While executing Task A, the Agent "incidentally" fixes a bug in Task B — this is scope creep relative to Task B, but may be valuable. This solution isolates by task boundary — cross-task modifications are always blocked. But "cross-task patching" has legitimate scenarios (e.g., lint errors, type errors) that need more granular boundary definitions.
-- **Exclusion List completeness**: The Exclusion List generated by Metis cannot cover everything that shouldn't be done — uncovered gaps may still be exploited by the Agent. The counter-strategy is not pursuing completeness (impossible), but making rejection cost low enough — if the Agent adds something it shouldn't, the user can one-click rollback and auto-update the Exclusion List ("this too, don't do"), enabling self-evolution of the Exclusion List.
-
----
-
-## 5. Verification Path
-
-### 5.1 Verified
-
-- **Existence of scope creep as a problem**: Deep comparison of 8 Agent products confirmed scope creep as a top-3 user pain point. Under no-intervention conditions, Agents exhibit significant scope inflation on over 40% of medium-complexity tasks (final Plan step count > 150% of initial Plan step count).
-- **Reasonableness of the two-level classification**: Annotation of 50+ Agent session scope inflation events — 76% of events could be clearly classified as demand-alignment creep or technical-planning creep, with the two types showing significant differences in Agent behavioral patterns, inflation direction, and user feedback. The remaining 24% were mixed — containing elements of both levels — but typically dominated by one.
-- **Psychological basis for reverse-questioning**: The cognitive psychology principle of "recognition over recall" supports the reverse-questioning design. Users answer "you don't want X?" with higher accuracy than "what do you want?"
-
-### 5.2 To Be Verified
-
-- **Metis reverse-questioning coverage**: Across 100+ real task scenarios, the proportion of actual scope creep directions covered by Metis-generated Exclusion Lists. Target: >80% coverage of historical creep patterns.
-- **Classification accuracy for necessary dependency vs. scope creep**: Precision and recall of the Agent's classification of new steps. Key metric: false positive rate of "misclassifying scope creep as necessary dependency" (too low → creep runs unchecked; too high → necessary dependencies killed).
-- **Token cost of cascade correction**: After accepting a necessary dependency, the additional token consumption from propagating impact through the Cascade Correction Engine (I-03). Expected: cascade correction token cost at 5–15% of total task tokens.
-- **Post-rejection manual re-add rate**: The system rejected the Agent's step proposal, but the user later manually asked the Agent to add it — indicating the rejection was a misclassification. Target misclassification rate: <10%.
-- **Joint effect with I-03 Cascade Correction Engine**: Two-level divide-and-conquer + cascade correction running together vs. no divide-and-conquer + one-size-fits-all limit vs. completely unconstrained — comparison of task completion time, output quality, and user satisfaction across the three conditions.
+```text
+change type
+why it is needed
+relationship to an Acceptance Criterion
+impact scope
+risk
+cost
+alternatives
+consequence of not doing it
+approval requirement
+```
 
 ---
 
-## 6. Relationship to Hermes
+## 5. Decision Matrix
 
-Hermes's layered architecture naturally supports two-level divide-and-conquer:
-
-**Landing point for Level 1 (Demand Alignment)**:
-
-Hermes's Metis module is the natural carrier for the reverse-questioning mechanism. Metis's task description analysis and strategy routing capabilities can directly extend to reverse-questioning — no new module needed.
-
-Implementation path:
-1. At Metis's task reception stage, add an "Exclusion List generation" sub-flow — analyze task description + project context + historical creep patterns, output a structured Exclusion List
-2. Inject the Exclusion List into both Plan generation and execution check phases — as a constraint during Plan generation, and as an interception rule during execution
-3. Users can modify the Exclusion List at any time — "add permission management" → remove that entry from the Exclusion List
-
-**Landing point for Level 2 (Technical Planning)**:
-
-The Cascade Correction Engine (I-03) has already found a landing solution within Hermes's Kanban/Plan architecture. Level 2's "necessary dependency vs. scope creep" classifier serves as a **pre-filter** for the Cascade Correction Engine — before triggering cascade correction, first determine whether this new step even qualifies to enter the cascade correction pipeline.
-
-Implementation path:
-1. Add a `step_type` field to OKR PlanSteps (I-03): `"original"` (step from the original Plan) or `"emergent"` (step that emerged during execution)
-2. Emergent steps automatically trigger classification check upon creation — pass → enter cascade correction; reject → record rejection reason and notify user
-3. Link with Metis Exclusion List — all rejection and acceptance decision records feed back to Metis, continuously optimizing Exclusion List generation and classifier judgment
-
-**Why Hermes is the only platform that can implement this solution**:
-
-Two-level divide-and-conquer requires three pieces of infrastructure — all of which Hermes already has or has in semi-finished form:
-- **Metis task analysis + strategy routing** (Level 1 carrier) — already exists
-- **OKR PlanStep dependency graph + Cascade Correction Engine** (Level 2 carrier) — I-03 already designed; Hermes Kanban already has task_links foundation
-- **Cross-session Skill/Memory persistence** (Exclusion List self-evolution) — Hermes Skills system already implemented
-
-Other Agent platforms lack at least two of these three. This is not a feature gap — it is an architectural gap.
+| Condition | Default action |
+| --- | --- |
+| No user capability change, low risk, within budget, reversible | Include automatically and record |
+| Necessary dependency exceeds file/time budget | Pause and request approval |
+| Adds an external dependency | Request approval |
+| Changes permissions, safety, or data | Higher-level Review + approval |
+| Adds user capability | Product Scope Change |
+| Pre-existing unrelated defect | Create an Issue; do not repair by default |
+| Necessity cannot be determined | Mark Unknown and request a decision |
 
 ---
 
-## Conclusion
+## 6. Reverse Clarification
 
-Agent scope creep is not one disease — it is two independent pathologies with different etiologies, different mechanisms, and different prescriptions. Treating both as the same problem — one-size-fits-all "limit scope" or one-size-fits-all "free exploration" — can only be effective at one level and harmful at the other.
+Clarification should target high-impact boundaries rather than list every possible feature.
 
-Demand-alignment creep needs boundary closure — through Metis reverse-questioning, make the Agent proactively confirm "what *cannot* be done," establishing hard boundaries in the form of a structured Exclusion List. Technical-planning creep needs dependency triage — through a classifier that distinguishes "necessary dependencies that prevent completion if omitted" from "scope creep that would be nice but isn't needed," sending the former to cascade correction (I-03) and rejecting the latter outright.
+A useful question:
 
-This is not about finding a balance point between "strict" and "loose" — it is about applying different strategies to different problems. Strict on demand boundaries, elastic on technical dependencies. Govern them separately, and defeat each.
+```text
+Should basic login include only username/password + JWT, excluding RBAC, OAuth, password recovery, and 2FA?
+```
+
+A better default system behavior is:
+
+```text
+I will implement username/password login, JWT, authentication middleware, and required tests. RBAC, OAuth, password recovery, and 2FA are excluded by default.
+```
+
+The user corrects a concrete default rather than defining everything from a blank form.
+
+### 6.1 When asking is mandatory
+
+- the option changes the data model;
+- the option is hard to roll back;
+- cost differs materially;
+- compliance or safety is involved;
+- different answers create different product value.
+
+### 6.2 When not to ask
+
+- an existing project convention can be selected safely;
+- deterministic configuration or documentation provides the answer;
+- the change is low-risk, reversible, and within budget;
+- the question concerns an implementation detail that does not affect user value.
 
 ---
 
-*Previous: [07 Review Switching Engine](07-review-switching.md) — Review strictness should dynamically adjust based on context state*
-*Next: [09 Skills Self-Evolution Loop](09-skills-self-evolution.md) — What you do repeatedly should become muscle memory*
+## 7. PlanGraph Integration
+
+I-06 PlanGraph maps changes to:
+
+```text
+new node
+new edge
+changed acceptance criterion
+changed constraint
+invalidated evidence
+```
+
+Flow:
+
+```text
+Discovery
+→ Change Proposal
+→ Classify
+→ Impact Analysis
+→ Approve / Reject / Defer
+→ New Scope and Plan Version
+→ Invalidate affected Evidence
+```
+
+An unapproved Scope Expansion must not enter the official Plan.
+
+---
+
+## 8. Controlling User Interruptions
+
+Frequent approval popups destroy Agent value. Use three levels.
+
+### Auto-accept
+
+Low-risk, necessary, within budget, reversible changes are recorded in the Timeline.
+
+### Batch Review
+
+Accumulate medium-impact changes until a Checkpoint and present them together:
+
+```text
+Added 3 necessary implementation steps
+Estimated increase: 2 files and 40 minutes
+No product-scope change
+```
+
+### Immediate Approval
+
+Pause immediately for high risk, scope expansion, irreversibility, external side effects, or budget overruns.
+
+---
+
+## 9. Scope Drift Detection
+
+At Runtime compare:
+
+```text
+approved scope
+current plan
+actual changed files
+actual tools/dependencies
+current artifacts
+```
+
+Signals include:
+
+- a modified file is unrelated to any In-scope Criterion;
+- a new dependency has no Change Proposal;
+- the Plan contains a Non-goal node;
+- tool permissions expanded;
+- file count, cost, or time exceeded the budget;
+- the output added an unapproved user capability.
+
+A signal triggers Review; it does not automatically prove a violation.
+
+---
+
+## 10. Scope Verdict
+
+```yaml
+verdict_id: scope-review-11
+scope_version: 3
+plan_version: 8
+status: changes_required
+findings:
+  - type: product_scope_expansion
+    node: step-rbac
+    reason: RBAC is explicitly listed under non_goals
+    required_action: remove_or_request_approval
+  - type: implementation_dependency
+    node: step-password-hash
+    reason: Required for basic secure login
+    approval: required_due_to_data_migration
+```
+
+A Verdict must reference Scope, Plan, and Evidence versions.
+
+---
+
+## 11. Evaluation
+
+### 11.1 Scope accuracy
+
+```text
+unauthorized feature additions
+missed necessary dependencies
+incorrect change classification
+scope drift detection precision / recall
+```
+
+### 11.2 Task outcomes
+
+```text
+first-pass acceptance
+rework
+user corrections
+completion time
+cost per successful task
+```
+
+### 11.3 Interaction cost
+
+```text
+clarification turns
+approval interruptions
+batched decisions
+unnecessary questions
+```
+
+### 11.4 Controls
+
+Compare:
+
+```text
+no scope contract
+prompt-only scope statement
+scope contract + change control
+```
+
+Use held-out tasks containing newly discovered dependencies, pre-existing defects, tempting adjacent features, and high-risk changes.
+
+---
+
+## 12. Boundaries and Risks
+
+- the Scope Contract may be incomplete;
+- the Agent may misjudge what is “necessary”;
+- the Change Budget may be too strict or too permissive;
+- the user may approve an incorrect expansion;
+- a safety issue discovered during implementation may require immediate action;
+- too many Change Proposals increase process cost;
+- too little approval creates silent drift;
+- project conventions may themselves be obsolete.
+
+The design needs an Unknown state, human override, audit, and post-task review.
+
+---
+
+## 13. Conclusion
+
+Scope governance is not a simple limit on Step count and does not require the user to enumerate every non-goal in advance.
+
+A reliable mechanism:
+
+1. fixes objective, In-scope, Non-goals, acceptance, constraints, and Change Budget in a Scope Contract;
+2. distinguishes product expansion, implementation dependency, corrective work, risk mitigation, and refactor opportunity;
+3. generates Impact and alternatives for every change;
+4. records low-risk within-budget changes automatically, batches medium changes, and immediately escalates high-risk changes;
+5. updates Scope/Plan Version and invalidates stale Evidence;
+6. evaluates scope accuracy, task outcomes, and interaction cost together.
+
+The goal is not an immutable Plan. It is a system in which every change has a type, reason, impact, authorization, and traceable decision.

@@ -1,260 +1,468 @@
-# Checkpoint 快照驱动的多轮审查
+# Checkpoint 驱动的多轮审查：状态快照必须连接原始证据
 
-> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
+> **证据等级：B（工程设计提案）**  
+> 本文不再假设“所有 Agent 都只在任务结束后审查”，也不再使用“审查质量与上下文长度成反比”的未经验证公式。Checkpoint 的核心价值是把执行状态、恢复条件和 Evidence 固定下来，让 Reviewer 在受控上下文中审查，并能按需回到原始 Artifact。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
-> **创新点索引**：I-11
-> **LLM + Harness = Agent** · 第 11 篇
-> **系列**：[LLM + Harness = Agent](../../README.md)
-> **上一篇**：[10 意图路由：7+1 意图→策略自动切换](10-intent-routing.md)
+> **创新点索引**：I-11  
+> **系列**：[LLM + Harness = Agent](../../README.md)  
+> **上一篇**：[10 意图→策略路由](10-intent-routing.md)  
 > **下一篇**：[12 Memory 粒度控制](12-memory-granularity.md)
 
 ---
 
-> **摘要**：所有 Agent 的审查机制都基于同一个假设——审查发生在任务结束后，审查者读取完整执行日志。这个假设在复杂多步任务中是错的：任务结束时的上下文已经膨胀到审查者自己也看不清了。本文提出 **语义审查快照（Semantic Checkpoint）** 驱动的多轮审查：在任务执行的每个关键节点生成结构化快照（目标 + 已完成步骤摘要 + 意外发现 + 剩余计划），异步 spawn 独立的审查子 Agent，审查 Agent 只读快照而非完整执行日志。核心反直觉性质：第二轮审查的上下文比第一轮更小——因为剩余计划在逐轮缩减。这不是「在同一上下文里反复审查」，是「每次从更小的快照里重新审查」。
+## 摘要
 
-> **概念说明**：此处的「Checkpoint」指语义审查快照，与 Reasonix 的文件编辑快照（Esc-Esc 撤销 / `/rewind`，位于 `internal/checkpoint/`）是不同的概念。
+复杂任务需要在执行过程中多次确认：
 
----
+- 当前目标是否仍一致；
+- 已完成步骤是否有证据；
+- 工作区是否被意外改变；
+- 失败后能否安全恢复；
+- 剩余计划是否仍成立；
+- 是否需要升级审查或人工介入。
 
-## 1. 问题定义
+仅在任务结束后读取完整对话不是唯一审查方式，但“只读模型生成的摘要”同样危险。摘要可能遗漏失败、错误归因或把未验证判断写成事实。
 
-### 1.1 现象
+因此 Checkpoint 应是：
 
-考虑一个典型的复杂 Agent 任务：在 3 个微服务中统一日志格式，涉及 12 个文件的修改、2 次跨服务 API 对齐、1 次 CI 配置更新。Agent 花了 45 轮对话完成。现在，系统需要对最终产出做一次审查。
-
-审查 Agent 面对的是一个 45 轮对话的执行日志，上下文窗口已经接近极限。Agent 在上下文前 20% 看到的「目标定义」和上下文后 20% 看到的「最终产物」之间，横亘着 60% 的中间推理、工具调用、错误重试、死胡同折返。审查 Agent 的注意力已经被稀释到几乎无法建立「目标→产物」的完整因果链的程度。
-
-结果：审查要么变成浅层的形式检查（「文件是否修改了？改了。」——但不判断改得对不对），要么被中间过程的噪音干扰做出错误判断。
-
-更隐蔽的问题是：**审查本身也需要上下文预算**。如果执行已经消耗了 90% 的上下文窗口，审查只能在剩余的 10% 里进行。这意味着复杂任务上的审查质量是受上下文预算挤压的——而挤压它的正是它要审查的执行过程。
-
-### 1.2 根因
-
-根因不在审查算法的质量，在审查发生的时机和审查者读取的内容。
-
-所有 Agent 的审查机制都隐含两个假设：
-
-**假设一：审查发生在任务结束后。** 完整执行 → 一次审查。这个假设在简单任务上成立——3 步操作，审查一眼看完。但在 45 步的复杂任务上，最后一刻才发现第 3 步就出错了，前面 42 步的工作全部需要重做。
-
-**假设二：审查者需要读取完整执行日志。** 要判断「是否做对了」，就得知道「做了什么」。但这个假设把审查者和执行者放进了同一个上下文困境——执行者因为上下文膨胀而犯错，审查者因为同样的上下文膨胀而漏判。
-
-这两个假设共同导致了一个反直觉的结果：**任务越复杂，审查越不可靠。** 而复杂任务恰恰是最需要审查的。
-
-### 1.3 形式化
-
-设任务 T 包含 n 个子步骤 {s₁, s₂, ..., sₙ}，执行过程的上下文序列长度为 L(t)，L(t) 随 t 单调递增。
-
-单轮审查发生在 t = n（任务结束时），此时审查 Agent 需要处理的上下文长度为 L(n)。设审查 Agent 的有效注意力比例为 α(L)，有 α(L) ∝ 1/L（由 Transformer 的软注意力机制决定）。则审查质量 Q_review ∝ α(L(n)) ∝ 1/L(n)。
-
-即：**任务越复杂（n 越大，L(n) 越大），单轮审查质量越差。** 审查质量和任务复杂度呈反比。
-
-多步任务中还存在错误累积效应：设步骤 s_i 引入错误的概率为 p，单轮审查发现错误的概率为 d。如果 d < 1（审查不完美），则任务结束时未被发现的累积错误数 E(n) = n·p·(1-d)ⁿ⁻¹（忽略错误传播和级联）。n 越大，E(n) 的基数越大。
-
-核心矛盾：复杂任务需要更强的审查，但审查机制的上下文线性增长导致审查反而更弱。
+> 一个版本化、可校验、可恢复的任务状态快照，其中自然语言摘要只是索引，真正的完成判断连接到 Diff、Test、Tool、Approval 和 Artifact Evidence。
 
 ---
 
-## 2. 现有方案与局限
+## 1. 公开修正
 
-| 方案 | 核心思路 | 为什么不行 |
-|------|---------|-----------|
-| **单轮终审（所有 Agent 默认）** | 任务结束后一次审查完整日志 | 审查质量 ∝ 1/L(n)。复杂任务上审查者自己也看不清。错误发现太晚——第 3 步的错到 45 步才发现 |
-| **人类在环审查（Human-in-the-loop）** | 关键步骤暂停，等人类确认后继续 | 人类注意力也是 O(n) 衰减。且人类审查的延迟打断了 Agent 的执行流。无法规模化——没有人会给 45 步任务按 45 次确认 |
-| **执行中自检（Self-check）** | Agent 每步完成后自己检查上一步的输出 | 同一 Agent 在同一个上下文里检查自己——用产生错误的注意力状态去发现错误。自检的漏判率远高于独立审查 |
-| **LangChain/LangGraph 的多轮审查** | 在同一对话流中多次调用审查节点 | 上下文在对话流中持续增长。第二轮审查的上下文 > 第一轮审查的上下文——审查质量逐轮递减 |
-| **Claude Code 的 /review 命令** | 用户手动触发审查，审查者读当前对话 | 依赖用户判断触发时机。且审查者仍然读取完整的膨胀上下文——和第 1 行的问题相同 |
-| **多 Agent 投票（Ensemble）** | 3 个 Agent 各自审查，取多数意见 | 3 个审查 Agent 都面对同一个膨胀的上下文。不是「3 个不同视角」，是「3 个同样被稀释的注意力」。增加的是算力成本，不是审查质量 |
+### 1.1 Checkpoint 不等于一段摘要
 
-**共性缺陷**：所有方案都把审查放在**执行结束后的同一上下文空间**里。正确方向是把审查从执行上下文中**剥离出来**——审查 Agent 不读执行日志，只读每个关键节点提取的结构化快照。
+错误设计：
 
----
-
-## 3. 方案设计
-
-### 3.1 核心机制：快照提取 → 独立审查 → 增量修正
-
-本方案由三个模块组成：
-
-**模块一：Checkpoint 快照提取**
-
-在任务执行的每个关键节点（见 3.2 触发条件），系统自动提取结构化 Checkpoint 快照。快照的格式是固定的——不依赖 Agent 的判断，由 Harness 填充：
-
-```
-Checkpoint #[N]
-├── 当前目标：Agent 正在执行的目标（从 PlanStep 提取）
-├── 已完成步骤摘要：
-│   ├── Step 1: [动作描述] → [结果]（≤2 句话）
-│   ├── Step 2: ...
-│   └── Step N: ...
-├── 意外发现：执行过程中发现的、计划外的重要信息
-│   （如「API 返回格式与文档不一致」「发现一个未记录的依赖」）
-└── 剩余计划：接下来要执行的步骤清单（从 PlanStep 提取）
+```text
+目标 + 已完成摘要 + 剩余计划
 ```
 
-关键设计：快照**不包含**工具调用的完整输入输出、中间推理链、错误堆栈的全文。这些都在提取阶段被结构化压缩——审查 Agent 不需要知道「curl 命令返回了 327 行 JSON」，只需要知道「API 调用成功，返回的数据结构与预期一致」。
+这种结构适合快速阅读，但不足以恢复或审计。至少还需要：
 
-**模块二：独立审查子 Agent 的异步 Spawn**
-
-系统在生成 Checkpoint 快照后，spawn 一个独立的审查子 Agent。审查 Agent 的上下文**仅包含**：
-
-1. 原始任务目标（从 OKR 或 PlanStep 提取）
-2. 截至当前 Checkpoint 的所有快照的串联
-3. 全局约束清单（从 System Prompt 的硬约束层提取）
-
-审查 Agent **不读取**执行主 Agent 的对话日志、工具调用历史、中间推理过程。这确保审查 Agent 的注意力不被执行过程的噪音稀释。
-
-审查 Agent 的审查任务：
-- 已完成步骤是否与原始目标一致？（目标对齐检查）
-- 是否存在进度偏差？（已完成步骤是否遗漏了计划中的关键步骤）
-- 意外发现是否有安全/合规影响？
-- 剩余计划是否需要调整？（是否有步骤因意外发现而变得不必要或需要重排）
-
-**模块三：审查结果的增量注入**
-
-审查 Agent 的输出不是一个「通过/不通过」的布尔值，而是一个**增量修正建议**：
-
-```
-审查结果 [Checkpoint #N]
-├── 目标对齐状态：✅ 一致 / ⚠️ 部分偏差 / ❌ 严重偏离
-├── 偏差详情：
-│   └── [具体描述哪个步骤偏离了目标的哪个方面]
-├── 意外发现评估：
-│   └── [对安全/合规/架构的影响判断]
-├── 修正建议：
-│   ├── [需要回退的操作]
-│   ├── [需要补充的步骤]
-│   └── [剩余计划的调整]
-└── 审查置信度：[高/中/低]（审查者对自己判断的置信度）
+```text
+state version
+workspace hash
+plan version
+changeset ids
+artifact hashes
+test run ids
+approval ids
+open errors
+resume preconditions
 ```
 
-修正建议以**非侵入式**方式注入主 Agent 的上下文——作为下一轮执行前的「修正提示」，而不是强制中断。其中置信度为「高」的修正强制执行，「中」的修正提醒但不阻断，「低」的修正仅记录供后续审查参考。
+### 1.2 Reviewer 不应只读摘要
 
-### 3.2 触发条件：何时生成 Checkpoint
+Reviewer 可以先读简洁 Snapshot，但必须拥有按需获取原始证据的能力：
 
-Checkpoint 的触发不能太频繁（审查开销 > 审查收益），也不能太稀疏（退化为单轮审查）。触发条件有三类：
+```text
+Snapshot
+→ Evidence Index
+→ Original Diff / Test / Tool Result / Source File
+```
 
-**条件一：步数阈值触发。** 每完成 k 个 PlanStep 触发一次 Checkpoint。k 的默认值为 3——既不会让每步都审查（审查开销过高），也不会让太多步骤未经审查就进入下一步（错误累积效应明显）。
+否则会出现 Summary Laundering：执行 Agent 的错误总结被 Reviewer 当成已验证事实。
 
-**条件二：异常事件触发。** Agent 在执行中遇到以下事件时立即触发 Checkpoint：
-- 工具调用返回非预期结果（如 API 返回 500、文件操作失败但被 fallback 处理）
-- Agent 自行修改了 PlanStep 的顺序或内容
-- Agent 遇到需要退出的死胡同（执行了 2 步后又撤销）
+### 1.3 “上下文更小”不是自动质量保证
 
-异常触发是**不可跳过**的——即使距离上一个 Checkpoint 只有 1 步。因为异常是错误风险最高的时刻。
+更小的 Review Context 可能减少噪音，也可能删除关键证据。需要测量的是：
 
-**条件三：阶段边界触发。** 当 PlanStep 中标记了显式的阶段划分（如「Phase 1: 数据迁移」「Phase 2: 接口适配」），每个 Phase 结束后强制触发 Checkpoint。Phase 边界是自然的审查点——Phase 1 的输出是 Phase 2 的输入，Phase 1 的错误会在 Phase 2 中被放大。
+- 关键来源覆盖率；
+- 缺陷发现率；
+- 错误引用率；
+- 审查成本；
+- 恢复成功率。
 
-### 3.3 与「在同上下文里反复审查」的根本区别
+不能仅以 Token 更少证明审查更可靠。
 
-一个常见的误解是：「这和在对话流里反复调用审查节点有什么不同？」
+### 1.4 异步审查必须处理状态漂移
 
-本质区别在于**审查 Agent 的上下文起点**。
+Reviewer 读取 Checkpoint 后，主 Agent 可能继续修改工作区。Verdict 必须绑定：
 
-在对话流中反复审查，审查 Agent 的上下文 = 对话历史 + 审查指令。对话历史在每次审查之间持续增长——第二次审查时的上下文比第一次更大。审查质量随轮数递减。
+```text
+checkpoint_id
+workspace_hash
+plan_version
+changeset_hash
+```
 
-在 Checkpoint 快照审查中，审查 Agent 的上下文 = Checkpoint 快照链 + 审查指令。快照链的长度随 Checkpoint 数量线性增长，但增长速率远低于对话历史——因为快照是结构化压缩的，每个快照的 Token 数是固定的（~200-500 Token），而对话历史中的每个步骤可能消耗 500-2000 Token。
-
-更重要的是，**剩余计划在缩短**。Checkpoint #N 的快照链中，已完成步骤摘要的长度在增加，但剩余计划的长度在减少。审查 Agent 的核心任务是检查「已完成步骤是否对齐剩余计划」——而剩余计划的上下文量在逐轮缩减。这产生了一个反直觉的性质：第二轮审查的上下文比第一轮**更小**。
-
----
-
-## 4. 分析
-
-### 4.1 上下文递减性质
-
-这是本方案与所有现有审查方案最根本的区别。
-
-设主 Agent 执行 n 个步骤的上下文增长为 L(t)。传统单轮审查，审查 Agent 在 t=n 时面对 L(n) 的上下文。
-
-本方案中，设第 i 个 Checkpoint 的快照大小为 S（S 为常数，约 300 Token），前 m 个 Checkpoint 的快照链长度为 m·S。剩余计划的大小为 R(t)，R(t) 随 t 增加而单调递减——因为步骤在逐个完成。
-
-审查 Agent 在第 m 次审查时的上下文 C_review(m) = m·S + R(t_m)。
-
-关键性质：C_review(m+1) 不一定大于 C_review(m)。当 R(t) 的下降速率 > S（快照增量速率），即每完成一步，剩余计划减少的 Token 数大于新增快照的 Token 数时，C_review 反而递减。
-
-在典型场景中，一个 PlanStep 的描述约占 100-200 Token。每完成 3 步（一次 Checkpoint），剩余计划减少约 300-600 Token，新增快照约 300 Token。C_review 基本持平或略有下降。
-
-与之对比，传统方案中同一对话流内的第 m+1 次审查，上下文 = 完整对话历史 + 审查指令，严格递增。
-
-**结论**：Checkpoint 快照审查实现了上下文预算的「脱钩」——审查质量不随任务复杂度线性衰减。这是通过把审查 Agent 的输入从「执行过程的完整记录」替换为「执行过程的结构化摘要」实现的。
-
-### 4.2 边界条件
-
-**快照质量退化风险。** 快照由主 Agent 在执行过程中生成——如果主 Agent 已经因上下文膨胀而注意力稀释，它生成的快照也可能遗漏关键信息。这是本方案最致命的失效模式：用出错的 Agent 生成的快照去审查这个 Agent 的工作。
-
-缓解措施：
-1. 快照的提取不由主 Agent 自由发挥——Harness 按固定模板从 PlanStep 和工具调用返回中机械提取，减少对 Agent 判断力的依赖。
-2. 「意外发现」字段由 Agent 填写，但 Harness 同时自动检测工具调用的非预期返回并强制标注——Agent 不记的异常，Harness 也能捕捉。
-3. 审查 Agent 有义务标注「快照质量存疑」——如果从快照链中发现了逻辑矛盾或信息缺口，降低审查置信度并标记。
-
-**短任务上的审查开销。** 当 n ≤ 3（任务少于 3 步），Checkpoint 机制的开销（spawn 审查 Agent + 生成快照）可能超过一次简单终审的成本。此时应降级：n ≤ k（默认阈值）时跳过 Checkpoint 触发，直接进行单轮终审。
-
-**审查 Agent 自身的错误。** 审查 Agent 也可能犯错——漏判或误判。但本方案通过多轮审查的**交叉验证**来降低审查错误的影响：Checkpoint #N 的审查可以修正 #N-1 审查的漏判（因为 #N 审查时，#N-1 审查的结果也在快照链中）。这形成了一个渐进式的纠错机制。
-
-**Checkpoint 密度与任务节奏的冲突。** 某些任务需要连续执行（如「依次修改 10 个文件」），每 3 步插入一次审查会打断执行流。解决方案：对于同构操作序列（同一类操作的重复执行），Checkpoint 的 k 值可以动态调整为 5 或更高——同构操作中单步出错概率低，稀疏审查的风险可控。
+状态变化后，旧 Verdict 只能作为历史记录，不能继续授权新动作。
 
 ---
 
-## 5. 验证
+## 2. Checkpoint 数据模型
 
-### 5.1 技术可行性
+```yaml
+checkpoint_id: cp-0007
+task_id: task-123
+sequence: 7
+created_at: 2026-07-27T00:00:00Z
+runtime_version: 0.1.1
+state_version: 42
+workspace:
+  root_id: workspace-a
+  git_commit: abcdef123456
+  dirty_tree_hash: sha256:...
+objective:
+  spec_ref: spec-12
+  text: 修复权限边界并补齐回归测试
+plan:
+  version: 8
+  current_step_id: step-4
+  completed_step_ids:
+    - step-1
+    - step-2
+  pending_step_ids:
+    - step-4
+    - step-5
+changesets:
+  proposed:
+    - cs-19
+  applied:
+    - cs-18
+evidence:
+  test_run_ids:
+    - test-88
+  tool_event_ids:
+    - tool-991
+  artifact_refs:
+    - diff:cs-18
+    - report:security-scan-7
+approvals:
+  - approval-55
+open_issues:
+  - id: issue-local-3
+    severity: medium
+    text: Windows symlink test 尚未运行
+resume:
+  idempotency_key: resume-task-123-cp-7
+  preconditions:
+    - workspace_hash_unchanged
+    - approval_still_valid
+summary:
+  completed: 已加入 Workspace boundary check
+  next: 补 Windows 和 symlink 回归测试
+integrity:
+  previous_checkpoint_hash: sha256:...
+  checkpoint_hash: sha256:...
+```
 
-Checkpoint 快照审查的技术可行性已在以下三个层面确认：
+### 2.1 必须字段
 
-**层面一：快照提取。** Hermes 的 PlanStep 系统已经为每个步骤维护了「目标→动作→结果」的结构化记录。Harness 从 PlanStep 记录中提取「已完成步骤摘要」和「剩余计划」是纯机械操作，不依赖 Agent 推理。一个 30 行的 TypeScript 函数即可完成提取和格式化。
+```text
+checkpoint_id
+task_id
+sequence
+state_version
+workspace identity/hash
+objective/spec ref
+plan version/current step
+changeset refs
+evidence refs
+approval refs
+open issues
+resume preconditions
+integrity hash
+```
 
-**层面二：独立审查 Agent 的 Spawn。** Hermes 的 `delegate_task` 机制已经支持 spawn 子 Agent 执行独立任务。审查 Agent 与执行 Agent 使用相同的 delegate 基础设施，但获得不同的上下文注入——注入的是快照链而非对话历史。
+### 2.2 摘要字段
 
-**层面三：修正建议的非侵入式注入。** Hermes 的 Memory 系统可以将审查结果作为「检查点摘要记忆」注入下一轮执行的上下文。注入格式是结构化的 Markdown，占用上下文预算可控（~200-500 Token/审查）。
+摘要只用于导航：
 
-三个层面的实现均不涉及核心架构变更——是现有机制的「组合」，而非「重构」。
-
-### 5.2 与现有测试的类比验证
-
-Checkpoint 快照审查的设计模式有一个成熟的类比：CI/CD 的流水线检查点。
-
-CI/CD 不会在代码合入 main 分支后再做一次全面的代码审查和测试——它在每个阶段（lint → unit test → integration test → deploy）插入独立的检查。每个阶段的检查只看该阶段的输入输出，不读整个流水线的日志。
-
-Agent 任务执行本质上也是一个流水线——步骤的线性序列。现有的单轮终审相当于「不在流水线中插入任何检查点，只在最终部署后做一次全量回归」。这不合理——CI/CD 行业 20 年前就否定了这个模式。
-
-Checkpoint 快照审查把这个成熟的流水线模式搬到了 Agent 任务执行上。不同之处在于 Agent 任务的流水线是**动态生成**的（PlanStep 在执行前已规划，但执行中可能调整），而 CI/CD 的流水线是静态的——这意味着 Checkpoint 的触发需要动态判断，而非预定义。
-
-### 5.3 待验证
-
-- **快照压缩率与审查精度的权衡**。快照的压缩率越高（Token 越少），审查上下文越干净；但压缩率太高会丢失审查所需的关键信息。最优压缩率的实验测定——以「审查漏判率」为因变量，以「快照 Token 数」为自变量，找到拐点。
-- **k 值（Checkpoint 间隔步数）的最优值**。k=1（每步审查）的审查质量最高但开销最大；k=n（无 Checkpoint）开销为零但退化为单轮终审。k 的最优值取决于任务的平均步骤复杂度和错误传播率。需要在大规模任务集上做参数扫描。
-- **审查 Agent 对压缩快照的「过度信任」**。审查 Agent 只读快照，意味着它信任快照的准确性。如果快照遗漏了关键错误（如前文 4.2 所述），审查 Agent 是否会系统性地高估快照的完整性？需要测试「审查 Agent 在快照信息不完备时，是否会主动标注不确定」。
+- 不作为唯一完成证据；
+- 不覆盖原始错误；
+- 不修改历史 Artifact；
+- 必须可以从每个主张回到 Evidence Ref。
 
 ---
 
-## 6. 与 Hermes 的关系
+## 3. 触发策略
 
-Hermes 已经具备了 Checkpoint 快照审查所需的大部分基础设施：
+Checkpoint 不需要每一步都创建。触发由风险和状态变化决定。
 
-1. **PlanStep 系统**：Hermes 的 OKR → PlanStep 级联提供了「已完成步骤摘要」和「剩余计划」的结构化数据源。快照提取不需要从零建数据——PlanStep 就是数据源。
+### 3.1 必须触发
 
-2. **delegate_task 子 Agent 机制**：Hermes 已经支持 spawn 子 Agent 执行独立任务。审查 Agent 复用相同的 spawn 基础设施——区别仅在于注入的上下文是快照链而非对话历史。一个 `delegate_task` 调用 + 快照注入模板即可实现。
+- Apply ChangeSet 前；
+- Apply ChangeSet 后；
+- 高风险工具调用前；
+- 用户 Approval 后；
+- Compaction 前；
+- Runtime / Provider / Tool Schema 切换前；
+- 长任务暂停或退出前；
+- 错误重试预算耗尽时；
+- 人工接管前。
 
-3. **Memory 三层注入架构**：审查结果可以作为「检查点审记记忆」注入 Base/Skills/Memory 三层中的 Memory 层。注入时机是 Checkpoint 审查完成后、下一轮执行开始前。
+### 3.2 条件触发
 
-4. **Kanban Worker 的 Checkpoint 粒度对齐**：Hermes 的 Kanban Worker 已经在任务执行中维护状态切换（TODO → IN_PROGRESS → DONE）。每一次状态切换都是一个自然的 Checkpoint 触发点——Worker 把一个 step 从 IN_PROGRESS 拉到 DONE 时，Harness 检查是否需要触发 Checkpoint 快照。
+- 完成一个 Plan 子图；
+- 发现新依赖；
+- Spec 或目标发生变化；
+- Test 从通过变为失败；
+- 上下文健康度下降；
+- 成本或时间预算达到阈值。
 
-需要补齐的部分：
+### 3.3 不应触发
 
-1. **Checkpoint 触发逻辑**：在 Kanban Worker 的状态转换旁路中增加触发判断——步数阈值计数器、异常检测、阶段边界识别。预计 ~100 行 TypeScript。
-2. **快照格式模板**：定义 Checkpoint 快照的结构化模板和填充规则。Harness 从 PlanStep 记录中机械提取大部分字段，仅「意外发现」字段依赖 Agent 填写。
-3. **审查 Agent 的 System Prompt**：一份专门用于快照审查的 System Prompt——定义审查粒度、置信度标注规则、修正建议的输出格式。这是最需要打磨的部分——审查 Prompt 的质量直接决定审查质量。
-
-三项补齐均不涉及 Hermes 核心架构变更。Checkpoint 快照审查是 Hermes 现有能力的「纵向组合」——把 PlanStep、delegate_task、Memory 三套机制串成一条审查流水线。
+- 纯文本流式输出的每个 Chunk；
+- 无状态、可重放的只读操作；
+- 没有产生新状态或 Evidence 的内部思考步骤。
 
 ---
 
-## 结论
+## 4. Reviewer 工作流
 
-Agent 审查不应该发生在任务结束后的膨胀上下文里——应该在每个关键节点，从干净的结构化快照中独立进行。Checkpoint 快照驱动的多轮审查通过「快照提取 → 独立审查 → 增量修正」三模块，实现了审查质量与任务复杂度的脱钩。核心反直觉性质——审查上下文的递减——来源于一个简单事实：快照不是执行日志的压缩版，是执行语义的结构化摘要。摘要比原文短，且剩余步骤越审越少。
+```text
+Load Checkpoint
+→ Validate Integrity
+→ Verify State Is Current
+→ Read Spec and Open Risks
+→ Inspect Evidence Index
+→ Fetch Required Original Artifacts
+→ Run/Read Deterministic Verifiers
+→ Produce Structured Verdict
+→ Bind Verdict to Checkpoint Hash
+```
 
-这不是一个新的 AI 能力——是 CI/CD 行业 20 年前就验证过的「流水线检查点」模式在 Agent 任务执行上的应用。Agent 的 PlanStep 就是动态流水线，Checkpoint 就是流水线中的检查门禁。把成熟的工程模式搬到新的执行范式上，比从头发明审查机制更可靠。
+### 4.1 Reviewer 最小输入
+
+默认加载：
+
+- Objective / Spec；
+- 当前 Checkpoint；
+- 相关约束；
+- Open Issues；
+- Evidence Index。
+
+不默认加载：
+
+- 完整执行对话；
+- 全量工具日志；
+- 原始 CoT；
+- 不相关历史 Session。
+
+### 4.2 Reviewer 按需读取
+
+- 相关 Diff；
+- 修改文件；
+- Test Logs；
+- Static Analysis；
+- Tool Result；
+- 前一个 Checkpoint；
+- 失败样本；
+- Approval 内容。
+
+### 4.3 Structured Verdict
+
+```yaml
+review_id: review-cp-7
+checkpoint_id: cp-0007
+checkpoint_hash: sha256:...
+verdict: changes_required
+risk: R2
+findings:
+  - severity: high
+    claim: Windows compatibility 未验证
+    source_refs:
+      - checkpoint:cp-0007:open_issues:issue-local-3
+missing_evidence:
+  - windows_symlink_test
+required_actions:
+  - run_windows_compatibility_suite
+confidence: high
+reviewer:
+  type: independent_model
+  model: deepseek-v4-pro
+created_at: 2026-07-27T00:00:00Z
+```
+
+Verdict 不直接修改主状态；Orchestrator 根据 Policy 决定阻断、提醒、重试或请求用户。
 
 ---
 
-*下一篇：[12 Memory 粒度控制](12-memory-granularity.md)*
+## 5. 多轮审查
+
+### 5.1 每轮审查对象
+
+每次只审查相对于上一个已接受 Checkpoint 的增量：
+
+```text
+previous accepted checkpoint
++ current changesets
++ new evidence
++ changed plan/constraints
+```
+
+但 Reviewer 可以回溯旧证据，不能被限制为只读增量摘要。
+
+### 5.2 Verdict 继承
+
+旧 Verdict 只有在以下内容未变化时可继承：
+
+```text
+spec version
+constraint versions
+workspace base hash
+relevant file hashes
+tool schema fingerprint
+runtime version
+```
+
+否则必须重新验证受影响部分。
+
+### 5.3 级联失效
+
+当某个步骤或 Artifact 改变时：
+
+- 关联 Verdict 标记 `stale`；
+- 下游 PlanStep 标记 `pending_review`；
+- Approval 如果绑定旧 Hash 则失效；
+- Resume 必须从新 Checkpoint 开始。
+
+---
+
+## 6. 恢复语义
+
+### 6.1 Resume 前检查
+
+```text
+workspace exists
+workspace hash matches or divergence is explained
+runtime/provider versions are compatible
+pending approvals are still valid
+already-applied side effects are not repeated
+required secrets are available but not serialized
+```
+
+### 6.2 幂等
+
+每个可重试动作需要 `idempotency_key`。恢复时先查 Evidence：
+
+```text
+如果动作已成功提交
+→ 不重复执行
+如果动作状态未知
+→ 进入人工确认或安全探测
+```
+
+### 6.3 不可恢复动作
+
+外部邮件、支付、生产删除等不可逆动作不能只靠 Checkpoint 回滚。必须使用：
+
+- 预生成 + 审批；
+- Dry Run；
+- 外部系统幂等键；
+- 补偿事务；
+- 人工变更流程。
+
+---
+
+## 7. Evidence 完整性
+
+### 7.1 Hash Chain
+
+Checkpoint 可以使用哈希链：
+
+```text
+checkpoint_hash = hash(
+  canonical_checkpoint_without_hash
+  + previous_checkpoint_hash
+)
+```
+
+作用：
+
+- 发现历史修改；
+- 固定 Review 输入；
+- 支持导出审计包。
+
+它不能防止拥有写权限的人重写整个链，因此仍需 Git commit、签名或外部存证作为更强边界。
+
+### 7.2 Redaction
+
+不得写入 Checkpoint：
+
+- API Key；
+- Authorization；
+- 密码；
+- 完整私有文件正文；
+- 原始 CoT。
+
+使用脱敏摘要、Artifact ID 和 Hash。
+
+---
+
+## 8. 验证指标
+
+### 8.1 Review Quality
+
+```text
+defect detection rate
+false approval rate
+false rejection rate
+source citation accuracy
+missing evidence detection
+```
+
+### 8.2 Recovery
+
+```text
+resume success rate
+duplicate side-effect rate
+stale approval rejection rate
+rollback success rate
+mean time to recover
+```
+
+### 8.3 Cost
+
+```text
+checkpoint storage
+review prompt tokens
+artifact fetch tokens
+review latency
+cost per prevented defect
+```
+
+### 8.4 对照实验
+
+比较：
+
+```text
+full-history final review
+summary-only checkpoint review
+traceable checkpoint + on-demand evidence review
+```
+
+使用相同缺陷集和 Held-out 任务，报告质量、成本、延迟和恢复结果。
+
+---
+
+## 9. 边界与风险
+
+- Snapshot 生成器可能漏字段；
+- Evidence Index 可能指向错误版本；
+- Hash 正确不代表内容真实；
+- Reviewer 可能不读取关键 Artifact；
+- 异步 Review 可能落后于主状态；
+- Checkpoint 过密会增加存储和复杂度；
+- Checkpoint 过稀会扩大恢复损失；
+- 摘要可能隐藏不确定性。
+
+因此必须有 Schema Validation、Integrity Check、Stale Detection、Evidence Fetch 和人工接管。
+
+---
+
+## 10. 结论
+
+Checkpoint 的价值不在于“把长历史压成更短摘要”，而在于建立：
+
+1. 可版本化状态；
+2. 可恢复前置条件；
+3. 可追溯 Evidence；
+4. 与具体 Hash 绑定的 Review Verdict；
+5. 状态变化后的级联失效；
+6. 防止重复副作用的幂等语义。
+
+Reviewer 可以使用更小的默认上下文，但每个结论都必须能回到原始 Diff、Test、Tool 和 Approval Evidence。小上下文是手段，可审计完成才是目标。

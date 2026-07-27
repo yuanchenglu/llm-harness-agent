@@ -1,330 +1,383 @@
-# KV Cache Hard-Constraint Prefix Injection: Constraints Survive Because They Never Enter the Compression Zone
+# Stable Constraints and Compressible History: A Context Compiler, Not a “KV Cache Safe Zone”
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source code, runtime wiring, and reproducible experiments are provided, "validated" does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
+> **Evidence level: B (engineering design proposal)**  
+> This article corrects the earlier claim that placing constraints in a KV Cache prefix physically guarantees retention and compliance. Provider Prefix Cache, Harness context compaction, and model constraint compliance are three different problems and must be designed and measured separately. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> **Innovation Index**: I-04
-> **LLM + Harness = Agent** · Part 4
-> **Series**: [LLM + Harness = Agent](../../README.md)
-> **Previous**: [03 Attention Budget Management](03-attention-budget.md)
-> **Next**: [05 Document KV Cache Optimization Structure](05-document-kv-cache.md)
-
----
-
-> **Abstract:** Long-task Agents must compress context to control window expansion, but compression algorithms evaluate all information with uniform weight — they don't know that "never touch config files" is 100x more important than "that warning from turn 7." This paper proposes KV Cache prefix-zone hard-constraint injection: separating non-losable constraints from the compressible zone and placing them in the prefix zone (KV Cache) for physical isolation. Constraints survive not because the compression algorithm is clever — but because they are never in the content being compressed. This approach raises constraint retention from ~40% to >95% after 15 dialogue turns, and its economic feasibility depends on DeepSeek's low KV Cache cost — the same approach is unaffordable for Claude and GPT.
+> **Innovation index**: I-04  
+> **Series**: [LLM + Harness = Agent](../../README_en.md)  
+> **Previous**: [03 Attention Budget Management](03-attention-budget.md)  
+> **Next**: [05 Stable-Prefix Document Structure](05-document-kv-cache.md)
 
 ---
 
-## 1. Problem Definition
+## Abstract
 
-### 1.1 The "Fairness Violence" of Compression
+Long-running tasks produce user constraints, project rules, tool traces, test results, historical discussion, and temporary information. These have different lifecycles and should not be processed by one compaction strategy.
 
-Every long-task Agent must perform context compression. No compression = context window explosion = Agent cannot run. Compression itself is not the problem — the problem is: **you don't know what information gets lost after compression.**
+The correct architectural principle is:
 
-Typical scenario: on turn 3 you repeatedly emphasize, "Never touch config files, the whole service will crash if you do." The Agent responds, "Understood."
+> Partition stable constraints that must persist, append-only evidence, the current active working set, and externally retrievable history; then define update, compaction, invalidation, and verification rules for each class.
 
-After 20 turns, the context has been compressed. Is that constraint you hammered on turn 3 still there?
+This is a **Context Compiler** design, not a physical isolation property of KV Cache.
 
-The compression algorithm doesn't know that "never touch config files" is 100x more important than "that warning on turn 7 doesn't matter." It evaluates all information with uniform weight. The important gets submerged, the unimportant gets preserved. This is the "fairness violence" of compression — mathematically fair, semantically stupid.
+- the Harness decides which information is reintroduced into each request;
+- the Provider Prefix Cache decides whether computation for a common prefix is reused;
+- Runtime Policy decides whether an action is permitted;
+- whether the model follows a natural-language constraint requires task-level tests.
 
-### 1.2 Root Cause: Constraints and Dialogue Share the Same Compression Domain
-
-The root of the problem is not that compression algorithms aren't good enough — it is an **architectural error**: hard constraints (non-losable) and dialogue history (compressible) are placed in the same region and subjected to uniform processing by the same compression algorithm.
-
-```
-Traditional approach:
-  [System Prompt including constraints A/B/C][dialogue1][dialogue2][dialogue3]...[dialogueN]
-    ↑ All in the same compression domain → constraint A may be randomly dropped after compression
-```
-
-Constraints and dialogue differ in position, importance, and lifecycle within the sequence, yet are fed indiscriminately into the same compressor. This is not the compressor's fault — it is the premise of "mix everything together then compress" that is the problem.
-
-### 1.3 Formalization
-
-Let an Agent's long dialogue sequence S = C ∥ D, where C = {c₁, c₂, ..., cₖ} is the set of hard constraints (non-losable) and D = {d₁, d₂, ..., dₜ} is the dialogue history (compressible).
-
-Let a compression function f reduce sequence length from L to L' (L' < L), with compression ratio r = L'/L. f is semantically unfaithful — for any information fragment x ∈ S, the probability P(preserved | x, f) that f retains x is independent of x's semantic importance.
-
-As t → ∞, sequence length L(t) ∝ t and compression ratio r converges to a fixed upper bound (determined by window size), so for any cᵢ:
-
-P(cᵢ ∈ f(S)) → r · (1/|S|) · |S| = r
-
-That is, the expected retention rate for each constraint converges to the compression ratio r. When r = 0.4 (typical long-task Agent compression ratio), constraint retention is approximately 40%.
-
-**Key insight**: if C and D are fed into the same f, C's retention rate is determined by r and uncontrollable. But if C is physically isolated — not passing through f — then P(cᵢ preserved) = 1.
+These four mechanisms cannot substitute for one another.
 
 ---
 
-## 2. Existing Approaches and Limitations
+## 1. Public Corrections
 
-| Approach | Core Idea | Why It Fails |
-|------|---------|-----------|
-| **Smarter compression algorithms** | Optimize compression strategy, use importance scoring instead of uniform weights | Still post-hoc remediation. Importance assessment itself depends on model judgment — the model forgets just the same in long context, and importance-assessment accuracy degrades with dialogue turns |
-| **Importance-aware compression** | Mark critical information as "incompressible" | The marking act itself depends on model judgment in long context. The deeper the turn count, the more likely the model misses marks. Essentially outsourcing the same model's attention problem to the same model |
-| **Longer compression intervals** | Accumulate more turns before compressing, lower compression frequency | Defers the problem. Window exhaustion just arrives later — pushed from turn 15 to turn 30, but the problem's nature doesn't change |
-| **Segmented summaries + cumulative tracking** (Claude Code) | Segment-summarize history dialogue, maintain cumulative tracking of file modifications | Industry's strongest, but summaries are still compression — after constraint expression in a summary is rephrased, fidelity drops. "Absolutely never touch config files" becomes "watch config files" |
-| **Constraint re-injection** | Re-inject key constraints into dialogue every N turns | Occupies context window → accelerates L(t) growth → triggers compression earlier → accelerates constraint dilution. Positive-feedback degradation |
+### 1.1 KV Cache is not a separate storage zone inside a message
 
-**Common defect**: all approaches optimize on the proposition "preserve the most important information after compression." The correct proposition should be: **what information fundamentally should not be compressed?**
+From a client Harness perspective, a request remains a serialized message sequence. Prefix Cache is usually a Provider-side mechanism for reusing computation over an identical or common prefix.
+
+It does not mean that a client can “place text into KV Cache” and remove that text from subsequent requests. Unless a specific Provider exposes an explicit persistent-cache protocol, each request must still send all messages required by the API contract.
+
+### 1.2 Exclusion from compaction is a Harness rule, not a Cache property
+
+If a Context Compiler specifies:
+
+```text
+System Rules do not enter the History Compactor
+```
+
+then those rules are retained because the request builder includes them again on every turn—not because Provider Cache automatically protects them.
+
+Use precise terminology:
+
+```text
+Stable Constraints Zone
+Compressible History Zone
+Provider Prefix Cache
+```
+
+Do not merge all three into the phrase “KV Cache prefix zone.”
+
+### 1.3 Presence in the request does not guarantee compliance
+
+Distinguish:
+
+```text
+Retention: is the constraint text still present in the input?
+Compliance: does model output or behavior satisfy the constraint?
+Enforcement: does the Runtime block a violating side effect?
+Cache: did the Provider reuse common-prefix computation?
+```
+
+Even if `Retention = 100%`, `Compliance` may be lower than 100%. Non-negotiable constraints should be guaranteed by Runtime Enforcement rather than natural-language Prompt alone.
+
+### 1.4 One changed byte does not necessarily cause a total cache miss
+
+Prefix Cache generally operates over a common prefix. A changed suffix may preserve hits for earlier common tokens; the earlier the first change occurs, the larger the potentially invalidated suffix.
+
+Exact behavior depends on Provider, serialization, Tokenizer, cache policy, TTL, account, and time. It must be inferred from Usage telemetry and repeated experiments, not stated as the universal rule “one changed byte clears the entire Cache.”
+
+### 1.5 Historical `40% → 95%` results are downgraded
+
+Earlier constraint-retention figures lacked a reproducible Runner, task set, raw results, and statistical testing. They are no longer treated as confirmatory evidence. Future reports must separately show:
+
+- input retention rate;
+- model compliance rate;
+- Runtime block rate;
+- final task success rate;
+- Prefix Cache hits and cost.
 
 ---
 
-## 3. Solution Design
+## 2. Problem Definition
 
-### 3.1 Prefix-Zone Isolation Principle
+### 2.1 Information has different lifecycles
 
-The physical structure of KV Cache provides a natural isolation zone: **the prefix zone**.
+| Information type | Example | Lifecycle | May be compacted? |
+| --- | --- | --- | --- |
+| Safety policy | Writing outside the Workspace is prohibited | Project or system | No; only versioned updates |
+| User-approved constraint | Do not modify configuration files | Task | No by default; explicit user change required |
+| Tool contract | Tool Schema, permission level | Session/version | No silent rewrite |
+| Decisions and evidence | Approval, Diff Hash, Test Result | Entire task | May be indexed, but provenance cannot be lost |
+| Active working set | Current objective, relevant file excerpt | Current step | Replaceable and re-retrievable |
+| Raw tool output | Logs, search results, full file text | Temporary | May be truncated or stored externally |
+| Conversation discussion | Alternatives, rejected ideas | Historical | May be summarized or archived |
 
-Prefix-zone tokens are computed (participate in self-attention) for every new token generated, but they sit at the very front of the sequence and **do not participate in subsequent dialogue accumulation and compression flows**. The prefix zone = a physical "compression get-out-of-jail-free card."
+The fundamental problem is not merely that “the compaction algorithm is not smart enough.” The system has failed to define:
 
-Core solution: extract hard constraints from the compressible zone and place them in the stable prefix of the system prompt (assembled once at Agent boot then frozen, using the inference engine's Prefix Caching mechanism so they do not participate in subsequent dialogue compression).
-
+```text
+who may change it
+when the change becomes effective
+whether it may be compacted
+how it is invalidated
+how it is audited
+how it is restored
 ```
-Traditional approach:
-  [System Prompt including constraints A/B/C][dialogue1][dialogue2][dialogue3]...
-    ↑ All in the compressible zone → constraint A may be dropped after compression
 
-Prefix injection approach:
-  [constraintA][constraintB][constraintC]  ← prefix zone (KV Cache, never compressed)
-  ═══════════════════════
-  [Rest of System Prompt][dialogue1][dialogue2][dialogue3]... ← compressible zone
-```
+### 2.2 Accurate meaning of a Hard Constraint
 
-Core logic: no smarter compression algorithm needed. Just physically separate "what cannot be lost" from "what can be lost."
+A genuine Hard Constraint should satisfy:
 
-> **Constraints survive not because the compression algorithm is clever. It is because they are never in the content being compressed.**
+> Its violation causes a safety, permission, data-integrity, or explicit acceptance failure, and a deterministic execution-time check exists.
 
-### 3.2 Definition and Extraction of Hard Constraints
+Examples:
 
-Not every instruction should be injected into the prefix zone. The prefix zone is a scarce resource — each additional token adds slightly to the fixed computation cost of KV Cache.
+| Constraint | Prompt reminder | Runtime Enforcement |
+| --- | --- | --- |
+| Do not write outside the Workspace | Useful | Path Boundary Check required |
+| Do not modify `.git` | Useful | Protected paths must be rejected |
+| Use Python 3.11 | Useful | Validate the execution and test environment |
+| Approval is required before modification | Useful | ChangeSet state machine must block |
+| Output must use Markdown | Usually sufficient | System-level blocking generally unnecessary |
 
-**Definition of a hard constraint**: violation leads to unacceptable task failure.
-
-| Constraint Type | Example | Hard Constraint? | Reason |
-|---------|------|:---:|------|
-| Safety red line | "Never delete the production database" | ✅ | Violation = disaster |
-| Environment limits | "Must use Python 3.11" | ✅ | Violation = code won't run |
-| Operation boundaries | "Don't modify files under /etc/" | ✅ | Violation = system-level damage |
-| Format requirements | "Output as Markdown tables" | ✅ | Violation = output unusable |
-| Style preference | "Code comments in English" | ⚠️ Case-dependent | Non-compliance doesn't cause failure, but may graduate to hard constraint in specific scenarios (e.g. international teams) |
-| Naming convention | "Use camelCase for variable names" | ❌ | Don't place when unnecessary — prefix-zone real estate is limited |
-
-**Extraction mechanism**: hard-constraint extraction should be automated — extract keywords like "shall not / don't / must / forbidden / strictly prohibited" from the System Prompt or user messages via pattern matching, and auto-inject into the prefix zone. No manual annotation needed, no need for the model to judge in long context — keyword matching is deterministic and unaffected by dialogue turn count.
-
-### 3.3 Implementation: System Prompt Preprocessing Skill
-
-In the Hermes architecture, this approach is implemented as a **System Prompt Preprocessing Skill**, fully leveraging Hermes's three-layer injection structure (template injection + Skills injection + Memory injection):
-
-1. When a user sends a task, the preprocessing Skill scans the System Prompt and user message
-2. Extracts all hard constraints via keyword matching ("cannot / don't / must / prohibit / strictly prohibit")
-3. Injects the extracted constraint list into the prefix zone (KV Cache layer)
-4. Executes the task normally — the rest of the System Prompt and dialogue history stay in the compressible zone
-
-This Skill requires no modification to Hermes core code. It is an elegant use case of the Skills mechanism — using Harness-layer extensibility to achieve physical isolation of constraints without touching core architecture.
+Words such as “must,” “must not,” “never,” and “prohibited” are insufficient to automatically promote a sentence to a system Hard Constraint. Natural language may contain negation, quotations, examples, temporary preferences, or conflicting instructions. Structured confirmation is required.
 
 ---
 
-## 4. Analysis
+## 3. Constraint Registry
 
-### 4.1 Why This Approach Solves the Root Problem
+Model stable constraints as versioned objects:
 
-The root problem is not "compression algorithms aren't smart enough" — it is **constraints and dialogue sharing the same compression domain**.
-
-All existing approaches attempt to improve f's fidelity (preserve more important information after compression). But f's fidelity has a hard upper bound — model attention dilution with sequence length is a physical law, not an engineering problem.
-
-Prefix injection does not improve f. It **bypasses f**:
-
-- Hard constraints C enter the prefix zone → do not pass through f → P(preserved) = 1 (physical guarantee)
-- Dialogue history D stays in the compressible zone → passes through f → accepts compression (acceptable because D is inherently designed to be compressed)
-
-This is fundamentally different from Claude Code's compaction: Claude Code's compaction optimizes **inside f** (better summarization strategy, cumulative tracking). Prefix injection does architecture **outside f** — making things that should never be processed by f never pass through f.
-
-Analogy: Claude Code is building a better juicer (less pulp, purer juice). Prefix injection says — don't juice yet, take the important fruit out and set it aside.
-
-### 4.2 Boundary Conditions
-
-The following scenarios are **not** covered by prefix injection:
-
-- **Implicit expectations**: constraints the user implies but does not explicitly state in the Prompt. Keyword extraction only catches explicit declarations — vague expectations like "code should be elegant" cannot be identified as hard constraints or injected into the prefix zone. They live in the compression zone and will be compressed.
-
-- **Context-dependent constraints**: constraint validity depends on current-context judgment. For example, "if it's an emergency fix, code review may be skipped" — injecting this verbatim into the prefix zone means the model sees it every turn, but the "emergency fix" judgment lives in the dialogue zone. After the dialogue zone is compressed, the model may be unable to judge whether the current scenario is an emergency fix.
-
-- **Constraint inflation problem**: if 80% of statements in the System Prompt contain "must / shall not" keywords, the prefix zone fills with hard constraints. Each additional 1K tokens in the prefix zone raises per-new-token generation cost proportionally. In extremis, an oversized prefix zone backfires on inference speed — this is an engineering decision requiring tradeoff between "constraint coverage" and "inference cost."
-
-- **Prefix-zone attention dilution**: although constraints are outside the compression domain (P(preserved) = 1), if the prefix zone itself is very large (e.g. 5K tokens of injected constraints), the model may still under-weight constraints at the back of the prefix zone in extremely long dialogues. Prefix injection solves "constraints not being lost" but cannot fully solve "constraints being followed." The latter requires combination with [attention budget management](03-attention-budget.md).
-
-### 4.3 Comparison with Claude Code Compaction
-
-| Dimension | Claude Code Compaction | Prefix Injection Approach |
-|------|----------------------|:---:|
-| Optimization target | Internal quality of compression algorithm f | Physical distribution of compressed objects |
-| Strategy nature | Reactive — recover after compression | Proactive — isolate before compression |
-| Constraint preservation mechanism | Depends on semantic fidelity of summary | Physical isolation, not passing through compression |
-| Model dependence | Requires model to maintain judgment in long context | Not needed — keyword matching is deterministic |
-| Retention rate | Incremental improvement, hard upper bound | >95% (physical guarantee) |
-| Extra cost | Consumes tokens for summarization per compression | Each 1K extra tokens in prefix zone → per-new-token generation cost rises microscopically |
-
-Claude Code's compaction is the industry's most mature approach, but its essence is still optimizing on "preserve the most important information after compression." Prefix injection changes the proposition — **don't compress** the most important information.
-
-### 4.4 V4 Compressor: Learned Gated Pooling Challenges Static Boundaries
-
-> **Evidence note:** This section is based on fixed-source analysis of DeepSeek V4 Flash (`inference/model.py`, checked-out commit). All line-number references use that checked-out version. Effect comparison of V4 Compressor against I-04's prefix injection = **Level B evidence** (pending end-to-end experimental validation); source-structure analysis = **Level A1 evidence** (reproducible reads).
-
-#### 4.4.1 Revisiting the Original Claim's Premise
-
-I-04's core thesis rests on Harness-layer physical constraints:
-
-> Hard constraints C enter the prefix zone → do not pass through compression function f → P(preserved) = 1 (physical guarantee)
-
-This claim is **completely correct** at the Harness layer. The Harness runs outside the model — it cannot see the attention matrix, gating weights, or which tokens the model internally considers most important for current generation. Therefore at the Harness layer, the claim "a static boundary between compression and hard constraints cannot be precisely implemented" still holds — you cannot use an external system that cannot see the model's internal workings to decide "keep the first 100 tokens, compress token 101."
-
-But at the model layer, DeepSeek V4's Compressor mechanism provides a new perspective: **the model can learn to approximate "precisely choosing what to keep."**
-
-#### 4.4.2 Compressor Mechanism: Learned Gated Pooling
-
-DeepSeek V4 Flash's `Compressor` class (`inference/model.py` L279-377) implements a fundamentally different approach from Harness-layer static isolation — **learned gated pooling**.
-
-Its docstring explicitly states the design intent:
-
-```python
-# inference/model.py L279-281
-class Compressor(nn.Module):
-    """Compresses KV cache via learned gated pooling over `compress_ratio` consecutive tokens.
-    When overlap=True (ratio==4), uses overlapping windows for smoother compression boundaries."""
+```yaml
+constraint_id: workspace-boundary
+version: 3
+source:
+  type: system_policy
+  ref: policy/security.yaml
+scope:
+  type: workspace
+  value: /approved/workspace
+enforcement: runtime
+severity: critical
+priority: 100
+message: Read and write only within the approved Workspace
+validator: path_boundary_check
+created_at: 2026-07-27T00:00:00Z
+supersedes: workspace-boundary@2
 ```
 
-Key components (`inference/model.py` L283-298):
+At minimum, include:
 
-```python
-# L283: default 4:1 compression ratio
-def __init__(self, args: ModelArgs, compress_ratio: int = 4, ...):
-    # L294: learnable positional encoding — gives each position in the compression window a trainable weight bias
-    self.ape = nn.Parameter(torch.empty(compress_ratio, coff * self.head_dim, ...))
-    # L297: learnable KV projection layer
-    self.wkv = Linear(self.dim, coff * self.head_dim, ...)
-    # L298: learnable gating weight layer — this is key: not static averaging, but learning each token's contribution weight in the target compressed token
-    self.wgate = Linear(self.dim, coff * self.head_dim, ...)
+```text
+constraint_id
+version
+source
+scope
+enforcement
+severity
+priority
+validator
+created_at
+supersedes
 ```
 
-The core operation is at L342 — the **soul** of the Compressor:
+### 3.1 Enforcement types
 
-```python
-# inference/model.py L324, L338, L342
-score = self.wgate(x)        # output gate score per token
-score = score.unflatten(1, (-1, ratio)) + self.ape  # add learnable positional encoding
-kv = (kv * score.softmax(dim=2)).sum(dim=2)  # aggregate ratio tokens into one by softmax weights
+| Type | Behavior |
+| --- | --- |
+| `runtime` | Deterministic code blocks the violating action |
+| `verifier` | Tests, Schema, or rules check the generated result |
+| `model_guidance` | Prompt guidance only; no strong guarantee |
+| `human_approval` | Explicit user approval is required to continue |
+
+The UI and Evidence must display the enforcement type so Prompt Guidance is not misrepresented as a hard security boundary.
+
+### 3.2 Conflicts and updates
+
+The constraint system must handle:
+
+- system policy conflicting with a user request;
+- old and new constraints conflicting;
+- overlapping constraints at different Scopes;
+- temporary exemptions;
+- security updates requiring immediate effect.
+
+Recommended precedence:
+
+```text
+system safety policy
+> organization/project policy
+> explicit task approval
+> user preference
+> inferred preference
 ```
 
-**This is not simple average pooling.** `score.softmax(dim=2)` assigns each token in the compression window a **continuous learned weight** (summing to 1); `wgate` and `ape` are jointly optimized in end-to-end training, enabling the model to learn: **among 4 (or 128) consecutive tokens, which is most important for future generation, and give it larger compression weight.**
-
-Furthermore, V4 Flash uses different compression ratios at different Transformer layers (`inference/model.py` L65 defaults, `config.json` L66 actual config):
-
-```python
-# ModelArgs L65: default compression ratio config
-compress_ratios: Tuple[int] = (0, 0, 4, 128, 4, 128, 4, 0)
-# 0 = no compression, 4 = CSA 4:1 compression, 128 = HCA 128:1 compression
-# Alternating: shallow CSA compresses gently, deep HCA compresses aggressively
-```
-
-```
-config.json L66 (Flash: 43 hidden layers + 1 MTP layer = 44 ratio values):
-[0, 0, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, ..., 4, 0]
-  L0 L1 L2  L3  L4  L5  L6  L7 ...
-```
-
-This means: **different depth layers see historical information at different granularities** — shallow layers retain finer-grained context, deep layers compress with more aggressive ratios, forming a "pyramid" KV compression structure. Each layer's Compressor has its own independent `wgate` and `ape` parameters, learning what to retain for itself.
-
-Additionally, V4's `Indexer` class (`inference/model.py` L380-433) handles top-k selection for sparse attention — it internally has an independent `Compressor` (L398) used to score compressed KV. This shows learned compression is used not only in KV cache storage but also in selecting "which historical positions to attend to."
-
-#### 4.4.3 Comparing the Two Approaches
-
-| Dimension | Harness-Layer Static Prefix (I-04 Original) | V4 Model-Layer Compressor |
-|------|------|------|
-| **Isolation mechanism** | Physical isolation — constraints in prefix zone, not through f | Learned pooling — each token has a softmax weight |
-| **Determinism** | Deterministic — P(preserved) = 1 | Probabilistic — P(preserved) ∝ learned weight, varies with input |
-| **Learning cost** | Zero — no training needed | End-to-end training optimizes wgate/ape |
-| **Granularity** | Coarse — either fully preserved or not preserved | Fine — each token has a continuous weight in [0, 1] |
-| **Interpretability** | High — can list every constraint in the prefix zone precisely | Low — gating weights are implicitly learned, hard to explain per-token |
-| **Visibility to Harness** | Fully visible — Harness constructs prefix-zone content | Invisible — Harness cannot see model-internal attention weights |
-| **Applicable scenario** | "Absolutely cannot lose" hard constraints | "Relatively important" dialogue context |
-
-#### 4.4.4 Complementary, Not Mutually Exclusive
-
-The discovery of V4 Compressor does not negate I-04's core thesis; it reveals two **complementary** optimization paths:
-
-- **Harness-layer prefix injection**: guarantees "absolutely cannot lose" hard constraints (system prompt core rules, safety red lines, environment limits). These constraints must have deterministic physical guarantees and cannot depend on the model's implicit judgment in long context.
-- **V4 model-layer Compressor**: in "relatively important" dialogue history, distinguishes important information from noise via learned gating — that warning from turn 7 may matter more than an edge config mentioned on turn 3; the model learns to aggregate by softmax weights rather than simple truncation or averaging.
-
-The division of labor can be summarized as:
-
-```
-Harness Layer (I-04 prefix injection)        Model Layer (V4 Compressor)
-───────────────────────────────              ─────────────────────────
-Guarantees "physical existence"               Learns "what is important"
-  of constraints                               in history
-Deterministic guarantee                      Probabilistic optimization
-Architectural constraint                     Learned in training
-"Don't lose"                                 "Choose correctly"
-```
-
-> **Analogy**: Harness-layer prefix injection is like taking important documents out of the pile headed for the shredder and locking them in a safe — **physically cannot be lost**. V4's Compressor is like training a sorter — it learns to quickly pick out the valuable sheets from the pile, but doesn't guarantee never making a mistake. The two solve different problems: the former targets "absolutely cannot lose" hard constraints, the latter targets "relatively important" soft context.
-
-#### 4.4.5 Correction to the Original Claim
-
-Earlier versions of this paper had a sharper formulation: **"the static boundary between compression and hard constraints cannot be precisely implemented."** This claim **still holds** at the Harness layer — because the Harness runs outside the model and lacks visibility into the model's internal attention distribution, it cannot "precisely" tell the model "keep the first 100 tokens, compress token 101."
-
-But V4 Compressor provides a **model-layer corrective lens**:
-
-1. **Inside the model**, through `wgate` + `ape` + `softmax` learned gating, the model can learn to "choose precisely" — not setting hard boundaries at the token level (keep vs. drop), but assigning continuous weights by importance within compression windows.
-2. **Compressor boundaries are soft**: `overlap=True` (when ratio=4) uses overlapping windows for smoother compression boundaries — further demonstrating V4's design choice: **no hard truncation; use learning to approximate the optimal retention strategy**.
-3. **Different compression ratios at different layers** means the model learns different "retention strategies" at different abstraction levels — shallow CSA (4:1) retains more positional detail, deep HCA (128:1) retains only the most core semantic information.
-
-Thus the complete picture is:
-
-> **The Harness layer (I-04) provides "deterministic physical guarantees" — constraints are not lost. The model layer (V4 Compressor) provides "learned information filtering" — what in history is important. Each plays its role; used in combination they maximize Agent information reliability in long tasks.**
+A security update must rebuild the prefix immediately even if it breaks Prefix Cache. Correctness and safety take priority over cache hits.
 
 ---
 
-## 5. Validation Path
+## 4. Four-Zone Context Compiler Model
 
-### 5.1 Validated
+```text
+┌──────────────────────────────────────────────┐
+│ 1. Stable Rules                             │
+│    versioned policy, approved constraints,   │
+│    stable tool contracts                    │
+├──────────────────────────────────────────────┤
+│ 2. Append-Only Evidence                     │
+│    decisions, Approval, Diff, Test,          │
+│    Checkpoint                               │
+├──────────────────────────────────────────────┤
+│ 3. Active Working Set                       │
+│    current objective, relevant files,        │
+│    recent tool results, open risks           │
+├──────────────────────────────────────────────┤
+│ 4. External Index                           │
+│    full trace, historical Session, Artifact, │
+│    Skill Body                               │
+└──────────────────────────────────────────────┘
+```
 
-| Approach | Constraint Retention After 15 Turns | Notes |
-|------|:---:|------|
-| No prefix injection (constraints in compressible zone) | ~40% | Constraints compressed alongside dialogue content — retention converges to compression ratio |
-| **Prefix injection (constraint isolation)** | **> 95%** | Constraints in physically isolated zone, compression cannot touch them |
+### 4.1 Stable Rules
 
-> **Data note:** Self-test data, same experiment group as article 03's prefix-injection dimension, not an independent experiment. Independent reproduction needed.
+Requirements:
 
-The reason retention > 95% is not 100%: not because constraints are lost to compression — but in extremely long context, the model's attention weight on constraints at the far end of the prefix zone may dilute. Prefix injection ensures "physical existence," but "attention allocation" remains constrained by Transformer's O(n²) attention distribution.
+- stable serialization;
+- explicit version;
+- a reason for each update;
+- explicit invalidation;
+- independence from the History Compactor;
+- contain only genuinely stable information that the model needs.
 
-### 5.2 To Be Validated
+### 4.2 Append-Only Evidence
 
-- **Cost-benefit curve**: for each additional 1K tokens in the prefix zone, what is the marginal drop in dialogue throughput? At what constraint volume does prefix injection's cost exceed its benefit?
-- **Optimal prefix-zone size**: under different task types, where is the sweet spot for prefix-zone token count? Is there a critical point where "constraints crowd out reasoning space"?
-- **Keyword-matching precision/recall**: false-positive rate (rules that don't need injecting get injected) and false-negative rate (truly hard constraints get missed) for automated hard-constraint extraction
-- **Combined effect with attention budget management**: when prefix injection (physical guarantee) + attention budget management (attention allocation optimization) run jointly, constraint **compliance rate** (not just retention rate) after 15 turns
+Evidence may be summarized inside a request, but the summary must retain references:
+
+```text
+evidence_id
+artifact_hash
+tool_call_id
+test_run_id
+approval_id
+```
+
+Original Evidence must not be overwritten or deleted by a summary.
+
+### 4.3 Active Working Set
+
+Recompile it for each step and include the smallest relevant set required for the current task. It must support re-retrieval and explicit scope expansion so aggressive pruning does not create missed recall.
+
+### 4.4 External Index
+
+Store complete history outside the model request and retrieve it through Tools or Retrieval when needed. An external index extends capacity but does not guarantee correct retrieval. Record queries, candidates, selections, and misses.
 
 ---
 
-## 6. Why Only DeepSeek Can Play This Way
+## 5. Prefix Cache Optimization
 
-This is not a technical barrier — it is an **economic barrier**.
+Optimize cache only after correctness is established.
 
-KV Cache is not free. The more constraints placed in the prefix zone, the more KV pairs must be computed per new token generated → token generation cost rises. Under standard self-attention, each additional 1K tokens in the prefix zone → per-subsequent-token inference FLOPs rise on the order of d_model × n_layers. But DeepSeek V4 uses CSA (Compressed Sparse Attention) + MQA (1 KV head) to drastically compress KV cache and inference overhead (official data: 10% KV cache vs V3.2), meaning the prefix zone can hold more constraints without significant cost increase.
+### 5.1 Content that should remain stable
 
-- **Claude / GPT**: Tokens themselves are expensive (GPT-4 output $60/1M tokens). Each extra 1K tokens in the prefix zone → per-new-token cost rises → marginal cost significant. A long task may generate 50K tokens → extra cost enough to be commercially unviable.
-- **DeepSeek**: KV Cache is cheap (output ~$2/1M tokens). Prefix zone can hold more constraints → marginal cost negligible. For the same 50K-token task, extra cost is within the price of a meal.
+- canonicalized System Rules;
+- deterministically ordered Tool Schemas;
+- stable Memory / Skill indexes;
+- fixed Provider and model configuration;
+- explicit serialization version.
 
-Engineering-wise Claude and GPT could implement the same approach, but commercially they can't afford it. It's not that "others can't do it" — it's that "others can't afford it."
+### 5.2 Changes allowed to invalidate the prefix
 
-This is why DeepSeek's KV Cache advantage is a **product moat**. The essence of Harness Engineering is leveraging this structural cost advantage to design product approaches competitors cannot economically catch up to. When your competitive advantage derives from opponents' cost structure rather than technical capability, their window to catch up is not "develop a new approach" — it's "wait for your own token prices to drop."
+- safety-policy updates;
+- reduced tool permissions;
+- Tool Schema corrections;
+- removal of an incorrect constraint;
+- Provider protocol changes;
+- Compaction or Session rebuild.
+
+### 5.3 Telemetry
+
+```text
+prefix_fingerprint
+serializer_version
+first_changed_offset
+drift_reason
+prompt_cache_hit_tokens
+prompt_cache_miss_tokens
+TTFT
+total_latency
+cost
+```
+
+`prefix_fingerprint` is diagnostic only and must not contain Secrets or a complete private Prompt.
 
 ---
 
-## Conclusion
+## 6. Validation Matrix
 
-The "fairness violence" of context compression is not a compression-algorithm problem — it is an architectural error: putting things that should not be compressed into the compression domain. Prefix injection does not optimize the compression algorithm; it physically isolates hard constraints out of the compression domain. Constraints survive not because the algorithm is clever — but because they are never in the content being compressed. And the economic feasibility of this approach depends on DeepSeek's low KV Cache cost — a textbook case of Harness Engineering exploiting structural cost advantages.
+### 6.1 Context-retention tests
+
+- are constraint objects identical before and after Compaction?
+- are Constraint ID, Version, and Scope preserved?
+- are conflicting constraints explicitly rejected?
+- does a security update trigger a context rebuild?
+
+### 6.2 Runtime Enforcement tests
+
+- Workspace escape;
+- symlink escape;
+- `.git` modification;
+- stale Approval;
+- unapproved write;
+- irreversible tool call;
+- budget overrun.
+
+### 6.3 Model compliance tests
+
+For behavior not directly blocked by the Runtime, measure:
+
+```text
+instruction compliance rate
+format compliance rate
+citation correctness
+incorrect-tool selection
+```
+
+### 6.4 Prefix Cache tests
+
+Control and repeatedly run these variants:
+
+- identical prefix;
+- only the user suffix changes;
+- only the end of the System content changes;
+- Tool order changes;
+- JSON key order changes;
+- safety-rule version changes;
+- different times and concurrency conditions.
+
+Report the number of common-prefix hit tokens, not only a binary hit/miss label.
 
 ---
 
-*Next: [05 Document KV Cache Optimization Structure](05-document-kv-cache.md) — applying the prefix principle of "stable up front, changing later" to all document formats the Agent produces*
+## 7. Boundaries and Failure Modes
+
+- an oversized stable prefix increases fixed input and maintenance cost;
+- stable reuse of an incorrect rule amplifies the error;
+- automatic constraint extraction may misclassify natural language;
+- unresolved constraint priority creates unpredictable behavior;
+- Provider Cache is best-effort and cannot enter a safety promise;
+- cache optimization may conflict with Progressive Tool Disclosure;
+- an external index may miss critical history;
+- the model may still violate rules enforced only through Prompt guidance.
+
+The system must support:
+
+```text
+invalidate prefix
+rebuild context
+disable inferred constraints
+escalate conflict to user
+fall back to full evidence
+```
+
+---
+
+## 8. Conclusion
+
+The most important design is not “put constraints in KV Cache.” It is:
+
+1. define persistent constraints as versioned objects;
+2. enforce non-negotiable safety boundaries with Runtime Policy;
+3. use a Context Compiler to separate Stable Rules, Append-Only Evidence, the Active Working Set, and external history;
+4. independently measure Retention, Compliance, Enforcement, and Cache;
+5. allow safety updates and correctness fixes to deliberately sacrifice cache hits.
+
+Prefix Cache is a cost and latency optimization tool. It is not a constraint-retention mechanism and not a guarantee of model compliance.
