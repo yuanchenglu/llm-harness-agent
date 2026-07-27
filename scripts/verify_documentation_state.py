@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate repository status, canonical research articles, and local links.
+"""Validate repository status, bilingual innovation articles, and local links.
 
 The verifier intentionally uses only the Python standard library so it can run
 in a clean GitHub Actions environment without dependency installation.
@@ -18,7 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 GATES_PATH = ROOT / "zh" / "blueprint" / "stage-gates.json"
 SCHEMA_PATH = ROOT / "schemas" / "stage-gates.schema.json"
 STATUS_PATH = ROOT / "STATUS.md"
-INNOVATIONS_DIR = ROOT / "zh" / "innovations"
+ZH_INNOVATIONS_DIR = ROOT / "zh" / "innovations"
+EN_INNOVATIONS_DIR = ROOT / "en" / "innovations"
 
 PUBLIC_STATUS_DOCS = [
     ROOT / "README.md",
@@ -185,9 +186,15 @@ def validate_release_evidence(data: dict[str, Any], errors: list[str]) -> None:
         fail(errors, "An unverified release must keep an explicit incomplete stage")
 
 
+def innovation_paths() -> tuple[list[Path], list[Path]]:
+    zh_paths = [ZH_INNOVATIONS_DIR / name for name in CANONICAL_INNOVATIONS]
+    en_paths = [EN_INNOVATIONS_DIR / name for name in CANONICAL_INNOVATIONS]
+    return zh_paths, en_paths
+
+
 def iter_current_docs() -> list[Path]:
-    article_paths = [INNOVATIONS_DIR / name for name in CANONICAL_INNOVATIONS]
-    return PUBLIC_STATUS_DOCS + article_paths
+    zh_paths, en_paths = innovation_paths()
+    return PUBLIC_STATUS_DOCS + zh_paths + en_paths
 
 
 def validate_public_docs(errors: list[str]) -> None:
@@ -208,36 +215,69 @@ def validate_public_docs(errors: list[str]) -> None:
     if "stage-gates.json" not in status_text:
         fail(errors, "STATUS.md must link to stage-gates.json")
 
-    english_readme = (ROOT / "README_en.md").read_text(encoding="utf-8")
-    if "current canonical versions" not in english_readme:
-        fail(errors, "README_en.md must state that current Chinese innovation articles are canonical")
+    english_readme_path = ROOT / "README_en.md"
+    if not english_readme_path.exists():
+        return
+    english_readme = english_readme_path.read_text(encoding="utf-8")
+    if "Bilingual status" not in english_readme:
+        fail(errors, "README_en.md must declare the bilingual synchronization status")
+    if "may lag behind" in english_readme or "must not be used" in english_readme:
+        fail(errors, "README_en.md still contains the obsolete stale-translation warning")
 
-    stale_english_links = [
+    linked_english_articles = {
         normalize_link_target(raw_target)
         for raw_target in MARKDOWN_LINK_RE.findall(english_readme)
         if normalize_link_target(raw_target).startswith("en/innovations/")
-    ]
-    if stale_english_links:
+    }
+    expected_links = {f"en/innovations/{name}" for name in CANONICAL_INNOVATIONS}
+    missing_links = sorted(expected_links - linked_english_articles)
+    if missing_links:
         fail(
             errors,
-            "README_en.md must not link readers to stale English innovation articles: "
-            + ", ".join(sorted(set(stale_english_links))),
+            "README_en.md does not link all current English innovation articles: "
+            + ", ".join(missing_links),
         )
+
+
+def validate_innovation_pair(name: str, errors: list[str]) -> None:
+    index = name.split("-", 1)[0]
+    zh_path = ZH_INNOVATIONS_DIR / name
+    en_path = EN_INNOVATIONS_DIR / name
+
+    if not zh_path.exists():
+        fail(errors, f"Missing Chinese innovation article: {zh_path.relative_to(ROOT)}")
+        return
+    if not en_path.exists():
+        fail(errors, f"Missing English innovation article: {en_path.relative_to(ROOT)}")
+        return
+
+    zh_text = zh_path.read_text(encoding="utf-8")
+    en_text = en_path.read_text(encoding="utf-8")
+
+    if "证据等级" not in zh_text:
+        fail(errors, f"{zh_path.relative_to(ROOT)} must declare an evidence level")
+    if "研究方法与事实校准" not in zh_text:
+        fail(errors, f"{zh_path.relative_to(ROOT)} must link the research method")
+    if "系列" not in zh_text or "README.md" not in zh_text:
+        fail(errors, f"{zh_path.relative_to(ROOT)} must link the Chinese series entry")
+    if f"I-{index}" not in zh_text:
+        fail(errors, f"{zh_path.relative_to(ROOT)} must declare innovation index I-{index}")
+
+    if "Evidence level" not in en_text:
+        fail(errors, f"{en_path.relative_to(ROOT)} must declare an Evidence level")
+    if "Research Method and Evidence Calibration" not in en_text:
+        fail(errors, f"{en_path.relative_to(ROOT)} must link the research method")
+    if "Series" not in en_text or "README_en.md" not in en_text:
+        fail(errors, f"{en_path.relative_to(ROOT)} must link the English series entry")
+    if f"I-{index}" not in en_text:
+        fail(errors, f"{en_path.relative_to(ROOT)} must declare innovation index I-{index}")
+    if "Evidence note:" in en_text:
+        fail(errors, f"{en_path.relative_to(ROOT)} still uses the obsolete generic Evidence note")
 
 
 def validate_innovations(errors: list[str]) -> None:
     for name in CANONICAL_INNOVATIONS:
-        path = INNOVATIONS_DIR / name
-        if not path.exists():
-            fail(errors, f"Missing canonical innovation article: {path.relative_to(ROOT)}")
-            continue
-        text = path.read_text(encoding="utf-8")
-        if "证据等级" not in text:
-            fail(errors, f"{path.relative_to(ROOT)} must declare an evidence level")
-        if "研究方法与事实校准" not in text:
-            fail(errors, f"{path.relative_to(ROOT)} must link the research method")
-        if "系列" not in text or "README.md" not in text:
-            fail(errors, f"{path.relative_to(ROOT)} must link the canonical series entry")
+        validate_innovation_pair(name, errors)
 
 
 def validate_local_links(errors: list[str]) -> None:
