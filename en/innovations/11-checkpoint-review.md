@@ -1,258 +1,468 @@
-# Checkpoint Multi-Round Review: Snapshot-Driven Asynchronous Auditing
+# Checkpoint-Driven Multi-Round Review: State Snapshots Must Connect to Original Evidence
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, “validated” does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
+> **Evidence level: B (engineering design proposal)**  
+> This article no longer assumes that “all Agents review only at the end of a task,” and it no longer uses an unverified formula in which review quality is inversely proportional to context length. The core value of a Checkpoint is preserving execution state, recovery conditions, and Evidence so a Reviewer can work within a controlled context and retrieve original Artifacts when needed. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> **Innovation Point**: I-11
-> **LLM + Harness = Agent** · Part 11
-> **Series**: [LLM + Harness = Agent](../../README.md)
-> **Previous**: [10 Intent Routing: 7+1 Intent → Strategy Auto-Switching](10-intent-routing.md)
+> **Innovation index**: I-11  
+> **Series**: [LLM + Harness = Agent](../../README_en.md)  
+> **Previous**: [10 Intent-to-Strategy Routing](10-intent-routing.md)  
 > **Next**: [12 Memory Granularity Control](12-memory-granularity.md)
 
 ---
 
-> **Abstract**: Every Agent auditing mechanism rests on the same assumption — review happens after the task completes, and the reviewer reads the full execution log. This assumption fails on complex multi-step tasks: by the time the task finishes, the context has ballooned to the point where the reviewer itself can't see clearly. This article proposes Checkpoint snapshot-driven multi-round review: at every critical node during task execution, a structured snapshot is generated (goal + completed step summary + unexpected discoveries + remaining plan), and an independent review sub-Agent is spawned asynchronously. The review Agent reads only the snapshot, not the full execution log. Core counterintuitive property: the second round of review has a *smaller* context than the first — because the remaining plan shrinks with each round. This is not "reviewing repeatedly inside the same context" — it's "re-reviewing from an ever-smaller snapshot each time."
+## Abstract
+
+Complex tasks require repeated confirmation during execution:
+
+- is the current objective still aligned?
+- do completed Steps have evidence?
+- has the Workspace changed unexpectedly?
+- can the system recover safely after failure?
+- does the remaining Plan still hold?
+- should review or human intervention be escalated?
+
+Reading a complete conversation only at the end is not the only review method. But reading only a model-generated summary is equally dangerous: a summary can omit failure, misattribute causes, or turn an unverified judgment into fact.
+
+A Checkpoint should therefore be:
+
+> A versioned, verifiable, recoverable snapshot of task state in which natural-language summaries act only as an index, while completion decisions connect to Diff, Test, Tool, Approval, and Artifact Evidence.
 
 ---
 
-## 1. Problem Definition
+## 1. Public Corrections
 
-### 1.1 The Phenomenon
+### 1.1 A Checkpoint is not merely a summary
 
-Consider a typical complex Agent task: unifying log formats across 3 microservices, involving modifications to 12 files, 2 cross-service API alignments, and 1 CI configuration update. The Agent takes 45 rounds of conversation to complete. Now, the system needs to audit the final output.
+Insufficient design:
 
-The review Agent faces a 45-round execution log, with the context window near its limit. Between the "goal definition" the Agent sees in the first 20% of context and the "final deliverable" it sees in the last 20%, there lies 60% of intermediate reasoning, tool calls, error retries, and dead-end backtracking. The review Agent's attention has been diluted to the point where it can barely establish a complete causal chain from "goal → deliverable."
-
-The result: review either degenerates into shallow formal checks ("Was the file modified? Yes." — without judging whether the modification was correct), or gets misled by noise from the intermediate process into making incorrect judgments.
-
-A more insidious problem: **review itself consumes context budget**. If execution has already consumed 90% of the context window, review can only operate within the remaining 10%. This means review quality on complex tasks is *squeezed* by context budget — and the very thing squeezing it is the execution process it's supposed to audit.
-
-### 1.2 Root Cause
-
-The root cause lies not in review algorithm quality, but in *when* review happens and *what* the reviewer reads.
-
-Every Agent auditing mechanism rests on two implicit assumptions:
-
-**Assumption 1: Review happens after task completion.** Complete execution → one review. This holds for simple tasks — 3 steps, review sees everything at a glance. But on a 45-step complex task, only at the final moment do you discover step 3 was wrong, and the preceding 42 steps' work all needs to be redone.
-
-**Assumption 2: The reviewer must read the full execution log.** To judge "was it done right," one must know "what was done." But this assumption puts reviewer and executor into the same context dilemma — the executor errs due to context inflation, and the reviewer misses errors due to the very same context inflation.
-
-Together, these two assumptions produce a counterintuitive result: **the more complex the task, the less reliable the review.** Yet complex tasks are precisely the ones that need review the most.
-
-### 1.3 Formalization
-
-Let task T consist of n sub-steps {s₁, s₂, ..., sₙ}, with the context sequence length of the execution process being L(t), where L(t) increases monotonically with t.
-
-Single-round review occurs at t = n (task completion), at which point the review Agent faces a context of length L(n). Let the review Agent's effective attention ratio be α(L), with α(L) ∝ 1/L (determined by Transformer soft attention mechanics). Then review quality Q_review ∝ α(L(n)) ∝ 1/L(n).
-
-That is: **the more complex the task (larger n, larger L(n)), the worse the single-round review quality.** Review quality is inversely proportional to task complexity.
-
-Multi-step tasks also exhibit error accumulation effects: let the probability of step s_i introducing an error be p, and the probability of single-round review detecting it be d. If d < 1 (imperfect review), then the cumulative undetected error count at task completion is E(n) = n·p·(1-d)ⁿ⁻¹ (ignoring error propagation and cascading). The larger n is, the larger the base of E(n).
-
-Core contradiction: complex tasks demand stronger review, but the linear growth of review mechanism context causes review to become *weaker* instead.
-
----
-
-## 2. Existing Solutions and Limitations
-
-| Solution | Core Idea | Why It Fails |
-|----------|-----------|-------------|
-| **Single-round final audit (all Agent defaults)** | One full-log review after task completion | Review quality ∝ 1/L(n). On complex tasks the reviewer itself can't see clearly. Errors found too late — a step-3 mistake only discovered at step 45 |
-| **Human-in-the-loop** | Pause at critical steps, wait for human confirmation before continuing | Human attention also decays at O(n). And human review latency disrupts Agent execution flow. Cannot scale — no one will click confirm 45 times for a 45-step task |
-| **In-execution self-check** | Agent checks its own previous step output after each step | The same Agent checks itself within the same context — using the same attention state that produced the error to discover the error. Self-check miss rate is far higher than independent review |
-| **LangChain/LangGraph multi-round review** | Invoke review nodes multiple times within the same conversation flow | Context grows continuously within the conversation flow. The second round's context > the first round's context — review quality degrades with each round |
-| **Claude Code's `/review` command** | User manually triggers review; reviewer reads current conversation | Depends on user judgment for trigger timing. And reviewer still reads the full inflated context — same problem as row 1 |
-| **Multi-Agent voting (Ensemble)** | 3 Agents review independently, take majority opinion | All 3 review Agents face the same inflated context. Not "3 different perspectives" — it's "3 sets of identically diluted attention." What increases is compute cost, not review quality |
-
-**Shared flaw**: every solution places review inside the **same context space after execution ends**. The correct direction is to **decouple** review from the execution context — the review Agent does not read the execution log; it reads only the structured snapshot extracted at each critical node.
-
----
-
-## 3. Solution Design
-
-### 3.1 Core Mechanism: Snapshot Extraction → Independent Review → Incremental Correction
-
-This solution consists of three modules:
-
-**Module 1: Checkpoint Snapshot Extraction**
-
-At each critical node during task execution (see 3.2 trigger conditions), the system automatically extracts a structured Checkpoint snapshot. The snapshot format is fixed — it does not depend on Agent judgment; the Harness fills it:
-
-```
-Checkpoint #[N]
-├── Current Goal: the objective the Agent is executing (extracted from PlanStep)
-├── Completed Steps Summary:
-│   ├── Step 1: [action description] → [result] (≤2 sentences)
-│   ├── Step 2: ...
-│   └── Step N: ...
-├── Unexpected Discoveries: important, unplanned information found during execution
-│   (e.g., "API response format doesn't match documentation," "found an undocumented dependency")
-└── Remaining Plan: list of steps yet to execute (extracted from PlanStep)
+```text
+objective + completed summary + remaining plan
 ```
 
-Key design: the snapshot does **not** include full tool-call input/output, intermediate reasoning chains, or complete error stack traces. All of these are structurally compressed during extraction — the review Agent doesn't need to know "the curl command returned 327 lines of JSON," it only needs to know "API call succeeded, returned data structure matches expectations."
+This is useful for orientation but insufficient for recovery or audit. At minimum include:
 
-**Module 2: Asynchronous Spawn of Independent Review Sub-Agent**
-
-After generating the Checkpoint snapshot, the system spawns an independent review sub-Agent. The review Agent's context **only** contains:
-
-1. The original task goal (extracted from OKR or PlanStep)
-2. The concatenation of all snapshots up to the current Checkpoint
-3. The global constraint checklist (extracted from the System Prompt's hard constraint layer)
-
-The review Agent does **not** read the executing main Agent's conversation log, tool-call history, or intermediate reasoning process. This ensures the review Agent's attention is not diluted by execution-process noise.
-
-Review Agent's audit tasks:
-- Are completed steps aligned with the original goal? (goal alignment check)
-- Is there progress deviation? (did completed steps miss any critical planned steps)
-- Do unexpected discoveries have security/compliance impact?
-- Does the remaining plan need adjustment? (are any steps now unnecessary or needing reordering due to discoveries)
-
-**Module 3: Incremental Injection of Review Results**
-
-The review Agent's output is not a "pass/fail" boolean — it is an **incremental correction suggestion**:
-
-```
-Review Result [Checkpoint #N]
-├── Goal Alignment Status: ✅ aligned / ⚠️ partial deviation / ❌ severe deviation
-├── Deviation Details:
-│   └── [specific description of which step deviates from which aspect of the goal]
-├── Unexpected Discovery Assessment:
-│   └── [impact judgment on security/compliance/architecture]
-├── Correction Suggestions:
-│   ├── [operations needing rollback]
-│   ├── [steps needing supplementation]
-│   └── [remaining plan adjustments]
-└── Review Confidence: [High / Medium / Low] (reviewer's confidence in its own judgment)
+```text
+state version
+workspace hash
+plan version
+changeset ids
+artifact hashes
+test run ids
+approval ids
+open errors
+resume preconditions
 ```
 
-Correction suggestions are injected **non-intrusively** into the main Agent's context — as "correction hints" before the next execution round, not forced interruptions. Corrections with "High" confidence are enforced; "Medium" confidence corrections remind but don't block; "Low" confidence corrections are only logged for subsequent review reference.
+### 1.2 A Reviewer should not read only the summary
 
-### 3.2 Trigger Conditions: When to Generate a Checkpoint
+A Reviewer may begin with a compact Snapshot, but must be able to retrieve original evidence:
 
-Checkpoint triggers cannot be too frequent (review overhead > review benefit) nor too sparse (degenerating into single-round review). There are three trigger categories:
+```text
+Snapshot
+→ Evidence Index
+→ Original Diff / Test / Tool Result / Source File
+```
 
-**Condition 1: Step-count threshold trigger.** Trigger a Checkpoint every k completed PlanSteps. Default value of k is 3 — neither reviewing every step (review overhead too high) nor allowing too many steps to proceed unchecked into the next stage (error accumulation effect becomes significant).
+Otherwise Summary Laundering occurs: the execution Agent’s incorrect summary is accepted by the Reviewer as verified fact.
 
-**Condition 2: Anomaly event trigger.** Immediately trigger a Checkpoint when the Agent encounters the following during execution:
-- Tool call returns unexpected result (e.g., API returns 500, file operation fails but is handled by fallback)
-- Agent autonomously modifies PlanStep order or content
-- Agent encounters a dead end requiring retreat (executed 2 steps then undid them)
+### 1.3 “Smaller context” is not an automatic quality guarantee
 
-Anomaly triggers are **unskippable** — even if only 1 step has passed since the last Checkpoint. Because anomalies are the moments of highest error risk.
+A smaller Review Context may reduce noise or remove critical evidence. Measure:
 
-**Condition 3: Phase boundary trigger.** When PlanStep contains explicit phase demarcations (e.g., "Phase 1: Data Migration," "Phase 2: Interface Adaptation"), a Checkpoint is forced after each Phase completes. Phase boundaries are natural review points — Phase 1's output is Phase 2's input; Phase 1's errors will be amplified in Phase 2.
+- critical-source coverage;
+- defect detection rate;
+- incorrect citation rate;
+- review cost;
+- recovery success.
 
-### 3.3 The Fundamental Difference from "Repeated Reviewing in the Same Context"
+Fewer tokens alone do not prove a more reliable review.
 
-A common misunderstanding: "How is this different from repeatedly calling review nodes within the conversation flow?"
+### 1.4 Asynchronous review must handle state drift
 
-The essential difference lies in the **review Agent's context starting point**.
+After a Reviewer loads a Checkpoint, the main Agent may continue changing the Workspace. A Verdict must bind to:
 
-In conversation-flow repeated reviewing, the review Agent's context = conversation history + review instructions. Conversation history grows continuously between reviews — the second review's context is larger than the first. Review quality degrades with each round.
+```text
+checkpoint_id
+workspace_hash
+plan_version
+changeset_hash
+```
 
-In Checkpoint snapshot review, the review Agent's context = Checkpoint snapshot chain + review instructions. The snapshot chain length grows linearly with Checkpoint count, but the growth rate is far lower than conversation history — because snapshots are structurally compressed, each snapshot's token count is fixed (~200-500 tokens), whereas each step in conversation history may consume 500-2000 tokens.
-
-More importantly, **the remaining plan is shrinking**. In Checkpoint #N's snapshot chain, the completed-steps summary is growing in length, but the remaining plan is shrinking. The review Agent's core task is to check "are completed steps aligned with the remaining plan" — and the remaining plan's context volume shrinks with each round. This produces a counterintuitive property: the second round of review has a **smaller** context than the first.
-
----
-
-## 4. Analysis
-
-### 4.1 The Context-Decreasing Property
-
-This is the most fundamental distinction between this solution and all existing review solutions.
-
-Let the main Agent's context growth over n execution steps be L(t). In traditional single-round review, the review Agent at t=n faces context L(n).
-
-In this solution, let the i-th Checkpoint's snapshot size be S (S is constant, ~300 tokens), and the snapshot chain length for the first m Checkpoints be m·S. The remaining plan size is R(t), where R(t) monotonically decreases as t increases — because steps are being completed one by one.
-
-The review Agent's context at the m-th review is C_review(m) = m·S + R(t_m).
-
-Key property: C_review(m+1) is not necessarily larger than C_review(m). When R(t)'s decline rate exceeds S (the snapshot increment rate) — i.e., the tokens reduced from the remaining plan per completed step exceed the tokens added by a new snapshot — C_review actually *decreases*.
-
-In typical scenarios, one PlanStep description occupies ~100-200 tokens. Every 3 steps completed (one Checkpoint), the remaining plan shrinks by ~300-600 tokens, while a new snapshot adds ~300 tokens. C_review remains roughly flat or slightly declines.
-
-By contrast, in traditional schemes, the (m+1)-th review within the same conversation flow has context = full conversation history + review instructions, which strictly increases.
-
-**Conclusion**: Checkpoint snapshot review achieves context budget "decoupling" — review quality does not linearly degrade with task complexity. This is accomplished by replacing the review Agent's input from "complete record of the execution process" with "structured summary of the execution process."
-
-### 4.2 Edge Cases
-
-**Snapshot quality degradation risk.** Snapshots are generated by the main Agent during execution — if the main Agent's attention is already diluted by context inflation, the snapshots it generates may also omit critical information. This is the most fatal failure mode of this solution: using snapshots generated by a degraded Agent to audit that same Agent's work.
-
-Mitigations:
-1. Snapshot extraction is not left to the main Agent's discretion — the Harness mechanically extracts from PlanStep and tool-call returns using a fixed template, reducing reliance on Agent judgment.
-2. The "Unexpected Discoveries" field is filled by the Agent, but the Harness simultaneously auto-detects unexpected tool-call returns and forces annotations — anomalies the Agent doesn't record, the Harness can still capture.
-3. The review Agent has an obligation to flag "snapshot quality suspect" — if logical contradictions or information gaps are found in the snapshot chain, lower review confidence and mark it.
-
-**Review overhead on short tasks.** When n ≤ 3 (tasks with fewer than 3 steps), the Checkpoint mechanism's overhead (spawning review Agent + generating snapshots) may exceed the cost of a simple final audit. Degradation: when n ≤ k (default threshold), skip Checkpoint triggering and perform a single-round final audit directly.
-
-**Review Agent's own errors.** The review Agent can also make mistakes — misses or false positives. But this solution mitigates review error impact through multi-round **cross-validation**: Checkpoint #N's review can correct #N-1 review misses (because during #N review, #N-1's review result is also in the snapshot chain). This forms a progressive error-correction mechanism.
-
-**Checkpoint density vs. task rhythm conflict.** Some tasks require continuous execution (e.g., "sequentially modify 10 files"), and inserting a review every 3 steps disrupts execution flow. Solution: for homogeneous operation sequences (repeated execution of the same type of operation), Checkpoint's k value can be dynamically adjusted to 5 or higher — single-step error probability is low for homogeneous operations, so sparser review carries manageable risk.
+After state changes, the old Verdict is historical evidence only and cannot authorize new actions.
 
 ---
 
-## 5. Validation
+## 2. Checkpoint Data Model
 
-### 5.1 Technical Feasibility
+```yaml
+checkpoint_id: cp-0007
+task_id: task-123
+sequence: 7
+created_at: 2026-07-27T00:00:00Z
+runtime_version: 0.1.1
+state_version: 42
+workspace:
+  root_id: workspace-a
+  git_commit: abcdef123456
+  dirty_tree_hash: sha256:...
+objective:
+  spec_ref: spec-12
+  text: Fix permission boundaries and add regression tests
+plan:
+  version: 8
+  current_step_id: step-4
+  completed_step_ids:
+    - step-1
+    - step-2
+  pending_step_ids:
+    - step-4
+    - step-5
+changesets:
+  proposed:
+    - cs-19
+  applied:
+    - cs-18
+evidence:
+  test_run_ids:
+    - test-88
+  tool_event_ids:
+    - tool-991
+  artifact_refs:
+    - diff:cs-18
+    - report:security-scan-7
+approvals:
+  - approval-55
+open_issues:
+  - id: issue-local-3
+    severity: medium
+    text: Windows symlink test has not been run
+resume:
+  idempotency_key: resume-task-123-cp-7
+  preconditions:
+    - workspace_hash_unchanged
+    - approval_still_valid
+summary:
+  completed: Workspace boundary check has been added
+  next: Add Windows and symlink regression tests
+integrity:
+  previous_checkpoint_hash: sha256:...
+  checkpoint_hash: sha256:...
+```
 
-Checkpoint snapshot review's technical feasibility has been confirmed at three layers:
+### 2.1 Required fields
 
-**Layer 1: Snapshot extraction.** Hermes's PlanStep system already maintains "goal → action → result" structured records for each step. The Harness extracting "completed step summary" and "remaining plan" from PlanStep records is a purely mechanical operation, requiring no Agent reasoning. A 30-line TypeScript function can accomplish the extraction and formatting.
+```text
+checkpoint_id
+task_id
+sequence
+state_version
+workspace identity/hash
+objective/spec ref
+plan version/current step
+changeset refs
+evidence refs
+approval refs
+open issues
+resume preconditions
+integrity hash
+```
 
-**Layer 2: Independent review Agent spawn.** Hermes's `delegate_task` mechanism already supports spawning sub-Agents for independent tasks. The review Agent uses the same delegate infrastructure as the execution Agent but receives a different context injection — the snapshot chain instead of conversation history.
+### 2.2 Summary fields
 
-**Layer 3: Non-intrusive injection of correction suggestions.** Hermes's Memory system can inject review results as "checkpoint summary memory" into the next round's execution context. The injection format is structured Markdown, with controllable context budget consumption (~200-500 tokens/review).
+The summary is for navigation only:
 
-Implementation at all three layers involves no core architecture changes — it is a "composition" of existing mechanisms, not a "restructuring."
-
-### 5.2 CI/CD Analogy Validation
-
-The design pattern of Checkpoint snapshot review has a mature analogy: CI/CD pipeline checkpoints.
-
-CI/CD does not perform a comprehensive code review and test after code is merged into the main branch — it inserts independent checks at each stage (lint → unit test → integration test → deploy). Each stage's check only examines that stage's inputs and outputs, not the entire pipeline log.
-
-Agent task execution is essentially also a pipeline — a linear sequence of steps. Existing single-round final audit is equivalent to "not inserting any checkpoints in the pipeline, only doing a full regression after final deployment." This is unreasonable — the CI/CD industry rejected this pattern 20 years ago.
-
-Checkpoint snapshot review transplants this mature pipeline pattern onto Agent task execution. The difference is that Agent task pipelines are **dynamically generated** (PlanStep is planned before execution but may be adjusted during execution), while CI/CD pipelines are static — meaning Checkpoint triggering needs dynamic judgment rather than predefinition.
-
-### 5.3 To Be Validated
-
-- **Snapshot compression rate vs. review precision tradeoff.** The higher the snapshot compression rate (fewer tokens), the cleaner the review context; but too high a compression rate loses critical information needed for review. Experimental determination of the optimal compression rate — with "review miss rate" as the dependent variable and "snapshot token count" as the independent variable, find the inflection point.
-- **Optimal k value (Checkpoint interval step count).** k=1 (review every step) gives the highest review quality but the highest overhead; k=n (no Checkpoint) has zero overhead but degenerates into single-round final audit. The optimal k depends on average task step complexity and error propagation rate. Parameter scanning on a large-scale task set is needed.
-- **Review Agent's "over-trust" of compressed snapshots.** The review Agent reads only snapshots, meaning it trusts snapshot accuracy. If snapshots omit critical errors (as described in 4.2 above), will the review Agent systematically overestimate snapshot completeness? Testing is needed on "whether the review Agent proactively flags uncertainty when snapshot information is incomplete."
+- it is not the only completion evidence;
+- it does not overwrite original errors;
+- it does not mutate historical Artifacts;
+- every material claim must trace to an Evidence Ref.
 
 ---
 
-## 6. Relationship with Hermes
+## 3. Trigger Policy
 
-Hermes already possesses most of the infrastructure needed for Checkpoint snapshot review:
+A Checkpoint is not required for every Step. Triggering depends on risk and state changes.
 
-1. **PlanStep system**: Hermes's OKR → PlanStep cascade provides the structured data source for "completed step summary" and "remaining plan." Snapshot extraction doesn't need to build data from scratch — PlanStep *is* the data source.
+### 3.1 Mandatory triggers
 
-2. **delegate_task sub-Agent mechanism**: Hermes already supports spawning sub-Agents for independent tasks. The review Agent reuses the same spawn infrastructure — the only difference is that the injected context is the snapshot chain rather than conversation history. One `delegate_task` call + snapshot injection template achieves it.
+- before applying a ChangeSet;
+- after applying a ChangeSet;
+- before a high-risk tool call;
+- after user Approval;
+- before Compaction;
+- before switching Runtime / Provider / Tool Schema;
+- before a long task pauses or exits;
+- when the retry budget is exhausted;
+- before human takeover.
 
-3. **Memory three-layer injection architecture**: Review results can be injected as "checkpoint review memory" into the Memory layer of the Base/Skills/Memory three layers. Injection timing is after Checkpoint review completes and before the next execution round begins.
+### 3.2 Conditional triggers
 
-4. **Kanban Worker's Checkpoint granularity alignment**: Hermes's Kanban Worker already maintains state transitions during task execution (TODO → IN_PROGRESS → DONE). Each state transition is a natural Checkpoint trigger point — when a Worker pulls a step from IN_PROGRESS to DONE, the Harness checks whether to trigger a Checkpoint snapshot.
+- completion of a Plan subgraph;
+- discovery of a new dependency;
+- a changed Spec or objective;
+- a Test changes from passing to failing;
+- degraded context health;
+- cost or time reaches a threshold.
 
-Parts needing completion:
+### 3.3 Do not trigger for
 
-1. **Checkpoint trigger logic**: Add trigger judgment in the Kanban Worker's state transition path — step-count threshold counter, anomaly detection, phase boundary identification. Estimated ~100 lines of TypeScript.
-2. **Snapshot format template**: Define the structured template for Checkpoint snapshots and filling rules. The Harness mechanically extracts most fields from PlanStep records; only the "Unexpected Discoveries" field relies on Agent filling.
-3. **Review Agent System Prompt**: A dedicated System Prompt for snapshot review — defining review granularity, confidence annotation rules, and correction suggestion output format. This is the part most needing polish — review Prompt quality directly determines review quality.
-
-All three completions involve no Hermes core architecture changes. Checkpoint snapshot review is a "vertical composition" of Hermes's existing capabilities — threading PlanStep, delegate_task, and Memory into a review pipeline.
+- every Chunk of streamed text;
+- stateless, replayable read-only operations;
+- internal reasoning that creates no new state or Evidence.
 
 ---
 
-## Conclusion
+## 4. Reviewer Workflow
 
-Agent review should not happen in the inflated context after task completion — it should happen at each critical node, independently, from clean structured snapshots. Checkpoint snapshot-driven multi-round review achieves decoupling of review quality from task complexity through the three modules of "snapshot extraction → independent review → incremental correction." The core counterintuitive property — review context decreasing — derives from a simple fact: snapshots are not compressed versions of execution logs; they are structured summaries of execution semantics. The summary is shorter than the original, and the remaining steps get fewer with each review.
+```text
+Load Checkpoint
+→ Validate Integrity
+→ Verify State Is Current
+→ Read Spec and Open Risks
+→ Inspect Evidence Index
+→ Fetch Required Original Artifacts
+→ Run/Read Deterministic Verifiers
+→ Produce Structured Verdict
+→ Bind Verdict to Checkpoint Hash
+```
 
-This is not a new AI capability — it is the "pipeline checkpoint" pattern validated by the CI/CD industry 20 years ago, applied to Agent task execution. The Agent's PlanStep is a dynamic pipeline; the Checkpoint is the quality gate within that pipeline. Transplanting a mature engineering pattern onto a new execution paradigm is more reliable than inventing a review mechanism from scratch.
+### 4.1 Minimum Reviewer input
+
+Load by default:
+
+- Objective / Spec;
+- current Checkpoint;
+- relevant constraints;
+- Open Issues;
+- Evidence Index.
+
+Do not load by default:
+
+- the full execution conversation;
+- all tool logs;
+- raw chain-of-thought;
+- unrelated historical Sessions.
+
+### 4.2 On-demand Reviewer reads
+
+- relevant Diff;
+- modified files;
+- Test Logs;
+- Static Analysis;
+- Tool Results;
+- previous Checkpoint;
+- failure samples;
+- Approval content.
+
+### 4.3 Structured Verdict
+
+```yaml
+review_id: review-cp-7
+checkpoint_id: cp-0007
+checkpoint_hash: sha256:...
+verdict: changes_required
+risk: R2
+findings:
+  - severity: high
+    claim: Windows compatibility has not been verified
+    source_refs:
+      - checkpoint:cp-0007:open_issues:issue-local-3
+missing_evidence:
+  - windows_symlink_test
+required_actions:
+  - run_windows_compatibility_suite
+confidence: high
+reviewer:
+  type: independent_model
+  model: deepseek-v4-pro
+created_at: 2026-07-27T00:00:00Z
+```
+
+A Verdict does not directly mutate main state. The Orchestrator uses Policy to block, warn, retry, or request a user decision.
 
 ---
 
-*Next: [12 Memory Granularity Control](12-memory-granularity.md)*
+## 5. Multi-Round Review
+
+### 5.1 Review target for each round
+
+Review the increment relative to the last accepted Checkpoint:
+
+```text
+previous accepted checkpoint
++ current changesets
++ new evidence
++ changed plan/constraints
+```
+
+The Reviewer may still traverse older evidence and must not be restricted to an incremental summary only.
+
+### 5.2 Verdict inheritance
+
+An earlier Verdict may be inherited only when all of the following remain unchanged:
+
+```text
+spec version
+constraint versions
+workspace base hash
+relevant file hashes
+tool schema fingerprint
+runtime version
+```
+
+Otherwise revalidate the affected portion.
+
+### 5.3 Cascading invalidation
+
+When a Step or Artifact changes:
+
+- related Verdicts become `stale`;
+- downstream PlanSteps become `pending_review`;
+- Approval bound to an old Hash expires;
+- Resume begins from a new Checkpoint.
+
+---
+
+## 6. Recovery Semantics
+
+### 6.1 Pre-resume checks
+
+```text
+workspace exists
+workspace hash matches or divergence is explained
+runtime/provider versions are compatible
+pending approvals are still valid
+already-applied side effects are not repeated
+required secrets are available but not serialized
+```
+
+### 6.2 Idempotency
+
+Every retryable action requires an `idempotency_key`. Before resuming, inspect Evidence:
+
+```text
+if the action was committed successfully
+→ do not execute again
+if action state is unknown
+→ require human confirmation or a safe probe
+```
+
+### 6.3 Irreversible actions
+
+External email, payments, and production deletion cannot be rolled back by a Checkpoint alone. Use:
+
+- pre-generation + approval;
+- Dry Run;
+- external-system idempotency keys;
+- compensating transactions;
+- human change-management processes.
+
+---
+
+## 7. Evidence Integrity
+
+### 7.1 Hash chain
+
+Checkpoints may form a hash chain:
+
+```text
+checkpoint_hash = hash(
+  canonical_checkpoint_without_hash
+  + previous_checkpoint_hash
+)
+```
+
+Uses:
+
+- detect historical modification;
+- fix Review input;
+- support exportable audit bundles.
+
+It cannot prevent an actor with write permission from rewriting the entire chain. Git commits, signatures, or external attestation provide stronger boundaries.
+
+### 7.2 Redaction
+
+Do not write into a Checkpoint:
+
+- API keys;
+- Authorization headers;
+- passwords;
+- complete private file contents;
+- raw chain-of-thought.
+
+Use redacted summaries, Artifact IDs, and hashes.
+
+---
+
+## 8. Validation Metrics
+
+### 8.1 Review Quality
+
+```text
+defect detection rate
+false approval rate
+false rejection rate
+source citation accuracy
+missing evidence detection
+```
+
+### 8.2 Recovery
+
+```text
+resume success rate
+duplicate side-effect rate
+stale approval rejection rate
+rollback success rate
+mean time to recover
+```
+
+### 8.3 Cost
+
+```text
+checkpoint storage
+review prompt tokens
+artifact fetch tokens
+review latency
+cost per prevented defect
+```
+
+### 8.4 Controlled experiment
+
+Compare:
+
+```text
+full-history final review
+summary-only checkpoint review
+traceable checkpoint + on-demand evidence review
+```
+
+Use the same defect set and held-out tasks and report quality, cost, latency, and recovery outcomes.
+
+---
+
+## 9. Boundaries and Risks
+
+- the Snapshot generator may omit fields;
+- the Evidence Index may point to the wrong version;
+- a correct Hash does not prove truthful content;
+- the Reviewer may fail to fetch a critical Artifact;
+- asynchronous Review may lag behind main state;
+- too many Checkpoints increase storage and complexity;
+- too few Checkpoints increase recovery loss;
+- a summary may hide uncertainty.
+
+Schema Validation, Integrity Check, Stale Detection, Evidence Fetch, and human takeover are required.
+
+---
+
+## 10. Conclusion
+
+The value of a Checkpoint is not merely compressing long history into a short summary. It establishes:
+
+1. versioned state;
+2. recoverable preconditions;
+3. traceable Evidence;
+4. Review Verdicts bound to concrete hashes;
+5. cascading invalidation after state changes;
+6. idempotent semantics that prevent duplicate side effects.
+
+A Reviewer may use a smaller default context, but every conclusion must trace to original Diff, Test, Tool, and Approval Evidence. Small context is a means; auditable completion is the objective.
