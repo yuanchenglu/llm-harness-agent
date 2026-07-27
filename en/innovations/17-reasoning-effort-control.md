@@ -1,150 +1,393 @@
-# Reasoning Effort Control: How to Make the Model "Think Harder" — And What It Costs
+# Reasoning Effort Control: Parameter Acceptance, Actual Semantics, and Task Benefit Must Be Validated Separately
 
-> **Evidence note:** Based on the definition of `REASONING_EFFORT_MAX` in `encoding_dsv4.py` and the rendering logic of the `reasoning_effort` parameter, this article presents design hypotheses. The actual effectiveness of the three reasoning tiers (max/high/None) requires end-to-end experimental validation. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
+> **Evidence level: A1 + N/B**  
+> - **A1**: fixed `encoding_dsv4.py` source confirms that `reasoning_effort` accepts `None / high / max`, and that `max` injects an enhanced reasoning instruction under specific conditions.  
+> - **N/B**: whether `high` is consumed by a server-side backend, whether the public API exposes the same semantics, and the quality/latency/token effects of each value all require end-to-end experiments.  
+> Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> Innovation Index: I-17
-> **LLM + Harness = Agent** · Part 17
-> Series: [LLM + Harness = Agent](../../README.md)
-> Previous: [I-16 Quick Instruction Routing](16-quick-instruction-routing.md)
-> Next: [I-18 Latest Reminder Injection](18-latest-reminder-injection.md)
-
----
-
-## Problem: When Does the Model Need to "Think Harder"?
-
-Making the model think harder can produce better answers, but it also makes them slower and more expensive. Not every question deserves deep reasoning. "1+1=?" requires no thought, but "debug this 200-line concurrency bug" does.
-
-The ideal state: the Harness dynamically adjusts reasoning depth based on task complexity. DeepSeek V4's `reasoning_effort` parameter provides this capability, but only defines three tiers. How to choose between them, when to switch, and at what cost — these require systematic analysis.
+> **Innovation index**: I-17  
+> **Series**: [LLM + Harness = Agent](../../README_en.md)  
+> **Previous**: [16 Quick Instruction Routing](16-quick-instruction-routing.md)  
+> **Next**: [18 Latest Reminder Injection](18-latest-reminder-injection.md)
 
 ---
 
-## Key Evidence: Three-Tier Reasoning Intensity Design
+## Abstract
 
-The `reasoning_effort` parameter in `encoding_dsv4.py` accepts three values: `"max"`, `"high"`, and `None` (L261):
+“Make the model think harder” is not one capability. It may involve:
+
+- a request parameter;
+- model selection;
+- Thinking Mode;
+- Prompt instructions;
+- maximum output tokens;
+- a Planner / Reviewer;
+- retry and verification budgets.
+
+Encoding source can prove that certain fields and Prompt-rendering paths exist. It cannot independently prove hosted API behavior or benefit.
+
+A reliable Harness should model reasoning intensity as Provider Capability plus Budget Policy:
+
+```text
+Task Risk / Uncertainty / Evidence Gap
+→ Candidate Reasoning Policy
+→ Provider Capability Check
+→ Execute with Budget
+→ Verify Result
+→ Escalate or Stop
+```
+
+---
+
+## 1. What the Source Confirms
+
+The fixed encoding source contains validation similar to:
 
 ```python
-assert reasoning_effort in ['max', None, 'high'], f"Invalid reasoning effort: {reasoning_effort}"
+assert reasoning_effort in ["max", None, "high"]
 ```
 
-Only the `"max"` tier has a tangible effect — it injects a set of strong reasoning instructions at the very beginning of the prompt (before the system message) in thinking mode (L262-263):
+Under a specific `thinking_mode` and message position, `max` injects enhanced reasoning text.
+
+A1 conclusions:
+
+- the encoding implementation accepts three values;
+- `max` has a visible Prompt-rendering path;
+- `None` does not inject that text;
+- in this encoding section, `high` does not use the same text-injection branch as `max`.
+
+This does not confirm that:
+
+- `high` is consumed by the backend inference engine;
+- `high` is deeper than the default;
+- the public API forwards the field;
+- `max` improves answer quality;
+- extra latency and tokens follow a fixed multiplier.
+
+---
+
+## 2. Public Corrections
+
+### 2.1 Remove unverified fixed cost numbers
+
+Earlier versions claimed:
+
+```text
+high: completion roughly 1.5–2x, latency +20–50%
+max: completion roughly 2–5x, latency +50–200%
+```
+
+Those figures were not bound to a fixed Endpoint, task set, repeat count, or result artifact and are removed. Future claims must use distributions from reproducible experiments.
+
+### 2.2 An accepted value does not mean the parameter took effect
+
+An API or SDK may:
+
+- accept and execute it;
+- accept and ignore it;
+- convert it into another parameter;
+- support it only for some models;
+- return 200 while behavior remains unchanged.
+
+Output, Usage, latency, and task quality must be examined together.
+
+### 2.3 Prompt position does not prove “maximum attention weight”
+
+Placing an instruction first, in System, or near the latest user message may change behavior, but internal attention weight cannot be inferred from position alone. Use an A/B test.
+
+### 2.4 More reasoning does not mean more correctness
+
+Longer reasoning may:
+
+- discover additional edge cases;
+- create additional incorrect assumptions;
+- increase latency and cost;
+- delay recognition that tool evidence is missing;
+- over-analyze a simple task.
+
+Final quality must be determined by Verifiers and task outcomes.
+
+---
+
+## 3. Provider Capability
+
+```yaml
+provider: deepseek
+endpoint: <redacted-endpoint-id>
+model: deepseek-v4-pro
+observed_at: 2026-07-27
+thinking_mode:
+  supported: unknown
+reasoning_effort:
+  accepted_values:
+    - null
+    - high
+    - max
+  high_semantics: unverified
+  max_prompt_injection_in_source: true
+  public_api_effect: unverified
+limitations:
+  - encoding source does not prove hosted endpoint behavior
+```
+
+Capability records require time, Endpoint, model, and evidence source. They must not become permanent global constants.
+
+---
+
+## 4. Internal Harness Policy
+
+Provider-neutral representation:
+
+```typescript
+type ReasoningPolicy = {
+  mode: "minimal" | "standard" | "deep";
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  maxLatencyMs: number;
+  maxCost: number;
+  requirePlanner: boolean;
+  requireIndependentReview: boolean;
+  providerParams: Record<string, unknown>;
+};
+```
+
+The upper product layer should not depend directly on the strings `high` or `max`.
+
+### 4.1 Minimal
+
+Appropriate for:
+
+- deterministic format conversion;
+- simple queries;
+- low-risk tasks with a strong Verifier;
+- quickly retryable work.
+
+### 4.2 Standard
+
+Appropriate for:
+
+- ordinary code changes;
+- multi-step analysis;
+- medium-risk decisions;
+- tasks requiring tool evidence.
+
+### 4.3 Deep
+
+Candidate conditions:
+
+- high risk and difficult rollback;
+- multiple conflicting constraints;
+- complex architecture tradeoffs;
+- repeated Verifier failure;
+- conflicting critical Evidence;
+- security review.
+
+Deep does not authorize automatic execution. High-risk actions still require Policy and Approval.
+
+---
+
+## 5. Routing Signals
+
+Do not route only by keyword:
 
 ```python
-if index == 0 and thinking_mode == "thinking" and reasoning_effort == 'max':
-    prompt += REASONING_EFFORT_MAX
+if "code review" in prompt:
+    effort = "high"
 ```
 
-And the content of `REASONING_EFFORT_MAX` (L64-68):
+More reliable signals:
 
-```python
-REASONING_EFFORT_MAX = (
-    "Reasoning Effort: Absolute maximum with no shortcuts permitted.\n"
-    "You MUST be very thorough in your thinking and comprehensively decompose "
-    "the problem to resolve the root cause, rigorously stress-testing your logic "
-    "against all potential paths, edge cases, and adversarial scenarios.\n"
-    "Explicitly write out your entire deliberation process, documenting every "
-    "intermediate step, considered alternative, and rejected hypothesis to ensure "
-    "absolutely no assumption is left unchecked.\n\n"
-)
+```text
+risk
+reversibility
+blast radius
+uncertainty
+evidence completeness
+novelty
+verifier failures
+remaining budget
 ```
 
-This instruction takes approximately 350 characters, roughly 90 tokens. Syntactically, it reads like an enhanced system prompt — but its position is entirely different.
+Example:
 
----
-
-## Three Tiers: When to Use Which
-
-### 1. `reasoning_effort=None` (Default)
-
-No reasoning intensity instruction is injected. The model uses its default reasoning depth.
-
-**Applicable scenarios:** Daily Q&A, simple code completion, knowledge lookup, literal translation, format conversion.
-
-**Cost:** Zero additional token overhead. Reasoning depth is determined autonomously by the model.
-
-### 2. `reasoning_effort="high"`
-
-In the source code, `"high"` is validated as a legal value (L261), but has no special logic in `render_message()`.
-
-**Probable (>90%)** that `"high"` is a backend parameter that influences the model's internal reasoning behavior rather than the prompt structure. Similar to OpenAI's `reasoning_effort` parameter, consumed by the inference engine rather than the encoding layer.
-
-**Applicable scenarios:** Medium-complexity tasks — code review, single-file refactoring, data interpretation, solution design.
-
-**Cost:** Does not increase prompt length, but the model's deeper internal reasoning increases latency and completion token consumption.
-
-### 3. `reasoning_effort="max"`
-
-Injects the `REASONING_EFFORT_MAX` instruction at the very beginning of the prompt. The placement of this instruction is deliberate:
-
-- ✅ After the `BOS` token, before the `system prompt` — it is the first content the model sees
-- ✅ Only active when `thinking_mode="thinking"` — this parameter is ignored in chat mode
-- ✅ Only injected when `index == 0` — injected once, never repeated in subsequent turns
-
-**Applicable scenarios:** High-difficulty tasks — complex bug debugging, architecture decisions, security audits, mathematical proofs.
-
-**Cost:** ~90 additional prompt tokens + significantly more reasoning output tokens + longer thinking latency.
-
----
-
-## Why Prompt Position Matters
-
-`REASONING_EFFORT_MAX` is injected at the **absolute earliest position** in the prompt — even before the system prompt. This is deliberately designed:
-
-```
-<bos>REASONING_EFFORT_MAX{system_prompt}<User>{question}...
+```yaml
+reasoning_route:
+  policy: deep
+  reasons:
+    - risk:R3
+    - irreversible:false
+    - verifier_failures:2
+    - evidence_conflict:true
+  budget:
+    max_latency_ms: 60000
+    max_cost: <configured-budget>
+  exit_conditions:
+    - verifier_pass
+    - user_intervention
+    - budget_exhausted
 ```
 
-In a KV Cache architecture, tokens positioned earlier are revisited by the attention mechanism during every decoding step (they form the prefix), exerting the greatest influence. Placing the reasoning intensity instruction here means: **every single token generation by the model is affected by it** — not a local option, but a global constraint.
-
-By contrast, if you place the same instruction somewhere inside the system prompt, its attention share gets diluted by subsequent system prompt content. Placing it first makes it the underlying tone of the model's generative behavior.
-
 ---
 
-## Implications for Harness
+## 6. Escalation Instead of a One-Time Guess
 
-### 1. Dynamic Reasoning Intensity Routing
+Recommended flow:
 
-The most basic integration is to make `reasoning_effort` a dynamic parameter:
-
-```python
-def classify_reasoning_effort(user_prompt: str) -> str:
-    if contains_complex_bug_pattern(user_prompt):  return "max"
-    if contains_code_review_pattern(user_prompt):   return "high"
-    return None  # default
+```text
+Standard Attempt
+→ Deterministic Verification
+→ if pass: finish
+→ if failure is repairable: retry with failure evidence
+→ if high risk or repeated failure: Deep + Independent Review
+→ if budget is exhausted or evidence is insufficient: stop and ask the user
 ```
 
-Set the `reasoning_effort` value before each call to `encode_messages()`.
+This avoids using the most expensive mode at the beginning of every task.
 
-### 2. Cost Budget Management
+### 6.1 Escalation record
 
-The three tiers correspond to three distinct cost budgets:
+```text
+from policy
+to policy
+trigger
+previous failure evidence
+additional budget
+outcome
+```
 
-| Dimension | None | high | max |
-|-----------|------|------|-----|
-| Prompt token overhead | 0 | 0 | ~90 |
-| Completion token overhead | Baseline | Moderate (≈1.5-2x) | Significant (≈2-5x) |
-| End-to-end latency | Baseline | +20-50% | +50-200% |
-| Suitable budget | Daily | Important tasks | Critical tasks |
+### 6.2 Prevent infinite “deep thinking”
 
-### 3. Synergy with Other Optimizations
+Set:
 
-Under `reasoning_effort="max"`, the reasoning output volume increases significantly. This makes [I-14 Reasoning Content Stripping](14-reasoning-content-stripping.md) especially important in long conversations — you don't want to cram the excessively long reasoning content produced by `max` mode back into the next turn's prompt.
-
----
-
-## Limitations and Open Questions
-
-1. **The actual behavior of `"high"` is unknown.** The source code only validates it as a legal value but has no front-end logic (independent of prompt structure). It may be passed as an API parameter to the backend inference engine. The difference in effect requires end-to-end comparative experiments.
-2. **Different models interpret `reasoning_effort` differently.** DeepSeek V4's three-tier semantics do not apply to Anthropic's or OpenAI's reasoning parameters. The Harness needs provider-specific adaptation.
-3. **Is `REASONING_EFFORT_MAX` purely a prompt effect or a model fine-tuning feature?** If the model has never seen this instruction during training, its effect may be limited. But if the model has been fine-tuned to recognize this instruction, the effect would be more reliable. Currently uncertain.
-
----
-
-## Validation Path
-
-1. For the same high-difficulty problem, call with `None`, `"high"`, and `"max"` respectively, and compare reasoning output length and final answer quality.
-2. Measure the end-to-end latency differences across the three tiers (average of 5 random questions).
-3. Compare output quality when `REASONING_EFFORT_MAX` is placed at the beginning of the prompt vs. inside the system prompt — to validate the hypothesis that "position matters."
+- maximum retries;
+- maximum tokens;
+- maximum latency;
+- maximum cost;
+- stop conditions;
+- human takeover.
 
 ---
 
-*This article is based on lines 64-68 of encoding_dsv4.py (REASONING_EFFORT_MAX definition) and lines 261-263 (reasoning_effort parameter rendering logic).*
+## 7. Reasoning Content and Subsequent Turns
+
+A deeper mode may generate more reasoning content, but replay depends on Provider protocol:
+
+- some Tool Call chains require retention;
+- some ordinary multi-turn paths permit removal;
+- some servers handle it automatically;
+- billing and Cache behavior may differ.
+
+Use the Capability Matrix from [I-14 Reasoning Content Replay Policy](14-reasoning-content-stripping.md). Never remove reasoning unconditionally merely to save tokens.
+
+---
+
+## 8. Experimental Matrix
+
+### 8.1 Protocol
+
+```text
+None / high / max
+thinking / non-thinking
+stream / non-stream
+tools / no tools
+raw HTTP / SDK
+```
+
+Confirm:
+
+- whether the field is accepted;
+- response structure;
+- whether it is silently ignored;
+- whether a Tool Loop can continue.
+
+### 8.2 Quality
+
+Task classes:
+
+- simple deterministic task;
+- ordinary code change;
+- concurrency Bug;
+- architecture decision;
+- security review;
+- adversarial question with a false premise.
+
+Metrics:
+
+```text
+first-pass success
+verifier pass
+constraint violation
+factual/source accuracy
+human preference
+```
+
+### 8.3 Resources
+
+```text
+reasoning tokens
+output tokens
+input tokens
+cache hit/miss
+TTFT
+total latency
+cost
+```
+
+### 8.4 Experimental discipline
+
+- randomize execution order;
+- repeat multiple times;
+- record service status;
+- separate development and held-out sets;
+- report distributions and failure samples;
+- do not compare output length only.
+
+---
+
+## 9. Decision Rule
+
+A deeper policy should enter default routing only when:
+
+```text
+quality improvement is reproducible
+AND
+cost per successful task remains within budget
+AND
+latency meets product requirements
+AND
+safety violations do not increase
+```
+
+If it only increases reasoning length without improving Verifier Pass or reducing human intervention, reject the policy.
+
+---
+
+## 10. Boundaries and Risks
+
+- Provider parameters may change;
+- `high` may be ignored;
+- `max` may be only Prompt injection;
+- longer reasoning may expose more sensitive content;
+- Tool Call protocol may require reasoning replay;
+- Deep mode may amplify a false premise;
+- the Router may over-escalate simple tasks;
+- cost estimates may expire after price changes.
+
+Capability Versions, budgets, Fallback, and a disable switch are required.
+
+---
+
+## 11. Conclusion
+
+Three legal values in source code cannot be directly converted into three stable product tiers.
+
+A reliable implementation must:
+
+1. distinguish parameter acceptance, semantic effect, and task benefit;
+2. encapsulate Provider-specific fields inside the Adapter;
+3. escalate from risk, reversibility, Evidence, and Verifier failures;
+4. set token, latency, cost, and retry ceilings;
+5. measure quality and cost per successful task on held-out work;
+6. stop when evidence is insufficient instead of “thinking harder” indefinitely.
+
+Longer reasoning is not the goal. More reliable outcomes at controlled cost are the goal.
