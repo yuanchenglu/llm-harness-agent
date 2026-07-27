@@ -1,178 +1,405 @@
-# Agent 免疫系统：让 Harness 自己发现并修复 Prompt 遗忘
+# Agent 免疫系统：从 Prompt 违规到可审计的系统加固
 
-> **证据说明：** 本文提出的是 Harness 设计假设与验证路径。除非明确给出固定版本源码、运行路径和可复现实验，否则“验证”不等于已证明普遍最优。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
+> **证据等级：B（工程设计提案）**  
+> 本文不再把“长对话中必然遗忘 Prompt”写成 Transformer 物理定律，也不再宣称自动生成 Skill 可以把遵守率提升到 100%。核心问题是：当 Agent 发生可复现违规时，Harness 如何把一次失败转化为可审计、可测试、可回滚的系统改进。请先阅读 [研究方法与事实校准](../theory/research-method.md)。
 
-> **创新点索引**：I-01
-> **LLM + Harness = Agent** · 第 1 篇
-> **系列**：[LLM + Harness = Agent](../../README.md)
+> **创新点索引**：I-01  
+> **系列**：[LLM + Harness = Agent](../../README.md)  
 > **下一篇**：[02 大脑主动驱动小脑](02-bidirectional-agent.md)
 
 ---
 
-> **摘要**：大语言模型在长对话中必然遗忘 System Prompt 中的行为约束——这是 Transformer 软注意力机制的物理边界，不是模型能力问题。本文提出一个「免疫系统」式自修复机制：Agent 执行任务后，由独立审查模块检查 Prompt 约束是否被遵守；发现遗漏则自动将约束固化为可执行 Skill，外挂到执行流中。该方案实现了 Prompt + 代码联合驱动系统的自进化闭环——正向学习（成功→Skill）Hermes 已做，负向纠偏（遗忘→自查→Skill）的盲区目前无人填补。
+## 摘要
 
----
+Agent 可能因为指令冲突、上下文遗漏、错误检索、工具结果噪音、模型行为波动或 Runtime 缺少强制检查而违反约束。
 
-## 1. 问题定义
+传统修复通常是：
 
-### 1.1 现象
-
-在长对话场景下，Agent 对 System Prompt 中行为约束的遵守率随对话轮数递增而单调下降。
-
-典型表现：一个包含 50 条行为规则的 System Prompt，在对话第 15 轮后，Agent 实际遵守的规则可能不足 20 条。遗漏的规则并非 Agent「选择」忽略——Agent 在每轮推理时都认为自己遵守了全部规则，但实际行为与规则要求之间存在系统性偏差。
-
-### 1.2 根因
-
-根因不在模型能力，在 Transformer 架构的注意力机制。
-
-Transformer 的自注意力在标准实现中是 O(n²) 的计算——每个 token 的注意力权重需要在全量 token 上分配。当序列长度从 2K 增长到 128K 时，System Prompt 中任意一条规则的注意力权重被稀释了约 64 倍。
-
-> **补充说明（2026-07-04 源码验证）**：DeepSeek V4 通过 CSA（Compressed Sparse Attention，4-128× 压缩）+ HCA（Heavily Compressed Attention）+ MQA（1 KV head）大幅降低了实际复杂度（官方数据：1M context 下仅需 V3.2 的 27% FLOPs + 10% KV cache），但注意力稀释的数学本质不变——softmax 权重分配仍随序列增长被稀释。
-
-**为什么「压缩」不能解决这个问题**：上下文压缩只是减少了序列长度，但压缩算法无法区分「这条约束必须保留」和「这段对话可以丢弃」。压缩后约束的丢失是随机的、不可预测的。
-
-### 1.3 形式化
-
-设 System Prompt 包含 n 条行为约束 C = {c₁, c₂, ..., cₙ}，对话经过 t 轮后序列长度为 L(t)。注意力权重在 cᵢ 上的分配比例 αᵢ(t) ∝ 1/L(t)。当 L(t) → ∞，αᵢ(t) → 0。约束遵守率与 αᵢ(t) 正相关。
-
-源码验证：OMO v0.3 的 System Prompt 定义了 50+ 种场景处理指令，但 `plan-progress.ts` 和 `types.ts` 中仅实现了 20 种的代码路径。另外 30+ 种完全依赖 Prompt 指令驱动——没有对应的运行时检查机制。
-
-> **注意**：此结论基于 OMO v0.3 版本的源码审计。v0.3 的具体文件路径和版本差异待补充标注。
-
----
-
-## 2. 现有方案与局限
-
-| 方案 | 核心思路 | 为什么不行 |
-|------|---------|-----------|
-| **Prompt 膨胀** | 遗漏了规则 A？在 Prompt 里加一条「别忘了规则 A」| 加入越多规则 → 每条规则的 αᵢ 更低 → 遗忘更严重。正反馈恶化 |
-| **更频繁地重复** | 每 N 轮在 System Prompt 中重复关键约束 | 占上下文窗口 → 加速 L(t) 增长 → 窗口耗尽更早 |
-| **等下一代模型** | 更大的 Context Window + 更强的注意力 | 1M 窗口只是让稀释从第 15 轮推迟到第 50 轮——问题不变，只是来得更晚 |
-| **上下文压缩** | 压缩历史对话，留空间给约束 | 压缩算法用统一权重评估所有信息。约束和普通对话混在一起——压缩后什么丢了不可知 |
-| **Hermes Skill（正向学习）** | 任务成功后，将成功做法保存为 Skill | 只在任务成功时触发。Prompt 被遗忘导致的失败不会触发 Skill 生成 |
-| **CodeWhale Self-Improvement** | LLM 发现代码缺陷后自己修改代码 | 不改代码。约束违反的根源不是代码不够好，是 Prompt 指令没有被执行 |
-
-**共性缺陷**：所有方案都在试图让模型「记住更多」。正确方向应该是让系统「减少需要模型记住的东西」。
-
----
-
-## 3. 方案设计
-
-### 3.1 核心机制：自查 → 固化 → 外挂
-
-本方案由三个环节组成：
-
-**环节一：自查（Self-Audit）**
-
-Agent 完成一轮任务执行后，系统 spawn 一个独立的审查 Agent。审查 Agent 的输入只有两样：
-1. 原始 Prompt 中的行为约束列表
-2. 最终产出物（代码变更、文件修改、命令执行记录）
-
-审查 Agent 不读执行日志——因为执行日志会再次引入上下文膨胀问题。审查粒度是「约束 → 产出物」的逐条匹配，而非「约束 → 执行过程」的全量追踪。
-
-**环节二：固化（Crystallization）**
-
-审查 Agent 发现某条约束未被遵守时，系统自动生成一条 Skill。Skill 的格式是结构化的检查步骤——不是自然语言提示，是可执行的检查逻辑。
-
-示例——如果审查发现 Agent 跳过「修改代码前先备份」：
-
-```markdown
-# Skill: pre-edit-backup
-# 固化自：Prompt 约束「修改代码前备份原文件」在第 N 轮被遗忘
-# 触发条件：write_file / patch / terminal(cp/mv/rm)
-# 检查逻辑：目标文件是否存在 → 是否已有 .bak → 没有则拦截并要求先备份
+```text
+发现一次错误
+→ 在 System Prompt 里再加一句提醒
+→ Prompt 越来越长
+→ 同类错误仍可能出现
 ```
 
-**环节三：外挂（Injection）**
+“Agent 免疫系统”应被定义为一条系统加固闭环：
 
-新生成的 Skill 注册到 Skill 系统中。后续任何 Agent 执行类似任务时，该 Skill 在执行前被加载，作为不可跳过的检查步骤注入执行流。
-
-### 3.2 关键设计决策
-
-**为什么不直接修改核心代码？**
-
-核心代码（如 `plan-progress.ts`）只能覆盖已知的、可量化的场景——约 20 种。但实际使用中可能出现 50+ 种变体场景。Prompt 的优势是覆盖广度（描述能力），劣势是执行可靠性（依赖模型记忆）。Skill 固化的优势是把 Prompt 的「覆盖广度」和代码的「执行可靠性」结合起来——不改核心代码，通过外挂 Skill 渐进扩展系统的行为覆盖范围。
-
-**为什么叫「免疫系统」？**
-
-生物免疫系统不靠「记住所有病原体」工作。它靠「识别非我 → 生成抗体 → 下次自动清除」。本方案完全复刻了这个逻辑：
-
-| | 生物免疫系统 | 本方案 |
-|---|---|---|
-| 识别 | 识别外来抗原 | 审查 Agent 发现约束被违反 |
-| 生成抗体 | B 细胞产生特异性抗体 | 自动生成针对性 Skill |
-| 记忆 | 记忆 B 细胞长期存活 | Skill 持久化，下次自动加载 |
-| 范围 | 不攻击自身细胞 | 不改动核心代码 |
-
-### 3.3 正向学习 vs 负向纠偏
-
-Hermes 的 Skill 机制是正向学习——只从成功任务中学习。本方案是负向纠偏——从失败/遗忘中学习。两者的关系不是替代，是互补：
-
-```
-正向学习（Hermes）：任务成功 → 提取做法 → 固化为 Skill
-负向纠偏（本方案）：约束遗忘 → 审查发现 → 固化为 Skill
-
-两者共享同一个 Skill 存储和执行引擎
-区别仅在于「什么事件触发 Skill 生成」
+```text
+违规事件
+→ 固定证据
+→ 根因分类
+→ 提议修复
+→ 选择正确控制层
+→ 测试与审批
+→ 小范围启用
+→ 监控复发与副作用
+→ 保留回滚
 ```
 
----
+关键原则：
 
-## 4. 分析
-
-### 4.1 为什么这个方案能解决根本问题
-
-根本问题不是「模型记不住」，是「不应该让模型来记」。本方案把「记忆约束」的职责从模型转移到 Harness——模型只负责推理和判断，约束遵守由 Harness 通过 Skill 外挂机制保障。
-
-每次自查 + 固化 = 一个约束从「依赖 Prompt」迁移到「依赖 Skill」。Skill 不占注意力权重——它是在执行前以确定性的检查步骤注入的，不经过模型的软注意力分配。迁移完成后，该约束的遵守率从概率性的（~40% @ 15 轮）变为确定性的（~100%）。
-
-### 4.2 边界条件
-
-以下场景本方案**无法**覆盖：
-
-- **隐性约束**：Prompt 中没有明确写出来、但用户隐含期待的约束（如「代码风格应该一致」）。审查 Agent 只能检查显式声明的约束。
-- **情境依赖约束**：约束的有效性依赖当前上下文的判断（如「如果是紧急修复，可以跳过代码审查」）。固化后的 Skill 是确定性检查，无法做情境判断。
-- **首次遗忘**：只有当某条约束被遗忘至少一次后，才能触发固化。固化之前的那次遗忘造成的损失，本方案无法挽回。
-
-### 4.3 与最接近方案的对比
-
-| 维度 | Hermes Skill | 本方案 |
-|------|:---:|:---:|
-| 触发事件 | 任务成功 | 约束被遗忘 |
-| 学习方向 | 正向 | 负向 |
-| 生成内容 | 成功做法的步骤 | 被遗忘约束的检查逻辑 |
-| 执行方式 | 任务前加载 Skill 指令 | 执行前注入检查步骤 |
-| 是否改核心代码 | 否 | 否 |
+> 不是每次失败都生成 Skill；不可妥协的安全约束优先变成 Runtime Policy、Schema、测试或权限规则。Skill 只适合可复用、可解释、需要模型参与的流程知识。
 
 ---
 
-## 5. 验证路径
+## 1. 公开修正
 
-### 5.1 已验证
+### 1.1 Prompt 违规不等于“模型遗忘”
 
-- **问题存在性**：OMO 源码审计证实 Prompt 指令覆盖 50+ 场景，代码仅实现 20 种。Prompt 衰减是结构性缺陷而非偶发 bug。
+观察到约束没有被遵守时，至少存在以下可能原因：
 
-### 5.2 待验证
+- 约束没有进入本轮请求；
+- 约束与更新后的用户指令冲突；
+- 压缩或检索遗漏约束；
+- 模型看到了约束但选择了错误动作；
+- Tool Schema 诱导了错误参数；
+- Runtime 没有阻止违规副作用；
+- Verifier 没有发现错误；
+- 约束本身模糊、不可执行或互相矛盾。
 
-- **自查精度**：审查 Agent 在 100+ 任务上的约束遵守检查准确率（精确率和召回率）
-- **固化效率**：从发现遗忘到 Skill 生成的平均延迟
-- **Token 节省**：Skill 固化前后的 Token 消耗对比——约束从「依赖 Prompt」迁移到「依赖 Skill」后，每轮节省的注意力预算
-- **正向+负向联合效果**：正向学习（成功→Skill）+ 负向纠偏（遗忘→Skill）联合运行的约束遵守率，vs 仅正向学习
+没有证据时，不能统一归因于“注意力稀释”或“Prompt 遗忘”。
+
+### 1.2 轮数增加不必然导致遵守率单调下降
+
+不同模型、任务、Prompt 布局和工具链可能呈现不同曲线。重新检索规则、重建上下文、切换独立 Session 或下沉 Runtime Policy 都可能恢复质量。
+
+### 1.3 自动生成 Skill 不是天然修复
+
+错误 Skill 可能成为持久化供应链风险：
+
+```text
+恶意或错误上下文
+→ 生成 Skill
+→ 跨任务自动加载
+→ 权限扩大或错误流程被系统化
+```
+
+因此 Skill 必须经过来源记录、权限限制、测试、审批、版本化、有效期和回滚。
+
+### 1.4 “无人填补的唯一创新”不成立
+
+行业中已经存在 Policy、Guardrail、Verifier、Hooks、Skills、Memory、Incident Learning 和自动规则提议等不同机制。本文的价值不在于宣称唯一，而在于把这些能力连接成一条严格的失败加固闭环。
 
 ---
 
-## 6. 与 Hermes 的关系
+## 2. 违规事件模型
 
-Hermes 已经具备了本方案的前半段——**正向学习的 Skill 自进化**。Agent 完成复杂任务后可以提议保存为 Skill。
+每次违规都保存结构化事件：
 
-缺失的是后半段——**负向纠偏的触发机制**。当前 Hermes 的 Skill 只在任务成功时触发，不会在约束被遗忘时触发。补齐这个盲区需要一个独立的「审查→固化」闭环，可以作为 Hermes 的一个 Skill 插件实现，无需修改核心架构。
+```yaml
+incident_id: inc-20260727-001
+task_id: task-123
+constraint_id: workspace-boundary@3
+expected: 只允许修改批准的 Workspace
+observed: 尝试写入 ../shared/config.yaml
+blocked: true
+source_refs:
+  - tool-call-882
+  - policy-event-991
+model: deepseek-v4-pro
+runtime_version: 0.1.1
+context_fingerprint: sha256:...
+severity: critical
+status: investigating
+```
+
+至少记录：
+
+```text
+incident_id
+task_id
+constraint_id / requirement_ref
+expected behavior
+observed behavior
+model/provider/runtime version
+context fingerprint
+tool and artifact refs
+whether side effect occurred
+severity
+```
+
+不记录完整私有 Prompt、API Key 或原始 CoT。
 
 ---
 
-## 结论
+## 3. 根因分类
 
-Agent 约束遵守的可靠性不取决于 Prompt 写得多好——取决于 Harness 层是否具备「发现遗忘 → 自我修复」的闭环。正向学习 + 负向纠偏，合在一起才是一个完整的自进化系统。
+### 3.1 Context Failure
+
+- 约束未进入请求；
+- Retrieval 漏召回；
+- Compaction 丢失；
+- 旧摘要覆盖新事实；
+- 错误 Session 被恢复。
+
+候选修复：Context Compiler、Constraint Registry、Checkpoint、Retrieval Test。
+
+### 3.2 Model Compliance Failure
+
+- 约束存在且无冲突，但模型仍生成违规建议；
+- 模型错误选择工具或参数；
+- 模型对风险判断错误。
+
+候选修复：更明确的指令、结构化输出、独立 Reviewer、模型路由，但高风险动作仍应由 Runtime 阻断。
+
+### 3.3 Runtime Enforcement Gap
+
+- 应该拒绝的路径被允许；
+- Approval 可被绕过；
+- stale Diff 仍可 Apply；
+- 不可逆工具没有单独权限。
+
+候选修复：Policy、Sandbox、Schema、状态机、幂等和 Hash 校验。
+
+### 3.4 Requirement Defect
+
+- 约束模糊；
+- 两条规则冲突；
+- 用户目标已经变化；
+- 完成标准不可验证。
+
+候选修复：澄清、版本化 Spec、冲突解决和用户审批。
+
+### 3.5 Verifier Failure
+
+- 测试覆盖不足；
+- Reviewer 只读摘要而无来源；
+- 失败被错误分类为成功；
+- Acceptance Hint 对开发集过拟合。
+
+候选修复：Held-out Tests、Evidence Trace、Verifier 多样性和失败样本复核。
 
 ---
 
-*下一篇：[02 大脑主动驱动小脑](02-bidirectional-agent.md) — LLM 不应该只是 Harness 的被动执行者*
+## 4. 修复层选择
+
+修复必须进入正确层级：
+
+| 问题 | 首选控制层 | 不推荐 |
+| --- | --- | --- |
+| 禁止写出 Workspace | Runtime Policy | 只加 Prompt 提醒 |
+| 输出必须符合 JSON Schema | Schema Verifier | 依赖模型自述正确 |
+| 修改前必须审批 | ChangeSet 状态机 | Skill 清单 |
+| 某框架升级固定步骤 | Governed Skill | 硬编码到核心 Runtime |
+| 项目使用 Python 3.11 | Environment Check + Project Policy | 每轮重复长提示 |
+| 用户偏好注释风格 | Project Memory / Style Rule | 系统级安全策略 |
+
+判定原则：
+
+```text
+能用确定性代码验证的，不只依赖 Prompt
+涉及副作用的，不只依赖模型判断
+需要跨任务复用但有情境变化的，才考虑 Skill
+```
+
+---
+
+## 5. 加固闭环
+
+### 5.1 Detect：发现
+
+来源包括：
+
+- Runtime Policy Block；
+- Test Failure；
+- Reviewer Verdict；
+- 用户纠正；
+- Rollback；
+- Incident Replay；
+- 任务失败聚类。
+
+### 5.2 Preserve：固定证据
+
+保存：
+
+```text
+Diff Hash
+Tool Call ID
+Test Run ID
+Policy Event
+Artifact Hash
+Runtime / Model Version
+```
+
+### 5.3 Diagnose：根因分类
+
+不得让同一个执行 Agent 仅凭自然语言自判根因。优先使用确定性证据；模型诊断必须标记置信度和备选解释。
+
+### 5.4 Propose：提议修复
+
+修复类型：
+
+```text
+policy_patch
+test_patch
+schema_patch
+context_rule
+skill_proposal
+documentation_fix
+model_route_change
+```
+
+### 5.5 Validate：验证
+
+每个修复至少包含：
+
+- 能复现原事故的失败测试；
+- 修复后通过测试；
+- 不相关任务回归测试；
+- 权限和副作用检查；
+- 性能与成本变化；
+- 回滚步骤。
+
+### 5.6 Approve：审批
+
+审批强度按影响范围：
+
+| 范围 | 审批 |
+| --- | --- |
+| 当前任务临时规则 | 用户或任务 Owner |
+| 当前项目 Skill / Policy | 项目 Maintainer |
+| 全局 Runtime Policy | 安全负责人 + Maintainer |
+| 跨用户自动 Skill | 默认禁止，需更高等级审核 |
+
+### 5.7 Canary：小范围启用
+
+先限定：
+
+```text
+workspace
+project
+user
+model
+runtime version
+time window
+```
+
+观察误拦截、漏拦截、成本和任务成功率，再决定扩大范围。
+
+### 5.8 Monitor：监控复发与副作用
+
+记录：
+
+```text
+incident recurrence rate
+false-positive block rate
+false-negative rate
+rollback rate
+first-pass success
+human override
+cost per successful task
+```
+
+### 5.9 Rollback：回滚
+
+所有自动加固项必须版本化，可禁用、可回滚，并保留原事故与修复关联。
+
+---
+
+## 6. Governed Skill 规范
+
+```yaml
+skill_id: python-migrate-pyproject
+version: 1.2.0
+origin:
+  incident_ids: []
+  successful_task_ids:
+    - task-456
+scope:
+  workspaces:
+    - project-a
+permissions:
+  tools:
+    - read_file
+    - propose_patch
+  network: false
+  write_requires_approval: true
+tests:
+  - fixture-basic
+  - fixture-custom-build
+reviewed_by:
+  - maintainer@example
+expires_at: 2026-10-27
+content_hash: sha256:...
+rollback_to: 1.1.0
+```
+
+要求：
+
+- 默认最小 Scope；
+- 默认最小权限；
+- 自动生成后默认禁用；
+- 用户能查看内容和来源；
+- 跨项目启用需重新审批；
+- 修改内容后 Hash 和审批失效；
+- 长期未命中或频繁失败时自动建议停用。
+
+---
+
+## 7. 验证设计
+
+### 7.1 数据集
+
+包含：
+
+- 已知历史违规；
+- 相似但不应触发的负样本；
+- 新项目 Held-out 样本；
+- 恶意 Prompt Injection；
+- 冲突约束；
+- 版本升级场景。
+
+### 7.2 指标
+
+```text
+incident detection precision / recall
+root-cause classification accuracy
+policy false positive / false negative
+skill trigger precision / recall
+regression pass rate
+recurrence rate
+human override rate
+rollback success rate
+```
+
+### 7.3 对照组
+
+比较：
+
+```text
+只增加 Prompt
+vs.
+Prompt + Runtime Policy / Test / Governed Skill
+```
+
+必须报告副作用，不能只报告原事故是否消失。
+
+---
+
+## 8. 边界与风险
+
+- Reviewer 也可能误判；
+- 自动根因分析可能把相关性当因果；
+- 过度加固会造成大量误拦截；
+- Skill 匹配可能过宽或过窄；
+- 安全策略可能与用户目标冲突；
+- 历史事故可能已不适用于新版本；
+- 自动学习可能被 Prompt Injection 污染。
+
+因此系统必须保留人工接管、证据回放、Scope 限制、有效期和回滚。
+
+---
+
+## 9. 结论
+
+Agent 免疫系统不是“模型忘了一次，就自动生成一个 Skill”。
+
+更可靠的闭环是：
+
+1. 把违规固定成可复现 Incident；
+2. 区分 Context、Model、Runtime、Requirement 和 Verifier 根因；
+3. 把修复放到正确控制层；
+4. 对持久化 Skill 做供应链级治理；
+5. 通过测试、审批、Canary、监控和回滚证明改进有效。
+
+真正的自进化不是系统越来越复杂，而是同类失败复发率下降，同时误拦截、权限风险和维护成本保持可控。
