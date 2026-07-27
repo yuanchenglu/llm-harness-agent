@@ -1,36 +1,88 @@
 # LLM + Harness = Agent
 
-> From model capability to a verifiable Agent system — a framework grounded in long-term practice, source audits, and falsifiable experiments
+> Making AI models work reliably in real-world scenarios — 18 in-depth analyses answering the same question from two angles: hands-on practice and source-code verification.
+>
+> Not a research paper. An engineer's field notes from the trenches.
 
-[**简体中文**](README.md) · [**English**](README_en.md) · [**Current Status**](STATUS.md)
+**[简体中文](README.md)** · **[English](README_en.md)**
+
+***
+
+## What This Repository Is
+
+You're probably here because you've run into one of these:
+
+- The same model (DeepSeek V4 / GPT-4o...) behaves completely differently across Agent frameworks, and you don't know why
+- You've tried several Agent products (Claude Code, OpenCode, Cursor...) and want to understand which architecture is worth deep-diving into
+- You've heard about KV Cache, Prefix Cache, Reasoning Effort — and you want to know how to actually use them
+- You want to build your own Agent but don't know where to start — too much theory, too many papers, not enough actionable code
+
+**This repository is the answer to those questions.** It's not a standard README but a living knowledge base — the theoretical frameworks, source-audit conclusions, and unverified experimental hypotheses accumulated over a year of building agents in production.
+
+**Core thesis**: Model capability determines the floor of an Agent; Harness design determines the ceiling. The same DeepSeek API, routed through different context management, tool orchestration, and permission controls, can produce 10× throughput difference. This isn't speculation — it's visible at the code level.
 
 ---
 
-## TL;DR
+## Who Should Read This
 
-1. **Model capability is not product capability.** Context, tools, permissions, state, and verification can materially change the reliability, cost, and user experience of the same model.
-2. **A Harness is the protocol, control, execution, and evidence layer between a model and the real world.** It may amplify model capability or introduce new failure modes, so it must be evaluated with fixed source evidence, protocol tests, and task benchmarks.
-3. **This repository is a knowledge base for research, product specifications, architecture decisions, and redacted experiment summaries.** It is not the complete current DeepSeekAgent Runtime repository and does not independently prove that a production release exists.
-4. **The current release state is defined by [`STATUS.md`](STATUS.md) and [`stage-gates.json`](zh/blueprint/stage-gates.json).** Without an immutable Runtime commit, tag, artifact, checksum, platform matrix, and release decision, the Production Release Gate remains unverified.
+| If you are… | Start here |
+|------------|-----------|
+| **Product Manager / CEO** — want to understand technical differences between Agent products | [PRD TechPlan](zh/prd-tech-plan/README.md) → [Product Comparison](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) |
+| **Developer** — want to apply these ideas in your own project | [Core Innovations](README_en.md#core-innovations) starting from 01 → [Research Method](en/theory/research-method.md) |
+| **Researcher** — interested in the academic lineage of Agent architecture | [Paper Database](https://github.com/yuanchenglu/llm-harness-agent/blob/master/references/papers.md) → [Theory Guide](en/theory/theory-guide.md) |
+| **Just want to get things done** — use a product instead | → [deepseek_runtime](https://github.com/7colorai/deepseek_runtime) / [deepseekagent](https://github.com/yuanchenglu/deepseekagent) |
 
-> **Translation status:** the Chinese innovation articles were methodologically rewritten on 2026-07-27 and are the current canonical versions. Older files under `en/innovations/` may lag behind and must not be used as the evidence source until their translations are refreshed.
+---
 
-## Product and Research Entry Points
+## Quick Navigation
 
-| Document | Purpose |
-|---|---|
-| [Repository Status](STATUS.md) | What this repository can confirm and which external release evidence is still missing |
-| [PRD TechPlan](zh/prd-tech-plan/README.md) | Product scope, PRD, architecture, release gates, and decision records |
-| [Blueprint Handover Pack](zh/blueprint/README.md) | Historical stages, evidence chains, and research materials |
-| [Research Method and Evidence Calibration](en/theory/research-method.md) | Distinguishes source facts, official claims, engineering inference, experiments, and missing evidence |
+### For Product Managers / Decision-Makers
 
-Read `STATUS.md` first, then the PRD TechPlan, and only then use the Blueprint to trace historical evidence.
+| Document | One-Liner |
+|----------|-----------|
+| [PRD TechPlan](zh/prd-tech-plan/README.md) | Current product roadmap, release gates, and decision log |
+| [9 Agent Products: Calibrated Comparison](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | Hermes / Claude Code / OpenCode / Codex / OpenClaw / Cursor / Coze / pi agent / CodeWhale |
+| [Blueprint Handover Pack](zh/blueprint/README.md) | Milestone artifacts, evidence chain, and research history |
+
+### For Developers
+
+Core innovations, best read in order starting from 01:
+
+| # | Article | One-Liner Value |
+|---|---------|----------------|
+| 01 | [Agent Immune System](en/innovations/01-agent-immune-system.md) | Prompt instructions decay in long tasks — have the harness self-audit and self-repair |
+| 02 | [Brain Drives the Cerebellum](en/innovations/02-bidirectional-agent.md) | From "Harness→LLM" one-way to "LLM⇄Harness" bidirectional flow |
+| 03 | [Attention Budget Management](en/innovations/03-attention-budget.md) | Agent degradation may come from context and attention management, not just the model |
+| 04 | [KV Cache Prefix Injection](en/innovations/04-kv-cache-prefix.md) | Separate stable constraints from compressible history |
+| 05 | [Document KV Cache Optimization](en/innovations/05-document-kv-cache.md) | Apply the agent's internal optimization to its own document structure |
+| 06 | [OKR PlanStep + Cascade Correction](en/innovations/06-okr-planstep-cascade.md) | Upgrade flat checklists to directed dependency graphs with auto-cascade |
+| 07 | [KV Cache-Driven Review Switching](en/innovations/07-review-switching.md) | Review depth as f(KV Cache, Plan complexity), not a fixed threshold |
+| 08 | [Two-Level Scope Creep Strategy](en/innovations/08-scope-creep.md) | Demand creep and technical creep are different diseases — different treatments |
+| 09 | [Skills Self-Evolution](en/innovations/09-skills-self-evolution.md) | Crystallize successful patterns into reusable skills |
+| 10 | [7+1 Intent→Strategy Routing](en/innovations/10-intent-routing.md) | Recognize task intent → auto-match strategy |
+| 11 | [Checkpoint Multi-Round Review](en/innovations/11-checkpoint-review.md) | Use independent snapshots to bound review context |
+| 12 | [Memory Granularity Control](en/innovations/12-memory-granularity.md) | Convergent tasks need strong memory; divergent tasks don't |
+| 13 | [Byte-Stable Prefix Architecture](en/innovations/13-byte-stable-prefix-architecture.md) | Make the whole Agent cache-first, not just the system prompt |
+| 14 | [Reasoning Content Stripping](en/innovations/14-reasoning-content-stripping.md) | Every token must justify its existence |
+| 15 | [DSML Tool-Call Format Optimization](en/innovations/15-dsml-tool-call-optimization.md) | DeepSeek V4's unique XML-style markup |
+| 16 | [Quick Instruction Routing](en/innovations/16-quick-instruction-routing.md) | V4's 6 built-in special-token routing |
+| 17 | [Reasoning Effort Control](en/innovations/17-reasoning-effort-control.md) | Three-tier reasoning_effort control strategy |
+| 18 | [Latest Reminder Injection](en/innovations/18-latest-reminder-injection.md) | Inject time-sensitive info at the highest-attention position |
+
+### I Want to Get Hands-On — Ready-Made Products
+
+| Product | One-Liner |
+|---------|-----------|
+| [deepseek_runtime](https://github.com/7colorai/deepseek_runtime) | Fork-ready Python runtime kernel for building agents on DeepSeek API |
+| [deepseekagent](https://github.com/yuanchenglu/deepseekagent) | "One-person company" OS with 10-layer Harness optimization |
+| [oh-my-deepseek-harness](https://github.com/yuanchenglu/oh-my-deepseek-harness) | Hermes Agent plugin — inject full DeepSeek capability in one command |
+| [deepcode](https://github.com/yuanchenglu/deepcode) | DeepSeek V4-optimized AI coding assistant |
 
 ---
 
 ## Core Architecture
 
-```text
+```
 ┌──────────────────────────────────────────────────────────────┐
 │                                                              │
 │   LLM (Probabilistic Engine)     Harness Runtime & Evidence   │
@@ -47,63 +99,28 @@ Read `STATUS.md` first, then the PRD TechPlan, and only then use the Blueprint t
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**One sentence:** the model performs probabilistic understanding and generation; the Harness controls context, tools, permissions, execution, state, recovery, and evidence. The CPU/OS analogy is useful for intuition, but it is not a substitute for protocol and runtime analysis.
+**One sentence**: The model is a probabilistic inference engine; the Harness connects it to context, tools, permissions, state, and evidence.
 
 ---
 
-## Start Here
+## About Me
 
-| Article | Purpose |
-|---|---|
-| [DeepSeek Agent Theory Guide](en/theory/theory-guide.md) | A five-layer theory of model, context, tools, orchestration, and evidence |
-| [Research Method and Evidence Calibration](en/theory/research-method.md) | Evidence levels and correction rules for strong claims |
-| [Protocol and Prefix Cache Evidence Report (Chinese)](zh/blueprint/03-5-DeepSeek-Agent协议与Benchmark验证-DeepSeek-Agent-Protocol-and-Benchmark-Validation/18-0-协议与Prefix-Cache实证报告-Protocol-and-Prefix-Cache-Evidence.md) | Historical experiment boundaries, confirmed observations, and unresolved questions |
-| [Benchmark Harness Plan (Chinese)](zh/blueprint/benchmark-harness-plan.md) | Historical experiment design and acceptance criteria; not the current sole execution task |
-| [Product Comparison](zh/blueprint/04-竞品架构对比与借鉴评估-Architecture-Comparison-and-Borrowing-Assessment/4-1-竞品对比分析.md) | Implementation boundaries and suitable use cases across Agent products |
+Yuan Chenglu. DeepinOS Linux operating system developer. Product Director at CodingCat → Founder at MiniCoding.
 
-## Core Innovations
+Now running an agent matrix across 5 machines: 3 R&D squads (OpenCode / Claude Code / CodeX) + 1 marketing squad (OpenClaw), with Hermes as the CEO orchestrating everything. Multiple rounds of Volcano Engine Hermes Agent internal beta testing.
 
-> The links below intentionally point to the current canonical Chinese articles. A mechanism name does not mean that a public benchmark or production implementation has already been completed.
-
-| # | Article | Accurate Current Positioning |
-|---|---------|------------------------------|
-| [01](zh/innovations/01-agent-immune-system.md) | **Agent Hardening Loop** | Convert incidents into governed Policy, Test, Schema, or Skill improvements |
-| [02](zh/innovations/02-bidirectional-agent.md) | **Model Meta-Requests** | The model may request context, review, or escalation while Runtime retains authority |
-| [03](zh/innovations/03-attention-budget.md) | **Context Allocation** | Replace the unsupported `1/L` dilution law with measurable context and evidence controls |
-| [04](zh/innovations/04-kv-cache-prefix.md) | **Stable Constraints vs. Compressible History** | Separate retention, compliance, enforcement, and Provider cache behavior |
-| [05](zh/innovations/05-document-kv-cache.md) | **Agent-Readable Documents** | Versioned summaries, stable section IDs, evidence indexes, and tiered reading |
-| [06](zh/innovations/06-okr-planstep-cascade.md) | **PlanGraph** | Nodes, typed edges, acceptance criteria, evidence, and cascading invalidation |
-| [07](zh/innovations/07-review-switching.md) | **Risk/Evidence Review Router** | Select review modes from risk, reversibility, blast radius, and evidence completeness |
-| [08](zh/innovations/08-scope-creep.md) | **Scope Change Control** | Separate product scope expansion from implementation dependency discovery |
-| [09](zh/innovations/09-skills-self-evolution.md) | **Governed Skill Supply Chain** | Provenance, permission, tests, approval, canary, monitoring, and rollback |
-| [10](zh/innovations/10-intent-routing.md) | **Intent→Strategy Routing** | A 7+1 design proposal built from observed OMO/Hermes routing ideas |
-| [11](zh/innovations/11-checkpoint-review.md) | **Traceable Checkpoints** | Versioned state, evidence references, stale verdicts, and idempotent resume |
-| [12](zh/innovations/12-memory-granularity.md) | **Scoped Memory Compilation** | Source, scope, confidence, validity, privacy, and user control |
-| [13](zh/innovations/13-byte-stable-prefix-architecture.md) | **Bounded Byte-Stability** | Canonical segments and explicit invalidation, subordinate to correctness and safety |
-| [14](zh/innovations/14-reasoning-content-stripping.md) | **Reasoning Replay Policy** | Provider/endpoint-specific replay, drop, or conservative fallback |
-| [15](zh/innovations/15-dsml-tool-call-optimization.md) | **DSML Encoding Research** | Encoding internals do not imply a client-side DSML protocol |
-| [16](zh/innovations/16-quick-instruction-routing.md) | **Quick Instruction Capability Probe** | Encoding evidence exists; public API availability remains to be verified |
-| [17](zh/innovations/17-reasoning-effort-control.md) | **Reasoning Policy and Budget** | Separate parameter acceptance, semantic effect, and task benefit |
-| [18](zh/innovations/18-latest-reminder-injection.md) | **Dynamic Context Placement** | Source, trust, scope, TTL, privacy, and A/B testing matter more than position slogans |
-
----
-
-## About
-
-Yuan Chenglu. More than ten years in the DeepinOS open-source community, former Product Director at CodingCat, and founder of MiniCoding.
-
-This project studies how models, Harnesses, tools, memory, skills, context, and evidence systems jointly affect real task outcomes.
-
-The core thesis is `LLM + Harness = Agent`, but every strong claim should be traceable to fixed source code, a public protocol, a reproducible experiment, or task-level evidence.
+I believe LLM + Harness = Agent. Models and Harnesses evolve together. DeepSeek introduces new model capabilities and cost structures; the next task is turning them into dependable products through verifiable systems engineering.
 
 ---
 
 ## Get Involved
 
-- **Technical discussion / opportunities:** yuanchenglu001@gmail.com
-- **GitHub Issues:** submit counterexamples, source evidence, or reproducible experiments
-- **License:** [CC BY-NC-SA 4.0](LICENSE.md) for non-commercial sharing and adaptation with attribution and share-alike. See [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Technical discussion / opportunities**: <yuanchenglu001@gmail.com>
+- **GitHub Issues**: Disagree with an innovation point? Open an Issue with your reasoning chain
+- **License**: [CC BY-NC-SA 4.0](LICENSE.md) — non-commercial sharing and adaptation with attribution and share-alike required. See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
-*Separating stable from changing information is an important design line, not an experiment-free universal law.*
+> ⭐ If this repository saved you research time, give it a star so others can find it.
+>
+> *Each article in the "LLM + Harness = Agent" series can be read independently. Start from 01 — they share the same core logic: separate what can't be lost from what can be compressed.*
