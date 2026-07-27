@@ -77,6 +77,13 @@ def load_json(path: Path, errors: list[str]) -> dict[str, Any]:
     return {}
 
 
+def normalize_link_target(raw_target: str) -> str:
+    target = raw_target.strip()
+    if target.startswith("<") and target.endswith(">"):
+        target = target[1:-1]
+    return unquote(target.split("#", 1)[0].split("?", 1)[0])
+
+
 def validate_gate_structure(data: dict[str, Any], errors: list[str]) -> None:
     required = {
         "schema_version",
@@ -204,8 +211,18 @@ def validate_public_docs(errors: list[str]) -> None:
     english_readme = (ROOT / "README_en.md").read_text(encoding="utf-8")
     if "current canonical versions" not in english_readme:
         fail(errors, "README_en.md must state that current Chinese innovation articles are canonical")
-    if "en/innovations/" in english_readme:
-        fail(errors, "README_en.md must not direct readers to stale English innovation articles")
+
+    stale_english_links = [
+        normalize_link_target(raw_target)
+        for raw_target in MARKDOWN_LINK_RE.findall(english_readme)
+        if normalize_link_target(raw_target).startswith("en/innovations/")
+    ]
+    if stale_english_links:
+        fail(
+            errors,
+            "README_en.md must not link readers to stale English innovation articles: "
+            + ", ".join(sorted(set(stale_english_links))),
+        )
 
 
 def validate_innovations(errors: list[str]) -> None:
@@ -221,13 +238,6 @@ def validate_innovations(errors: list[str]) -> None:
             fail(errors, f"{path.relative_to(ROOT)} must link the research method")
         if "系列" not in text or "README.md" not in text:
             fail(errors, f"{path.relative_to(ROOT)} must link the canonical series entry")
-
-
-def normalize_link_target(raw_target: str) -> str:
-    target = raw_target.strip()
-    if target.startswith("<") and target.endswith(">"):
-        target = target[1:-1]
-    return unquote(target.split("#", 1)[0].split("?", 1)[0])
 
 
 def validate_local_links(errors: list[str]) -> None:
