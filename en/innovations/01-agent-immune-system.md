@@ -1,178 +1,405 @@
-# Agent Immune System: Let the Harness Self-Audit and Self-Repair Prompt Decay
+# Agent Immune System: From Prompt Violations to Auditable System Hardening
 
-> **Evidence note:** This paper presents Harness design hypotheses and validation paths. Unless fixed-version source, runtime wiring, and reproducible experiments are provided, "validated" does not mean universally proven. Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
+> **Evidence level: B (engineering design proposal)**  
+> This article no longer treats “a model inevitably forgets the Prompt in long conversations” as a physical law of Transformers, nor does it claim that automatically generated Skills can raise compliance to 100%. The central question is: when an Agent produces a reproducible violation, how should the Harness turn one failure into an auditable, testable, and reversible system improvement? Read [Research Method and Evidence Calibration](../theory/research-method.md) first.
 
-> **Innovation Index**: I-01
-> **LLM + Harness = Agent** · Part 1
-> **Series**: [LLM + Harness = Agent](../../README.md)
+> **Innovation index**: I-01  
+> **Series**: [LLM + Harness = Agent](../../README_en.md)  
 > **Next**: [02 Brain Actively Drives the Cerebellum](02-bidirectional-agent.md)
 
 ---
 
-> **Abstract**: Large language models inevitably forget behavioral constraints in the System Prompt during long conversations. This is a physical boundary of the Transformer soft attention mechanism, not a model capability problem. This paper proposes an "immune system" style self-repair mechanism: after the Agent completes a task, an independent audit module checks whether the Prompt constraints were followed; when omissions are detected, the constraint is automatically crystallized into an executable Skill and injected into the execution flow. This approach realizes a self-evolution loop for Prompt + code co-driven systems. Hermes already handles positive learning (success → Skill), but the blind spot of negative correction (forgetting → self-audit → Skill) is currently unfilled by anyone.
+## Abstract
 
----
+An Agent may violate a constraint because of instruction conflicts, missing context, retrieval errors, noisy tool results, stochastic model behavior, or absent Runtime enforcement.
 
-## 1. Problem Definition
+The conventional repair pattern is usually:
 
-### 1.1 The Phenomenon
-
-In long conversation scenarios, the Agent's compliance with behavioral constraints in the System Prompt decreases monotonically as the number of conversation rounds increases.
-
-The typical pattern: a System Prompt with 50 behavioral rules may have fewer than 20 rules actually followed by the Agent after round 15. The omitted rules are not "chosen" to be ignored. The Agent genuinely believes it has followed every rule at each inference round, but a systematic gap exists between actual behavior and the rules.
-
-### 1.2 Root Cause
-
-The root cause is not model capability. It is the Transformer architecture's attention mechanism.
-
-In the standard implementation, Transformer self-attention is O(n²) computation. Each token's attention weight must be distributed across all tokens. When sequence length grows from 2K to 128K, the attention weight allocated to any single rule in the System Prompt is diluted by roughly 64x.
-
-> **Supplementary note (2026-07-04, source verified)**: DeepSeek V4 dramatically reduces effective complexity through CSA (Compressed Sparse Attention, 4-128x compression) + HCA (Heavily Compressed Attention) + MQA (1 KV head). Official data: 27% FLOPs + 10% KV cache of V3.2 at 1M context. But the mathematical nature of attention dilution remains unchanged. The softmax weight distribution is still diluted as sequence length grows.
-
-**Why compression cannot solve this**: Context compression only reduces sequence length, but the compression algorithm cannot distinguish "this constraint must be preserved" from "this conversation can be discarded." After compression, constraint loss is random and unpredictable.
-
-### 1.3 Formalization
-
-Let the System Prompt contain n behavioral constraints C = {c₁, c₂, ..., cₙ}. After t rounds of conversation, the sequence length is L(t). The attention weight allocated to constraint cᵢ is αᵢ(t) ∝ 1/L(t). When L(t) → ∞, αᵢ(t) → 0. Constraint compliance rate is positively correlated with αᵢ(t).
-
-Source verification: OMO v0.3's System Prompt defines 50+ scenario-handling instructions, but only 20 code paths are implemented in `plan-progress.ts` and `types.ts`. The other 30+ rely entirely on Prompt instructions with no corresponding runtime check mechanism.
-
-> **Note**: This conclusion is based on a source audit of OMO v0.3. Specific file paths and version differences for v0.3 still need supplementary annotation.
-
----
-
-## 2. Existing Approaches and Their Limitations
-
-| Approach | Core Idea | Why It Fails |
-|----------|-----------|--------------|
-| **Prompt inflation** | Agent forgot rule A? Add "don't forget rule A" to the Prompt | More rules → lower αᵢ per rule → worse forgetting. A positive feedback loop that makes things worse |
-| **More frequent repetition** | Repeat key constraints in the System Prompt every N rounds | Eats context window → accelerates L(t) growth → exhausts the window sooner |
-| **Wait for next-gen models** | Bigger context windows + stronger attention | A 1M window only delays dilution from round 15 to round 50. The problem is unchanged, just delayed |
-| **Context compression** | Compress conversation history to make room for constraints | The compression algorithm evaluates all information with uniform weight. Constraints and ordinary conversation are mixed together. What is lost after compression is unknowable |
-| **Hermes Skill (positive learning)** | Save successful procedures as Skills after task success | Only triggers on task success. Forgetting-caused failures never trigger Skill generation |
-| **CodeWhale Self-Improvement** | LLM detects code defects and fixes its own code | Does not change code. The root cause of constraint violation is not that the code is bad, but that the Prompt instructions were not executed |
-
-**Common flaw**: Every approach tries to make the model "remember more." The correct direction is to make the system "reduce what the model needs to remember."
-
----
-
-## 3. Solution Design
-
-### 3.1 Core Mechanism: Self-Audit → Crystallize → Inject
-
-The solution consists of three steps:
-
-**Step One: Self-Audit**
-
-After the Agent completes a task, the system spawns an independent audit Agent. The audit Agent receives exactly two inputs:
-1. The list of behavioral constraints from the original Prompt
-2. The final output (code changes, file modifications, command execution records)
-
-The audit Agent does not read execution logs. Reading execution logs would re-introduce the context inflation problem. The audit granularity is a one-by-one match between "constraint" and "output," not a full-scale "constraint → execution trace" scan.
-
-**Step Two: Crystallization**
-
-When the audit Agent detects that a constraint was not followed, the system automatically generates a Skill. The Skill format is structured check steps. Not natural language hints, but executable check logic.
-
-Example. If the audit finds the Agent skipped "back up before modifying code":
-
-```markdown
-# Skill: pre-edit-backup
-# Crystallized from: Prompt constraint "back up original file before editing" was forgotten at round N
-# Trigger condition: write_file / patch / terminal(cp/mv/rm)
-# Check logic: Does the target file exist → Is there already a .bak → If not, intercept and require backup first
+```text
+Observe one error
+→ add another reminder to the System Prompt
+→ the Prompt keeps growing
+→ the same class of error can still recur
 ```
 
-**Step Three: Injection**
+An “Agent Immune System” should instead be defined as a system-hardening loop:
 
-The newly generated Skill is registered into the Skill system. When any subsequent Agent executes a similar task, this Skill is loaded before execution and injected into the execution flow as a non-skippable check step.
-
-### 3.2 Key Design Decisions
-
-**Why not directly modify core code?**
-
-Core code (e.g., `plan-progress.ts`) can only cover known, quantifiable scenarios. About 20 of them. But in real usage, 50+ variant scenarios can emerge. The strength of the Prompt is coverage breadth (descriptive power). Its weakness is execution reliability (depends on model memory). Skill crystallization combines the "coverage breadth" of the Prompt with the "execution reliability" of code. Core code stays untouched, and the system's behavioral coverage expands progressively through injected Skills.
-
-**Why call it an "immune system"?**
-
-A biological immune system does not work by "remembering all pathogens." It works by "recognize non-self → generate antibodies → auto-clear on next encounter." This solution replicates that logic exactly:
-
-| | Biological Immune System | This Solution |
-|---|---|---|
-| Recognition | Recognize foreign antigens | Audit Agent detects constraint violation |
-| Generate antibodies | B cells produce specific antibodies | Automatically generate a targeted Skill |
-| Memory | Memory B cells survive long-term | Skill persists, auto-loads next time |
-| Self-tolerance | Does not attack self-cells | Does not modify core code |
-
-### 3.3 Positive Learning vs. Negative Correction
-
-Hermes's Skill mechanism is positive learning. It only learns from successful tasks. This solution is negative correction. It learns from failure/forgetting. The relationship is not substitution, but complement:
-
-```
-Positive learning (Hermes):  task success → extract procedure → crystallize as Skill
-Negative correction (this):  constraint forgotten → audit detects → crystallize as Skill
-
-Both share the same Skill storage and execution engine
-The only difference is "what event triggers Skill generation"
+```text
+Violation event
+→ preserve evidence
+→ classify root cause
+→ propose a repair
+→ select the correct control layer
+→ test and approve
+→ enable within a limited scope
+→ monitor recurrence and side effects
+→ retain rollback
 ```
 
----
+The key principle is:
 
-## 4. Analysis
-
-### 4.1 Why This Solution Addresses the Root Problem
-
-The root problem is not "the model cannot remember." It is "the model should not be the one doing the remembering." This solution shifts the responsibility of "remembering constraints" from the model to the Harness. The model only handles reasoning and judgment. Constraint compliance is guaranteed by the Harness through the Skill injection mechanism.
-
-Each audit + crystallization cycle migrates one constraint from "depends on the Prompt" to "depends on a Skill." A Skill does not consume attention weight. It is injected as a deterministic check step before execution, bypassing the model's soft attention allocation entirely. After migration, the compliance rate for that constraint shifts from probabilistic (~40% @ round 15) to deterministic (~100%).
-
-### 4.2 Boundary Conditions
-
-The following scenarios **cannot** be covered by this solution:
-
-- **Implicit constraints**: Constraints that are not explicitly written in the Prompt but are implicitly expected by the user (e.g., "code style should be consistent"). The audit Agent can only check explicitly declared constraints.
-- **Context-dependent constraints**: Constraints whose validity depends on situational judgment (e.g., "if it's an emergency fix, skip code review"). A crystallized Skill is a deterministic check and cannot make situational judgments.
-- **First-time forgetting**: Crystallization can only be triggered after a constraint has been forgotten at least once. The loss caused by that first forgotten instance cannot be recovered by this solution.
-
-### 4.3 Comparison with the Closest Approach
-
-| Dimension | Hermes Skill | This Solution |
-|-----------|:---:|:---:|
-| Trigger event | Task success | Constraint forgotten |
-| Learning direction | Positive | Negative |
-| Generated content | Steps of a successful procedure | Check logic for a forgotten constraint |
-| Execution method | Load Skill instructions before task | Inject check step before execution |
-| Modifies core code | No | No |
+> Not every failure should generate a Skill. Non-negotiable safety constraints should first become Runtime Policy, Schema, tests, or permission rules. A Skill is suitable only for reusable, explainable process knowledge that still requires model participation.
 
 ---
 
-## 5. Verification Path
+## 1. Public Corrections
 
-### 5.1 Verified
+### 1.1 A Prompt violation does not necessarily mean “the model forgot”
 
-- **Problem existence**: OMO source audit confirms Prompt instructions cover 50+ scenarios, code implements only 20. Prompt decay is a structural defect, not an occasional bug.
+When a constraint is not followed, at least the following explanations are possible:
 
-### 5.2 To Be Verified
+- the constraint never entered the current request;
+- the constraint conflicted with a newer user instruction;
+- compaction or retrieval omitted the constraint;
+- the model saw the constraint but selected the wrong action;
+- the Tool Schema induced an incorrect parameter choice;
+- the Runtime did not block a prohibited side effect;
+- the Verifier failed to detect the error;
+- the constraint itself was ambiguous, non-executable, or internally inconsistent.
 
-- **Audit accuracy**: Constraint compliance check accuracy (precision and recall) of the audit Agent across 100+ tasks
-- **Crystallization efficiency**: Average latency from detecting forgetting to Skill generation
-- **Token savings**: Token consumption comparison before and after Skill crystallization. After a constraint migrates from "depends on Prompt" to "depends on Skill," the attention budget saved per round
-- **Combined positive + negative effect**: Constraint compliance rate under joint operation of positive learning (success → Skill) + negative correction (forgetting → Skill), versus positive learning alone
+Without evidence, these cases cannot all be attributed to “attention dilution” or “Prompt forgetting.”
+
+### 1.2 More turns do not necessarily produce monotonically lower compliance
+
+Different models, tasks, Prompt layouts, and toolchains can produce different curves. Re-retrieving rules, rebuilding context, switching to an independent Session, or moving a constraint into Runtime Policy can restore quality.
+
+### 1.3 Automatically generating a Skill is not inherently a repair
+
+An incorrect Skill can become a persistent supply-chain risk:
+
+```text
+Malicious or incorrect context
+→ generate Skill
+→ automatically load it across tasks
+→ expand permissions or institutionalize an incorrect process
+```
+
+A Skill therefore requires provenance, permission limits, tests, approval, versioning, expiration, and rollback.
+
+### 1.4 “A unique innovation no one else has addressed” is not a defensible claim
+
+The industry already contains Policies, Guardrails, Verifiers, Hooks, Skills, Memory, incident learning, and automatic rule proposals. The value of this design is not uniqueness; it is the integration of those mechanisms into a strict failure-hardening loop.
 
 ---
 
-## 6. Relationship with Hermes
+## 2. Violation Event Model
 
-Hermes already has the first half of this solution. **Positive learning through Skill self-evolution.** After an Agent completes a complex task, it can propose saving the procedure as a Skill.
+Every violation should be preserved as a structured event:
 
-What is missing is the second half. **The trigger mechanism for negative correction.** Currently, Hermes Skills only trigger on task success. They never trigger when a constraint is forgotten. Filling this blind spot requires an independent "audit → crystallize" loop. This can be implemented as a Skill plugin for Hermes without modifying the core architecture.
+```yaml
+incident_id: inc-20260727-001
+task_id: task-123
+constraint_id: workspace-boundary@3
+expected: Only the approved Workspace may be modified
+observed: Attempted to write ../shared/config.yaml
+blocked: true
+source_refs:
+  - tool-call-882
+  - policy-event-991
+model: deepseek-v4-pro
+runtime_version: 0.1.1
+context_fingerprint: sha256:...
+severity: critical
+status: investigating
+```
+
+At minimum, record:
+
+```text
+incident_id
+task_id
+constraint_id / requirement_ref
+expected behavior
+observed behavior
+model / provider / runtime version
+context fingerprint
+tool and artifact references
+whether a side effect occurred
+severity
+```
+
+Do not record complete private Prompts, API keys, or raw chain-of-thought.
 
 ---
 
-## Conclusion
+## 3. Root-Cause Classification
 
-The reliability of Agent constraint compliance does not depend on how well the Prompt is written. It depends on whether the Harness layer has a "detect forgetting → self-repair" loop. Positive learning plus negative correction. Together, they form a complete self-evolving system.
+### 3.1 Context Failure
+
+- the constraint did not enter the request;
+- Retrieval missed it;
+- Compaction removed it;
+- an old summary overrode newer facts;
+- the wrong Session was restored.
+
+Candidate repairs: Context Compiler, Constraint Registry, Checkpoint, Retrieval Test.
+
+### 3.2 Model Compliance Failure
+
+- the constraint was present and non-conflicting, but the model still proposed a violating action;
+- the model selected the wrong tool or parameters;
+- the model assessed risk incorrectly.
+
+Candidate repairs: clearer instructions, structured output, an independent Reviewer, or model routing. High-risk actions should still be blocked by the Runtime.
+
+### 3.3 Runtime Enforcement Gap
+
+- a path that should have been rejected was allowed;
+- Approval could be bypassed;
+- a stale Diff could still be applied;
+- an irreversible tool lacked a separate permission.
+
+Candidate repairs: Policy, Sandbox, Schema, state machine, idempotency, and hash verification.
+
+### 3.4 Requirement Defect
+
+- the constraint was ambiguous;
+- two rules conflicted;
+- the user’s objective changed;
+- the completion criterion was not verifiable.
+
+Candidate repairs: clarification, versioned Specs, conflict resolution, and user approval.
+
+### 3.5 Verifier Failure
+
+- test coverage was insufficient;
+- the Reviewer read only a summary without source evidence;
+- a failed task was classified as successful;
+- an acceptance heuristic overfit the development set.
+
+Candidate repairs: held-out tests, evidence traces, Verifier diversity, and manual review of failure samples.
 
 ---
 
-*Next: [02 Brain Actively Drives the Cerebellum](02-bidirectional-agent.md) — The LLM should not be just a passive executor inside the Harness*
+## 4. Selecting the Repair Layer
+
+A repair must be placed in the correct layer:
+
+| Problem | Preferred control layer | Not recommended |
+| --- | --- | --- |
+| Writing outside the Workspace is prohibited | Runtime Policy | Only adding a Prompt reminder |
+| Output must conform to a JSON Schema | Schema Verifier | Relying on the model to claim correctness |
+| Approval is required before modification | ChangeSet state machine | A Skill checklist |
+| A framework upgrade follows a fixed procedure | Governed Skill | Hard-coding it into the core Runtime |
+| The project requires Python 3.11 | Environment Check + Project Policy | Repeating a long reminder every turn |
+| The user prefers a particular comment style | Project Memory / Style Rule | System-level security policy |
+
+Decision rules:
+
+```text
+If deterministic code can verify it, do not rely only on a Prompt
+If it creates a side effect, do not rely only on model judgment
+Use a Skill only when knowledge should be reusable across tasks but remains context-dependent
+```
+
+---
+
+## 5. The Hardening Loop
+
+### 5.1 Detect
+
+Signals include:
+
+- Runtime Policy Block;
+- Test Failure;
+- Reviewer Verdict;
+- user correction;
+- Rollback;
+- Incident Replay;
+- task-failure clustering.
+
+### 5.2 Preserve
+
+Preserve:
+
+```text
+Diff Hash
+Tool Call ID
+Test Run ID
+Policy Event
+Artifact Hash
+Runtime / Model Version
+```
+
+### 5.3 Diagnose
+
+The same execution Agent must not determine the root cause solely through natural-language self-assessment. Prefer deterministic evidence. Model-based diagnosis must carry a confidence value and alternative explanations.
+
+### 5.4 Propose
+
+Repair types:
+
+```text
+policy_patch
+test_patch
+schema_patch
+context_rule
+skill_proposal
+documentation_fix
+model_route_change
+```
+
+### 5.5 Validate
+
+Every repair should include at least:
+
+- a failing test that reproduces the original incident;
+- a passing test after the repair;
+- regression tests for unrelated tasks;
+- permission and side-effect checks;
+- performance and cost changes;
+- rollback instructions.
+
+### 5.6 Approve
+
+Approval strength depends on scope:
+
+| Scope | Approval |
+| --- | --- |
+| Temporary rule for the current task | User or task owner |
+| Project-level Skill / Policy | Project maintainer |
+| Global Runtime Policy | Security owner + maintainer |
+| Cross-user automatic Skill | Disabled by default; requires higher-level review |
+
+### 5.7 Canary
+
+Initially constrain:
+
+```text
+workspace
+project
+user
+model
+runtime version
+time window
+```
+
+Observe false blocks, missed blocks, cost, and task success before widening the scope.
+
+### 5.8 Monitor recurrence and side effects
+
+Record:
+
+```text
+incident recurrence rate
+false-positive block rate
+false-negative rate
+rollback rate
+first-pass success
+human override
+cost per successful task
+```
+
+### 5.9 Rollback
+
+Every automatically proposed hardening item must be versioned, disableable, and reversible, and must preserve the link between the original incident and the repair.
+
+---
+
+## 6. Governed Skill Specification
+
+```yaml
+skill_id: python-migrate-pyproject
+version: 1.2.0
+origin:
+  incident_ids: []
+  successful_task_ids:
+    - task-456
+scope:
+  workspaces:
+    - project-a
+permissions:
+  tools:
+    - read_file
+    - propose_patch
+  network: false
+  write_requires_approval: true
+tests:
+  - fixture-basic
+  - fixture-custom-build
+reviewed_by:
+  - maintainer@example
+expires_at: 2026-10-27
+content_hash: sha256:...
+rollback_to: 1.1.0
+```
+
+Requirements:
+
+- minimum scope by default;
+- least privilege by default;
+- disabled by default after automatic generation;
+- users can inspect content and provenance;
+- cross-project enablement requires renewed approval;
+- changing content invalidates the hash and approval;
+- long-term non-use or repeated failures should trigger a disablement recommendation.
+
+---
+
+## 7. Validation Design
+
+### 7.1 Dataset
+
+Include:
+
+- known historical violations;
+- similar negative samples that should not trigger;
+- held-out samples from new projects;
+- malicious Prompt Injection;
+- conflicting constraints;
+- version-upgrade scenarios.
+
+### 7.2 Metrics
+
+```text
+incident detection precision / recall
+root-cause classification accuracy
+policy false positive / false negative
+skill trigger precision / recall
+regression pass rate
+recurrence rate
+human override rate
+rollback success rate
+```
+
+### 7.3 Control groups
+
+Compare:
+
+```text
+Prompt-only reinforcement
+vs.
+Prompt + Runtime Policy / Test / Governed Skill
+```
+
+Side effects must be reported; it is insufficient to report only whether the original incident disappeared.
+
+---
+
+## 8. Boundaries and Risks
+
+- the Reviewer can also make incorrect judgments;
+- automatic root-cause analysis may mistake correlation for causation;
+- excessive hardening can create many false blocks;
+- Skill matching may be too broad or too narrow;
+- security policy may conflict with the user’s objective;
+- historical incidents may no longer apply to a new version;
+- automatic learning can be poisoned by Prompt Injection.
+
+The system must therefore retain human takeover, evidence replay, scope restrictions, expiration, and rollback.
+
+---
+
+## 9. Conclusion
+
+An Agent Immune System is not “the model forgot once, so automatically generate a Skill.”
+
+A more reliable loop is:
+
+1. preserve a violation as a reproducible Incident;
+2. distinguish Context, Model, Runtime, Requirement, and Verifier root causes;
+3. place the repair in the correct control layer;
+4. govern persistent Skills as supply-chain artifacts;
+5. prove the improvement through tests, approval, canary rollout, monitoring, and rollback.
+
+Real self-evolution does not mean that the system becomes increasingly complex. It means that recurrence of the same failure declines while false blocks, permission risk, and maintenance cost remain controlled.
