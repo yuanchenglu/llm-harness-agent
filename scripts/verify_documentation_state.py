@@ -1,35 +1,73 @@
 #!/usr/bin/env python3
-"""Validate repository stage state and public status documents.
+"""Validate repository status, canonical research articles, and local links.
 
-This verifier intentionally uses only the Python standard library so it can run
-in a clean GitHub Actions environment without installing dependencies.
+The verifier intentionally uses only the Python standard library so it can run
+in a clean GitHub Actions environment without dependency installation.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parents[1]
 GATES_PATH = ROOT / "zh" / "blueprint" / "stage-gates.json"
+SCHEMA_PATH = ROOT / "schemas" / "stage-gates.schema.json"
 STATUS_PATH = ROOT / "STATUS.md"
+INNOVATIONS_DIR = ROOT / "zh" / "innovations"
+
 PUBLIC_STATUS_DOCS = [
     ROOT / "README.md",
+    ROOT / "README_en.md",
     ROOT / "STATUS.md",
+    ROOT / "zh" / "blueprint" / "README.md",
     ROOT / "zh" / "prd-tech-plan" / "README.md",
     ROOT / "zh" / "prd-tech-plan" / "04-roadmap-and-release-gates.md",
+    ROOT / "zh" / "prd-tech-plan" / "07-plan-assets" / "README.md",
+]
+
+CANONICAL_INNOVATIONS = [
+    "01-agent-immune-system.md",
+    "02-bidirectional-agent.md",
+    "03-attention-budget.md",
+    "04-kv-cache-prefix.md",
+    "05-document-kv-cache.md",
+    "06-okr-planstep-cascade.md",
+    "07-review-switching.md",
+    "08-scope-creep.md",
+    "09-skills-self-evolution.md",
+    "10-intent-routing.md",
+    "11-checkpoint-review.md",
+    "12-memory-granularity.md",
+    "13-byte-stable-prefix-architecture.md",
+    "14-reasoning-content-stripping.md",
+    "15-dsml-tool-call-optimization.md",
+    "16-quick-instruction-routing.md",
+    "17-reasoning-effort-control.md",
+    "18-latest-reminder-injection.md",
 ]
 
 FORBIDDEN_CURRENT_CLAIMS = {
     "当前没有最早未完成项": "Use the machine-readable earliest_incomplete_stage value.",
     "Earliest incomplete stage 是 `null`": "Use the machine-readable earliest_incomplete_stage value.",
-    "Stage 6 status 是 `completed`": "Stage 6 research MVP and product release status must be separated.",
+    "Stage 6 status 是 `completed`": "Separate research MVP status from release status.",
     "`production_release_gate` 已关闭": "A verified release requires immutable external evidence.",
     "production release gate 已关闭": "A verified release requires immutable external evidence.",
     "生产 Release Gate 已关闭": "A verified release requires immutable external evidence.",
 }
+
+LEGACY_CANONICAL_CLAIMS = {
+    "注意力权重随序列长度增长而衰减的数学关系 O(1/L)": "The 1/L attention law is not a supported canonical claim.",
+    "约束保持率从 ~40% 提升至 >95%": "Unreproducible historical numbers must not remain canonical.",
+    "任何接入 DeepSeek V4 的 Agent 都必须实现 DSML 解析器": "The API spike disproved this client requirement.",
+    "注意力权重最高的位置": "Position effects require experiments and must not be stated as a law.",
+}
+
+MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
 
 def fail(errors: list[str], message: str) -> None:
@@ -78,12 +116,18 @@ def validate_gate_structure(data: dict[str, Any], errors: list[str]) -> None:
             if key not in stage:
                 fail(errors, f"Stage {stage_id} missing {key}")
         open_items = stage.get("open", [])
+        passed_items = stage.get("passed", [])
         status = stage.get("status")
         if not isinstance(open_items, list):
             fail(errors, f"Stage {stage_id} open must be an array")
             continue
+        if not isinstance(passed_items, list):
+            fail(errors, f"Stage {stage_id} passed must be an array")
+            continue
         if status == "completed" and open_items:
             fail(errors, f"Stage {stage_id} is completed but still has open items")
+        if set(open_items) & set(passed_items):
+            fail(errors, f"Stage {stage_id} has items in both passed and open")
         if status != "completed" or open_items:
             incomplete.append(stage_id)
 
@@ -137,9 +181,13 @@ def validate_release_evidence(data: dict[str, Any], errors: list[str]) -> None:
             )
         if data.get("earliest_incomplete_stage") is not None:
             fail(errors, "verified_released requires earliest_incomplete_stage=null")
-    else:
-        if data.get("earliest_incomplete_stage") is None:
-            fail(errors, "An unverified release must keep an explicit incomplete stage")
+    elif data.get("earliest_incomplete_stage") is None:
+        fail(errors, "An unverified release must keep an explicit incomplete stage")
+
+
+def iter_current_docs() -> list[Path]:
+    article_paths = [INNOVATIONS_DIR / name for name in CANONICAL_INNOVATIONS]
+    return PUBLIC_STATUS_DOCS + article_paths
 
 
 def validate_public_docs(errors: list[str]) -> None:
@@ -160,22 +208,84 @@ def validate_public_docs(errors: list[str]) -> None:
     if "stage-gates.json" not in status_text:
         fail(errors, "STATUS.md must link to stage-gates.json")
 
+    english_readme = (ROOT / "README_en.md").read_text(encoding="utf-8")
+    if "current canonical versions" not in english_readme:
+        fail(errors, "README_en.md must state that current Chinese innovation articles are canonical")
+    if "en/innovations/" in english_readme:
+        fail(errors, "README_en.md must not direct readers to stale English innovation articles")
+
+
+def validate_innovations(errors: list[str]) -> None:
+    for name in CANONICAL_INNOVATIONS:
+        path = INNOVATIONS_DIR / name
+        if not path.exists():
+            fail(errors, f"Missing canonical innovation article: {path.relative_to(ROOT)}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "证据等级" not in text:
+            fail(errors, f"{path.relative_to(ROOT)} must declare an evidence level")
+        if "研究方法与事实校准" not in text:
+            fail(errors, f"{path.relative_to(ROOT)} must link the research method")
+        for phrase, guidance in LEGACY_CANONICAL_CLAIMS.items():
+            if phrase in text:
+                fail(errors, f"{path.relative_to(ROOT)} contains legacy claim {phrase!r}. {guidance}")
+
+
+def normalize_link_target(raw_target: str) -> str:
+    target = raw_target.strip()
+    if target.startswith("<") and target.endswith(">"):
+        target = target[1:-1]
+    return unquote(target.split("#", 1)[0].split("?", 1)[0])
+
+
+def validate_local_links(errors: list[str]) -> None:
+    for path in iter_current_docs():
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for raw_target in MARKDOWN_LINK_RE.findall(text):
+            target = normalize_link_target(raw_target)
+            if not target:
+                continue
+            if target.startswith(("http://", "https://", "mailto:")):
+                continue
+            if target.startswith("#"):
+                continue
+            destination = (path.parent / target).resolve()
+            try:
+                destination.relative_to(ROOT.resolve())
+            except ValueError:
+                fail(errors, f"{path.relative_to(ROOT)} links outside repository: {raw_target}")
+                continue
+            if not destination.exists():
+                fail(
+                    errors,
+                    f"Broken local link in {path.relative_to(ROOT)}: {raw_target}",
+                )
+
 
 def main() -> int:
     errors: list[str] = []
+    if not SCHEMA_PATH.exists():
+        fail(errors, f"Missing schema: {SCHEMA_PATH.relative_to(ROOT)}")
+    else:
+        load_json(SCHEMA_PATH, errors)
+
     data = load_json(GATES_PATH, errors)
     if data:
         validate_gate_structure(data, errors)
         validate_release_evidence(data, errors)
     validate_public_docs(errors)
+    validate_innovations(errors)
+    validate_local_links(errors)
 
     if errors:
-        print("Documentation state verification failed:", file=sys.stderr)
+        print("Documentation integrity verification failed:", file=sys.stderr)
         for index, error in enumerate(errors, start=1):
             print(f"{index}. {error}", file=sys.stderr)
         return 1
 
-    print("Documentation state verification passed.")
+    print("Documentation integrity verification passed.")
     return 0
 
 
