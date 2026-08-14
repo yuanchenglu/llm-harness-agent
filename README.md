@@ -1,3 +1,5 @@
+
+
 # LLM + Harness = Agent
 
 > 从模型能力到可验证 Agent 系统——基于长期实践、源码审计与可证伪实验的理论框架
@@ -108,7 +110,7 @@
 ## 参与讨论
 
 - **深度技术交流 / 工作机会**：yuanchenglu001@gmail.com
-- **GitHub Issue**：对任何创新点有不同看法，可提交反例、源码证据或复现实验
+- **GitHub Issue**：[提交新议题](https://github.com/yuanchenglu/llm-harness-agent/issues) 对任何创新点有不同看法，可提交反例、源码证据或复现实验
 - **协议**：[CC BY-NC-SA 4.0](LICENSE.md) — 允许非商业分享和改编，需署名并以相同方式共享。详见 [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
