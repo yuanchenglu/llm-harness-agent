@@ -16,7 +16,7 @@
 
 > **Bilingual status:** the 18 English innovation articles were synchronized with the current Chinese methodology and architecture on 2026-07-27. On 2026-10-08 the research series (7 manuscripts, Chinese-first full texts with English abstracts inside) was added, together with an English research index at [`en/research/README.md`](en/research/README.md). Paired documents must keep evidence level, boundaries, data models, and validation requirements equivalent.
 
-## Research Program: Reliable Long-Horizon Agents (7 manuscripts)
+## Research Series: Reliable Long-Horizon Agents (7 manuscripts)
 
 > **Status: method-and-protocol drafts** — 59,325 Chinese characters of full text · 72 reference entries · machine-checked structure (0 errors, 0 warnings). No experiments have been run; no performance results are reported.
 
@@ -75,7 +75,7 @@ Read `STATUS.md` first, then the PRD TechPlan, and only then use the Blueprint t
 
 | Article | Purpose |
 |---|---|
-| [Research Program: Reliable Long-Horizon Agents (7 manuscripts)](en/research/README.md) | Falsifiable method-and-protocol drafts; all seven English abstracts collected |
+| [Research Series: Reliable Long-Horizon Agents (7 manuscripts)](en/research/README.md) | Falsifiable method-and-protocol drafts; all seven English abstracts collected |
 | [Research Series Index (zh)](zh/research/README.md) | Series map, division of labour, execution order, self-check and re-runnable structure checks |
 | [DeepSeek Agent Theory Guide](en/theory/theory-guide.md) | A five-layer theory of model, context, tools, orchestration, and evidence |
 | [Research Method and Evidence Calibration](en/theory/research-method.md) | Evidence levels and correction rules for strong claims |
