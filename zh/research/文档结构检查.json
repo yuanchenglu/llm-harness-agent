@@ -1,0 +1,146 @@
+[
+  {
+    "paper": "01-依赖感知计划级联修正/论文初稿.md",
+    "markdown_sha256": "7de97ae96c16003057b2769fee88762e74aed4afc6fc17f7d01625faa09e8458",
+    "word_sha256": "09b1598572a04956728b03d5ab2d15a6bc6bc81f8e37e3335887f0ef8afd4f54",
+    "chinese_characters": 9707,
+    "english_abstract_words": 219,
+    "reference_count": 11,
+    "paragraphs": 141,
+    "tables": [
+      {
+        "rows": 5,
+        "columns": 3
+      },
+      {
+        "rows": 5,
+        "columns": 4
+      }
+    ],
+    "math_objects": 49,
+    "errors": [],
+    "warnings": []
+  },
+  {
+    "paper": "02-多平台插件架构边界/论文初稿.md",
+    "markdown_sha256": "437cea8a867c9f3df9e35bf149fbc928ebaf9e5b90e27971c01a03756df0de86",
+    "word_sha256": "b6089e30e9f769eb8362fcb739cc2d4e6063cebb19dea1dc22a222a65ca560bc",
+    "chinese_characters": 7097,
+    "english_abstract_words": 211,
+    "reference_count": 10,
+    "paragraphs": 120,
+    "tables": [
+      {
+        "rows": 7,
+        "columns": 3
+      },
+      {
+        "rows": 5,
+        "columns": 3
+      }
+    ],
+    "math_objects": 13,
+    "errors": [],
+    "warnings": []
+  },
+  {
+    "paper": "03-记忆与上下文治理/论文初稿.md",
+    "markdown_sha256": "1f6738a68b97f39cb29dbcd7e0c1ea09f9a77c403209b7087edca1d4cc4ee36e",
+    "word_sha256": "1187b5be4b256637dca788cdc5f645829078f1da6aefd48e8fee11b1e8607928",
+    "chinese_characters": 8267,
+    "english_abstract_words": 236,
+    "reference_count": 11,
+    "paragraphs": 114,
+    "tables": [
+      {
+        "rows": 5,
+        "columns": 3
+      },
+      {
+        "rows": 6,
+        "columns": 3
+      }
+    ],
+    "math_objects": 20,
+    "errors": [],
+    "warnings": []
+  },
+  {
+    "paper": "04-行动后验证与结构化反思/论文初稿.md",
+    "markdown_sha256": "6c064e09966729258d25e7d41076de4bb9b00d392fc118b6eb531d7e98b11c3e",
+    "word_sha256": "24315f488e3dfe9f91db0b1e4a68eca9fbb7497977996893770c6f977d0035f7",
+    "chinese_characters": 8607,
+    "english_abstract_words": 211,
+    "reference_count": 10,
+    "paragraphs": 127,
+    "tables": [
+      {
+        "rows": 5,
+        "columns": 3
+      },
+      {
+        "rows": 5,
+        "columns": 4
+      }
+    ],
+    "math_objects": 26,
+    "errors": [],
+    "warnings": []
+  },
+  {
+    "paper": "05-证据链与可信智能体/论文初稿.md",
+    "markdown_sha256": "4b39502c3e6200a0fc2bfc4344c54be97127f709c60989c2f76247414d8e031c",
+    "word_sha256": "f1292a482d0e4d3bdb7612a7f461c04a5d17e68d3c9d52793fb9df944db12b2b",
+    "chinese_characters": 7710,
+    "english_abstract_words": 215,
+    "reference_count": 10,
+    "paragraphs": 119,
+    "tables": [],
+    "math_objects": 30,
+    "errors": [],
+    "warnings": []
+  },
+  {
+    "paper": "06-教育场景长期人机协作/论文初稿.md",
+    "markdown_sha256": "8ce18d5b46122af1d42287d77aa3c9e9721b2a8a532e5194a72809cf0b07c19a",
+    "word_sha256": "87a79908d344fd0787e0ca3dd7948f0692325c10f4dba6606aff440fce437f46",
+    "chinese_characters": 8306,
+    "english_abstract_words": 233,
+    "reference_count": 10,
+    "paragraphs": 121,
+    "tables": [],
+    "math_objects": 18,
+    "errors": [],
+    "warnings": []
+  },
+  {
+    "paper": "07-认知治理综合框架/论文初稿.md",
+    "markdown_sha256": "95e295b01e623045350571c6a0a938f47c81f09f0c0088013635af36b9236698",
+    "word_sha256": "1fd796d1747cbe1311eb893d0a28d7cf574db7aebbc01548a0b74c2d13e054c1",
+    "chinese_characters": 9631,
+    "english_abstract_words": 233,
+    "reference_count": 10,
+    "paragraphs": 130,
+    "tables": [
+      {
+        "rows": 5,
+        "columns": 4
+      },
+      {
+        "rows": 4,
+        "columns": 4
+      },
+      {
+        "rows": 9,
+        "columns": 3
+      },
+      {
+        "rows": 4,
+        "columns": 4
+      }
+    ],
+    "math_objects": 14,
+    "errors": [],
+    "warnings": []
+  }
+]

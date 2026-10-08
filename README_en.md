@@ -10,16 +10,36 @@
 
 1. **Model capability is not product capability.** Context, tools, permissions, state, and verification can materially change the reliability, cost, and user experience of the same model.
 2. **A Harness is the protocol, control, execution, and evidence layer between a model and the real world.** It may amplify model capability or introduce new failure modes, so it must be evaluated with fixed source evidence, protocol tests, and task benchmarks.
-3. **This repository is a knowledge base for research, product specifications, architecture decisions, and redacted experiment summaries.** It is not the complete current DeepSeekAgent Runtime repository and does not independently prove that a production release exists.
-4. **The current release state is defined by [`STATUS.md`](STATUS.md) and [`stage-gates.json`](zh/blueprint/stage-gates.json).** Without an immutable Runtime commit, tag, artifact, checksum, platform matrix, and release decision, the Production Release Gate remains unverified.
+3. **This repository publishes a doctoral research paper series on Reliable Long-Horizon Agents (7 manuscripts).** Each manuscript is a falsifiable method-and-protocol draft (research questions, hypotheses, evaluation protocols) paired with an Evidence Check & Experiment Execution Note. Writing and internal checks are complete; **no experiments have been run and no results are reported**.
+4. **This repository is a knowledge base for research, product specifications, architecture decisions, and redacted experiment summaries.** It is not the complete current DeepSeekAgent Runtime repository and does not independently prove that a production release exists.
+5. **The current release state is defined by [`STATUS.md`](STATUS.md) and [`stage-gates.json`](zh/blueprint/stage-gates.json).** Without an immutable Runtime commit, tag, artifact, checksum, platform matrix, and release decision, the Production Release Gate remains unverified.
 
-> **Bilingual status:** the 18 English innovation articles were synchronized with the current Chinese methodology and architecture on 2026-07-27. The Chinese and English articles are maintained as paired current documents; when wording differs, evidence level, boundaries, data models, and validation requirements must remain equivalent.
+> **Bilingual status:** the 18 English innovation articles were synchronized with the current Chinese methodology and architecture on 2026-07-27. On 2026-10-08 the research series (7 manuscripts, Chinese-first full texts with English abstracts inside) was added, together with an English research index at [`en/research/README.md`](en/research/README.md). Paired documents must keep evidence level, boundaries, data models, and validation requirements equivalent.
+
+## Research Program: Reliable Long-Horizon Agents (7 manuscripts)
+
+> **Status: method-and-protocol drafts** — 59,325 Chinese characters of full text · 72 reference entries · machine-checked structure (0 errors, 0 warnings). No experiments have been run; no performance results are reported.
+
+| # | Question | Draft |
+|---|----------|-------|
+| 01 | How can a requirement change be scoped so plan revision stays consistent with execution evidence? | [正文 (zh)](zh/research/01-依赖感知计划级联修正/论文初稿.md) · [notes](zh/research/01-依赖感知计划级联修正/证据核对与实验执行说明.md) |
+| 02 | Do extension mechanisms behave equivalently across capability, authority, and portability? | [正文 (zh)](zh/research/02-多平台插件架构边界/论文初稿.md) · [notes](zh/research/02-多平台插件架构边界/证据核对与实验执行说明.md) |
+| 03 | How should an agent select memory when records conflict, expire, or are superseded? | [正文 (zh)](zh/research/03-记忆与上下文治理/论文初稿.md) · [notes](zh/research/03-记忆与上下文治理/证据核对与实验执行说明.md) |
+| 04 | Does structured reflection add correction value beyond verification and retry, at controlled cost? | [正文 (zh)](zh/research/04-行动后验证与结构化反思/论文初稿.md) · [notes](zh/research/04-行动后验证与结构化反思/证据核对与实验执行说明.md) |
+| 05 | When an agent claims “done”, how can claims, evidence, and real completion be jointly audited? | [正文 (zh)](zh/research/05-证据链与可信智能体/论文初稿.md) · [notes](zh/research/05-证据链与可信智能体/证据核对与实验执行说明.md) |
+| 06 | Can longitudinal human–AI collaboration improve unaided learning transfer while fading assistance? | [正文 (zh)](zh/research/06-教育场景长期人机协作/论文初稿.md) · [notes](zh/research/06-教育场景长期人机协作/证据核对与实验执行说明.md) |
+| 07 | When constraints, epistemic state, and feedback are combined, do they complement or interfere? | [正文 (zh)](zh/research/07-认知治理综合框架/论文初稿.md) · [notes](zh/research/07-认知治理综合框架/证据核对与实验执行说明.md) |
+
+**Entry points:** [English research index with all seven abstracts](en/research/README.md) · [Chinese series index](zh/research/README.md)
+
+> Adjacent relations to the innovation articles (examples, not one-to-one): PlanGraph [I-06](zh/innovations/06-okr-planstep-cascade.md) ↔ 01; Memory granularity [I-12](zh/innovations/12-memory-granularity.md) ↔ 03; hardening loop [I-01](zh/innovations/01-agent-immune-system.md) ↔ 04; traceable checkpoints [I-11](zh/innovations/11-checkpoint-review.md) ↔ 05.
 
 ## Product and Research Entry Points
 
 | Document | Purpose |
 |---|---|
 | [Repository Status](STATUS.md) | What this repository can confirm and which external release evidence is still missing |
+| [Research Series Index (zh)](zh/research/README.md) · [English index](en/research/README.md) | The Reliable Long-Horizon Agents program: manuscripts, protocols, abstracts |
 | [PRD TechPlan](zh/prd-tech-plan/README.md) | Product scope, PRD, architecture, release gates, and decision records |
 | [Blueprint Handover Pack](zh/blueprint/README.md) | Historical stages, evidence chains, and research materials |
 | [Research Method and Evidence Calibration](en/theory/research-method.md) | Distinguishes source facts, official claims, engineering inference, experiments, and missing evidence |
@@ -55,6 +75,8 @@ Read `STATUS.md` first, then the PRD TechPlan, and only then use the Blueprint t
 
 | Article | Purpose |
 |---|---|
+| [Research Program: Reliable Long-Horizon Agents (7 manuscripts)](en/research/README.md) | Falsifiable method-and-protocol drafts; all seven English abstracts collected |
+| [Research Series Index (zh)](zh/research/README.md) | Series map, division of labour, execution order, self-check and re-runnable structure checks |
 | [DeepSeek Agent Theory Guide](en/theory/theory-guide.md) | A five-layer theory of model, context, tools, orchestration, and evidence |
 | [Research Method and Evidence Calibration](en/theory/research-method.md) | Evidence levels and correction rules for strong claims |
 | [Protocol and Prefix Cache Evidence Report (Chinese)](zh/blueprint/03-5-DeepSeek-Agent协议与Benchmark验证-DeepSeek-Agent-Protocol-and-Benchmark-Validation/18-0-协议与Prefix-Cache实证报告-Protocol-and-Prefix-Cache-Evidence.md) | Historical experiment boundaries, confirmed observations, and unresolved questions |
@@ -95,6 +117,8 @@ Yuan Chenglu. More than ten years in the DeepinOS open-source community, former 
 This project studies how models, Harnesses, tools, memory, skills, context, and evidence systems jointly affect real task outcomes.
 
 The core thesis is `LLM + Harness = Agent`, but every strong claim should be traceable to fixed source code, a public protocol, a reproducible experiment, or task-level evidence.
+
+Currently advancing: the [Reliable Long-Horizon Agents research series (7 manuscripts)](en/research/README.md) — freeze falsifiable protocols first, run the experiments next, then rewrite conclusions from real results.
 
 ---
 
