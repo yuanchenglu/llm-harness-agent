@@ -1,6 +1,6 @@
 # 项目状态真源
 
-> 最近核对：2026-07-27  
+> 最近核对：2026-07-27；2026-10-08 增补研究系列状态（其余状态未复核）  
 > 适用仓库：`yuanchenglu/llm-harness-agent`  
 > 机器可读状态：[`zh/blueprint/stage-gates.json`](zh/blueprint/stage-gates.json)
 
@@ -15,12 +15,15 @@
 
 本仓库不能仅凭计划文档或某个未提交工作区的描述，宣布生产发布完成。
 
+本仓库同时维护一条独立的「可靠长程智能体」博士研究论文系列（7 篇，位于 [`zh/research/`](zh/research/README.md)）：方法与研究协议初稿，写作与内部自查已完成，无实验结果；该系列不参与产品发布 Gate 的判定，也不改变上述状态区分。
+
 ## 2. 当前确定状态
 
 | 范围 | 状态 | 说明 |
 | --- | --- | --- |
 | Stage 0–5 | `completed` | 项目总纲、模型事实、竞品调研、协议实验、架构和 PRD 规格已经形成可用文档资产。 |
 | Stage 6 研究 MVP | `completed` | 已有 E3/E4 摘要、安全写入、回滚和恢复等研究证据。 |
+| 博士研究论文系列（7 篇） | `protocol_drafts_completed` | 方法与研究协议初稿、逐篇证据核对说明、结构自查与可重跑检查脚本已完成；无实验结果；独立于产品发布状态。 |
 | Production Release Gate | `unverified_in_this_repository` | 本仓库缺少实际 Runtime 的固定仓库/commit、远端 release tag、可下载 artifact、checksum 和完整平台矩阵。 |
 | 最早未完成项 | `6-release-evidence-reconciliation` | 先把外部实现证据映射回本仓库，再决定 Gate 是关闭、延期还是重新打开。 |
 
@@ -56,5 +59,6 @@
 2. 固定对应 commit/tag，补齐证据索引。
 3. 运行发布 Gate 验证并提交机器可读结果。
 4. 同步更新 `stage-gates.json`、本文件、PRD TechPlan 和 Blueprint README。
+5. 并行（研究线）：论文系列保持“方法与协议”定位，按各篇《证据核对与实验执行说明》推进开发集与先导试验，取得数据后再更新各篇结论。
 
 在上述工作完成前，本仓库继续作为研究与产品知识库维护，不对外宣称生产版本已经完成发布。
