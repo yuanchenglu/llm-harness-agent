@@ -20,6 +20,20 @@ SCHEMA_PATH = ROOT / "schemas" / "stage-gates.schema.json"
 STATUS_PATH = ROOT / "STATUS.md"
 ZH_INNOVATIONS_DIR = ROOT / "zh" / "innovations"
 EN_INNOVATIONS_DIR = ROOT / "en" / "innovations"
+RESEARCH_DIR = ROOT / "zh" / "research"
+EN_RESEARCH_DIR = ROOT / "en" / "research"
+RESEARCH_INDEX = RESEARCH_DIR / "README.md"
+EN_RESEARCH_INDEX = EN_RESEARCH_DIR / "README.md"
+
+RESEARCH_PAPERS = [
+    "01-依赖感知计划级联修正",
+    "02-多平台插件架构边界",
+    "03-记忆与上下文治理",
+    "04-行动后验证与结构化反思",
+    "05-证据链与可信智能体",
+    "06-教育场景长期人机协作",
+    "07-认知治理综合框架",
+]
 
 PUBLIC_STATUS_DOCS = [
     ROOT / "README.md",
@@ -192,9 +206,17 @@ def innovation_paths() -> tuple[list[Path], list[Path]]:
     return zh_paths, en_paths
 
 
+def research_doc_paths() -> list[Path]:
+    paths: list[Path] = []
+    for directory in (RESEARCH_DIR, EN_RESEARCH_DIR):
+        if directory.exists():
+            paths.extend(sorted(directory.rglob("*.md")))
+    return paths
+
+
 def iter_current_docs() -> list[Path]:
     zh_paths, en_paths = innovation_paths()
-    return PUBLIC_STATUS_DOCS + zh_paths + en_paths
+    return PUBLIC_STATUS_DOCS + zh_paths + en_paths + research_doc_paths()
 
 
 def validate_public_docs(errors: list[str]) -> None:
@@ -280,6 +302,32 @@ def validate_innovations(errors: list[str]) -> None:
         validate_innovation_pair(name, errors)
 
 
+def validate_research_series(errors: list[str]) -> None:
+    for index_path in (RESEARCH_INDEX, EN_RESEARCH_INDEX):
+        if not index_path.exists():
+            fail(errors, f"Missing research series index: {index_path.relative_to(ROOT)}")
+            continue
+        text = index_path.read_text(encoding="utf-8")
+        for name in RESEARCH_PAPERS:
+            if name not in text:
+                fail(
+                    errors,
+                    f"{index_path.relative_to(ROOT)} does not link the manuscript "
+                    f"directory {name}",
+                )
+    for name in RESEARCH_PAPERS:
+        paper_dir = RESEARCH_DIR / name
+        if not paper_dir.exists():
+            fail(errors, f"Missing research manuscript directory: {paper_dir.relative_to(ROOT)}")
+            continue
+        for file_name in ("论文初稿.md", "证据核对与实验执行说明.md"):
+            if not (paper_dir / file_name).exists():
+                fail(
+                    errors,
+                    f"Missing research file: {(paper_dir / file_name).relative_to(ROOT)}",
+                )
+
+
 def validate_local_links(errors: list[str]) -> None:
     for path in iter_current_docs():
         if not path.exists():
@@ -314,6 +362,7 @@ def main() -> int:
         validate_release_evidence(data, errors)
     validate_public_docs(errors)
     validate_innovations(errors)
+    validate_research_series(errors)
     validate_local_links(errors)
 
     if errors:
